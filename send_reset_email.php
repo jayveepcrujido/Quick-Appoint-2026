@@ -386,5 +386,3 @@ function sendPersonnelRescheduleNotification($recipientEmail, $recipientName, $d
         return false;
     }
 }
-
-//modify
