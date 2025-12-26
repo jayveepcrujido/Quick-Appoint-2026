@@ -386,3 +386,156 @@ function sendPersonnelRescheduleNotification($recipientEmail, $recipientName, $d
         return false;
     }
 }
+
+
+function sendPersonnelAppointmentNotification($recipientEmail, $recipientName, $appointmentDetails) {
+    $mail = new PHPMailer(true);
+
+    try {
+        // Server settings
+        $mail->isSMTP();
+        $mail->Host       = 'smtp.gmail.com';
+        $mail->SMTPAuth   = true;
+        $mail->Username   = 'jvcrujido@gmail.com';
+        $mail->Password   = 'jqwcysmffzbxoeaj';
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port       = 587;
+
+        // Sender and recipient
+        $mail->setFrom('jvcrujido@gmail.com', 'LGU Quick Appoint');
+        $mail->addAddress($recipientEmail, $recipientName);
+        $mail->addReplyTo('jvcrujido@gmail.com', 'LGU Support');
+
+        // Format requirements list
+        $requirementsList = '';
+        if (!empty($appointmentDetails['requirements'])) {
+            foreach ($appointmentDetails['requirements'] as $req) {
+                $requirementsList .= "<li style='margin: 8px 0; color: #2c3e50;'>{$req}</li>";
+            }
+        } else {
+            $requirementsList = "<li style='margin: 8px 0; color: #2c3e50;'>Valid ID</li>";
+        }
+
+        // Email content
+        $mail->isHTML(true);
+        $mail->Subject = 'New Appointment: ' . $appointmentDetails['resident_name'] . ' - ' . $appointmentDetails['date'];
+        $mail->Body = "
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset='UTF-8'>
+            <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+        </head>
+        <body style='margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;'>
+            <table width='100%' cellpadding='0' cellspacing='0' style='background-color: #f4f4f4; padding: 20px;'>
+                <tr>
+                    <td align='center'>
+                        <table width='600' cellpadding='0' cellspacing='0' style='background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);'>
+                            <tr>
+                                <td style='background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%); padding: 30px; text-align: center;'>
+                                    <h1 style='color: #ffffff; margin: 0; font-size: 28px;'>New Appointment Alert</h1>
+                                    <p style='color: #ffffff; margin: 10px 0 0 0; font-size: 14px;'>A new appointment has been assigned to you</p>
+                                </td>
+                            </tr>
+                            
+                            <tr>
+                                <td style='padding: 40px 30px;'>
+                                    <p style='color: #333; font-size: 16px; line-height: 1.6; margin: 0 0 15px 0;'>
+                                        Dear <strong>{$recipientName}</strong>,
+                                    </p>
+                                    <p style='color: #555; font-size: 15px; line-height: 1.6; margin: 0 0 25px 0;'>
+                                        A new appointment has been booked and assigned to you. Please review the details below:
+                                    </p>
+                                    
+                                    <table width='100%' cellpadding='0' cellspacing='0' style='background: linear-gradient(135deg, #f8f9fa, #e9ecef); border-radius: 8px; margin: 20px 0; border: 2px solid #3498db;'>
+                                        <tr>
+                                            <td style='padding: 20px;'>
+                                                <h3 style='color: #2c3e50; margin: 0 0 15px 0; font-size: 18px;'>Appointment Details</h3>
+                                                
+                                                <table width='100%' cellpadding='8' cellspacing='0'>
+                                                    <tr>
+                                                        <td style='color: #6c757d; font-size: 14px; padding: 8px 0;'><strong>Resident:</strong></td>
+                                                        <td style='color: #2c3e50; font-size: 14px; padding: 8px 0;'>{$appointmentDetails['resident_name']}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style='color: #6c757d; font-size: 14px; padding: 8px 0;'><strong>Service:</strong></td>
+                                                        <td style='color: #2c3e50; font-size: 14px; padding: 8px 0;'>{$appointmentDetails['service_name']}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style='color: #6c757d; font-size: 14px; padding: 8px 0;'><strong>Date:</strong></td>
+                                                        <td style='color: #2c3e50; font-size: 14px; padding: 8px 0;'>{$appointmentDetails['date']}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style='color: #6c757d; font-size: 14px; padding: 8px 0;'><strong>Time:</strong></td>
+                                                        <td style='color: #2c3e50; font-size: 14px; padding: 8px 0;'>{$appointmentDetails['time']}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style='color: #6c757d; font-size: 14px; padding: 8px 0;'><strong>Department:</strong></td>
+                                                        <td style='color: #2c3e50; font-size: 14px; padding: 8px 0;'>{$appointmentDetails['department_name']}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style='color: #6c757d; font-size: 14px; padding: 8px 0; vertical-align: top;'><strong>Reason:</strong></td>
+                                                        <td style='color: #2c3e50; font-size: 14px; padding: 8px 0;'>{$appointmentDetails['reason']}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td colspan='2' style='padding: 15px 0 8px 0;'>
+                                                            <div style='background: white; padding: 15px; border-radius: 6px; text-align: center; border: 2px dashed #3498db;'>
+                                                                <p style='color: #6c757d; font-size: 12px; margin: 0 0 5px 0;'>Transaction Number</p>
+                                                                <p style='color: #2c3e50; font-size: 24px; font-weight: bold; margin: 0; letter-spacing: 2px;'>{$appointmentDetails['transaction_id']}</p>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                    
+                                    <div style='background: #e3f2fd; border-left: 4px solid #2196f3; padding: 15px; margin: 20px 0; border-radius: 4px;'>
+                                        <p style='color: #1565c0; font-size: 14px; margin: 0 0 10px 0;'><strong>ℹ️ Action Required:</strong></p>
+                                        <ul style='color: #1565c0; font-size: 14px; margin: 0; padding-left: 20px;'>
+                                            <li style='margin: 5px 0;'>Review the appointment details</li>
+                                            <li style='margin: 5px 0;'>Prepare necessary materials</li>
+                                            <li style='margin: 5px 0;'>Ensure required documents are ready</li>
+                                        </ul>
+                                    </div>
+                                    
+                                    <div style='background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;'>
+                                        <h3 style='color: #2c3e50; margin: 0 0 15px 0; font-size: 16px;'>📄 Required Documents to Check:</h3>
+                                        <ul style='margin: 0; padding-left: 20px;'>
+                                            {$requirementsList}
+                                        </ul>
+                                    </div>
+                                    
+                                    <hr style='border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;'>
+                                    
+                                    <p style='color: #999; font-size: 13px; line-height: 1.6; margin: 0;'>
+                                        Please log in to the system to view more details or update the appointment status.
+                                    </p>
+                                </td>
+                            </tr>
+                            
+                            <tr>
+                                <td style='background-color: #f8f9fa; padding: 20px 30px; text-align: center; border-top: 1px solid #e0e0e0;'>
+                                    <p style='color: #888; font-size: 12px; margin: 0 0 5px 0;'>
+                                        © 2025 LGU Quick Appoint. All rights reserved.
+                                    </p>
+                                    <p style='color: #999; font-size: 11px; margin: 0;'>
+                                        This is an automated notification. Please do not reply.
+                                    </p>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </body>
+        </html>
+        ";
+
+        $mail->send();
+        return true;
+    } catch (Exception $e) {
+        error_log("Personnel Notification Email Error: " . $mail->ErrorInfo);
+        return false;
+    }
+}

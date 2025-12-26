@@ -209,6 +209,70 @@ try {
     }
     // ==================== END EMAIL NOTIFICATION ====================
 
+    // ==================== PERSONNEL EMAIL NOTIFICATION ====================
+// Send email to assigned personnel about the new appointment
+try {
+    // Get personnel email
+    $personnelEmailQuery = "SELECT email FROM auth WHERE id = ?";
+    $personnelEmailStmt = $pdo->prepare($personnelEmailQuery);
+    $personnelEmailStmt->execute([$personnel_auth_id]);
+    $personnelAuthData = $personnelEmailStmt->fetch(PDO::FETCH_ASSOC);
+    
+    if ($personnelAuthData && $personnelAuthData['email']) {
+        // Get personnel full name
+        $personnelNameQuery = "SELECT first_name, last_name FROM lgu_personnel WHERE id = ?";
+        $personnelNameStmt = $pdo->prepare($personnelNameQuery);
+        $personnelNameStmt->execute([$personnel_id]);
+        $personnelData = $personnelNameStmt->fetch(PDO::FETCH_ASSOC);
+        $personnel_full_name = $personnelData['first_name'] . ' ' . $personnelData['last_name'];
+        
+        // Get department name (already queried for resident email, but we'll get it again for clarity)
+        $deptQuery = "SELECT name FROM departments WHERE id = ?";
+        $deptStmt = $pdo->prepare($deptQuery);
+        $deptStmt->execute([$department_id]);
+        $deptData = $deptStmt->fetch(PDO::FETCH_ASSOC);
+        
+        // Get service name (already queried for resident email)
+        $serviceQuery = "SELECT service_name FROM department_services WHERE id = ?";
+        $serviceStmt = $pdo->prepare($serviceQuery);
+        $serviceStmt->execute([$service_id]);
+        $serviceData = $serviceStmt->fetch(PDO::FETCH_ASSOC);
+        
+        // Get service requirements (already queried for resident email)
+        $reqQuery = "SELECT requirement FROM service_requirements WHERE service_id = ?";
+        $reqStmt = $pdo->prepare($reqQuery);
+        $reqStmt->execute([$service_id]);
+        $requirements = $reqStmt->fetchAll(PDO::FETCH_COLUMN);
+        
+        // Format time slot
+        $timeSlot = ($slot_period === 'am') ? '9:00 AM - 12:00 PM' : '2:00 PM - 5:00 PM';
+        
+        // Prepare personnel appointment details
+        $personnelAppointmentDetails = [
+            'resident_name' => $resident_name,
+            'service_name' => $serviceData['service_name'] ?? 'N/A',
+            'date' => $formatted_date,
+            'time' => $timeSlot,
+            'department_name' => $deptData['name'] ?? 'N/A',
+            'transaction_id' => $transactionId,
+            'reason' => $reason,
+            'requirements' => $requirements
+        ];
+        
+        // Send email to personnel
+        require_once '../send_reset_email.php';
+        sendPersonnelAppointmentNotification(
+            $personnelAuthData['email'], 
+            $personnel_full_name, 
+            $personnelAppointmentDetails
+        );
+    }
+} catch (Exception $emailError) {
+    // Log email error but don't fail the appointment
+    error_log("Personnel email notification error: " . $emailError->getMessage());
+}
+// ==================== END PERSONNEL EMAIL NOTIFICATION ====================
+
     echo json_encode([
         'status' => 'success',
         'appointment_id' => $appointmentId,
