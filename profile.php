@@ -50,375 +50,420 @@ function h($v){ return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
   <style>
-    body {
-      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      min-height: 100vh;
-      padding: 1.5rem 0;
-    }
+  body {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  min-height: 100vh;
+  padding: 1.5rem 0;
+}
 
-    .profile-container {
-      max-width: 1000px;
-      margin: 0 auto;
-    }
+.profile-container {
+  max-width: 1000px;
+  margin: 0 auto;
+}
 
-    .profile-header {
-      background: white;
-      border-radius: 20px;
-      padding: 2rem;
-      margin-bottom: 2rem;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-      position: relative;
-      overflow: hidden;
-    }
+.profile-header {
+  background: white;
+  border-radius: 20px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  position: relative;
+  overflow: hidden;
+}
 
-    .profile-header::before {
-      content: '';
-      position: absolute;
-      top: -50%;
-      right: -10%;
-      width: 300px;
-      height: 300px;
-      background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
-      border-radius: 50%;
-    }
+.profile-header::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -10%;
+  width: 300px;
+  height: 300px;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+  border-radius: 50%;
+}
 
-    .profile-header-content {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 1rem;
-    }
+.profile-header-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
 
-    .profile-avatar {
-      width: 80px;
-      height: 80px;
-      background: linear-gradient(135deg,  #2c3e50 0%, #3498db 100%);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-size: 2rem;
-      font-weight: bold;
-      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
-    }
+.profile-avatar {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg,  #2c3e50 0%, #3498db 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 2rem;
+  font-weight: bold;
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
 
-    .profile-info {
-      flex: 1;
-      min-width: 200px;
-    }
+.profile-info {
+  flex: 1;
+  min-width: 200px;
+}
 
-    .profile-info h3 {
-      margin: 0;
-      color: #2d3748;
-      font-weight: 700;
-      font-size: 1.5rem;
-    }
+.profile-info h3 {
+  margin: 0;
+  color: #2d3748;
+  font-weight: 700;
+  font-size: 1.5rem;
+}
 
-    .profile-info p {
-      margin: 0.25rem 0 0 0;
-      color: #718096;
-      font-size: 0.95rem;
-    }
+.profile-info p {
+  margin: 0.25rem 0 0 0;
+  color: #718096;
+  font-size: 0.95rem;
+}
 
-    .role-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      background: linear-gradient(135deg,  #2c3e50 0%, #3498db 100%);
-      color: white;
-      padding: 0.5rem 1.25rem;
-      border-radius: 25px;
-      font-weight: 600;
-      font-size: 0.9rem;
-      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-    }
+.role-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg,  #2c3e50 0%, #3498db 100%);
+  color: white;
+  padding: 0.5rem 1.25rem;
+  border-radius: 25px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
 
-    .section-card {
-      background: white;
-      border-radius: 20px;
-      padding: 2rem;
-      margin-bottom: 1.5rem;
-      box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
-      transition: all 0.3s ease;
-    }
+.section-card {
+  background: white;
+  border-radius: 20px;
+  padding: 2rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
 
-    .section-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.12);
-    }
+.section-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.12);
+}
 
-    .section-title {
-      font-weight: 700;
-      color: #2d3748;
-      font-size: 1.2rem;
-      margin-bottom: 1.5rem;
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      padding-bottom: 1rem;
-      border-bottom: 3px solid #f0f3f7;
-    }
+.section-title {
+  font-weight: 700;
+  color: #2d3748;
+  font-size: 1.2rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-bottom: 1rem;
+  border-bottom: 3px solid #f0f3f7;
+}
 
-    .section-title i {
-      color: #3498db
-      font-size: 1.3rem;
-    }
+.section-title i {
+  color: #3498db;
+  font-size: 1.3rem;
+}
 
-    .form-group label {
-      font-weight: 600;
-      color: #4a5568;
-      font-size: 0.9rem;
-      margin-bottom: 0.5rem;
-    }
+.form-group label {
+  font-weight: 600;
+  color: #4a5568;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
 
-    .form-control {
-      border: 2px solid #e2e8f0;
-      border-radius: 10px;
-      padding: 1re
-      font-size: 0.95rem;
-      transition: all 0.3s ease;
-      background: #f8fafc;
-    }
+.form-control {
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  background: white !important;
+  color: #2d3748 !important;
+}
 
-    .form-control:focus {
-      border-color: #3498db;
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-      outline: none;
-      background: white;
-    }
+.form-control:focus {
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  outline: none;
+  background: white;
+}
 
-    .form-control:disabled {
-      background: #f0f3f7;
-      color: #718096;
-      cursor: not-allowed;
-    }
+.form-control:disabled {
+  background: #f0f3f7;
+  color: #718096;
+  cursor: not-allowed;
+}
 
-    select.form-control {
-      cursor: pointer;
-    }
+/* Enhanced Select Dropdown Styling - CRITICAL FIX */
+select.form-control {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%232d3748' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 12px;
+  padding-right: 2.5rem !important;
+  cursor: pointer !important;
+  color: #2d3748 !important;
+  background-color: white !important;
+  font-weight: 500 !important;
+  -webkit-text-fill-color: #2d3748 !important;
+}
 
-    .btn {
-      border-radius: 10px;
-      padding: 0.75rem 1.75rem;
-      font-weight: 600;
-      font-size: 0.95rem;
-      transition: all 0.3s ease;
-      border: none;
-    }
+select.form-control::-ms-expand {
+  display: none;
+}
 
-    .btn-primary {
-      background: linear-gradient(135deg,  #2c3e50 0%, #3498db 100%);
-      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-    }
+/* Ensure all options are visible with proper colors */
+select.form-control option {
+  color: #2d3748 !important;
+  background-color: white !important;
+  padding: 10px !important;
+  font-weight: 500 !important;
+}
 
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-    }
+/* Fix for empty/placeholder options */
+select.form-control option[value=""] {
+  color: #94a3b8 !important;
+  font-style: italic;
+}
 
-    .btn-warning {
-      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-      color: white;
-      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
-    }
+/* Ensure selected option is visible */
+select.form-control option:checked {
+  background-color: #3498db !important;
+  color: white !important;
+}
 
-    .btn-warning:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
-      color: white;
-    }
+/* Modal select specific fixes */
+.modal-body select.form-control {
+  color: #2d3748 !important;
+  background-color: white !important;
+  -webkit-text-fill-color: #2d3748 !important;
+}
 
-    .btn-success {
-      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-    }
+.modal-body select.form-control option {
+  color: #2d3748 !important;
+  background-color: white !important;
+}
 
-    .btn-success:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
-    }
+/* Fix disabled select */
+select.form-control:disabled {
+  background-color: #f0f3f7 !important;
+  color: #94a3b8 !important;
+  cursor: not-allowed !important;
+  -webkit-text-fill-color: #94a3b8 !important;
+}
 
-    .btn-secondary {
-      background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
-      box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
-    }
+.btn {
+  border-radius: 10px;
+  
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  border: none;
+}
 
-    .btn-secondary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(107, 114, 128, 0.4);
-    }
+.btn-primary {
+  background: linear-gradient(135deg,  #2c3e50 0%, #3498db 100%);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
 
-    .action-buttons {
-      display: flex;
-      gap: 1rem;
-      flex-wrap: wrap;
-    }
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
 
-    .alert {
-      border-radius: 12px;
-      border: none;
-      padding: 1rem 1.25rem;
-      font-weight: 500;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-    }
+.btn-warning {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
 
-    .alert-success {
-      background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
-      color: #065f46;
-    }
+.btn-warning:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+  color: white;
+}
 
-    .alert-danger {
-      background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-      color: #991b1b;
-    }
+.btn-success {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
 
-    .modal-content {
-      border-radius: 20px;
-      border: none;
-      overflow: hidden;
-    }
+.btn-success:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+}
 
-    .modal-header {
-      background: linear-gradient(135deg,  #2c3e50 0%, #3498db 100%);
-      color: white;
-      padding: 1.5rem;
-      border: none;
-    }
+.btn-secondary {
+  background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+  box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
+}
 
-    .modal-header .modal-title {
-      font-weight: 700;
-      font-size: 1.25rem;
-    }
+.btn-secondary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(107, 114, 128, 0.4);
+}
 
-    .modal-header .close {
-      color: white;
-      opacity: 1;
-      font-size: 1.5rem;
-      text-shadow: none;
-    }
+.btn-info {
+  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+}
 
-    .modal-body {
-      padding: 2rem;
-    }
+.btn-info:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(14, 165, 233, 0.4);
+}
 
-    .modal-footer {
-      border-top: 2px solid #f0f3f7;
-      padding: 1.5rem 2rem;
-    }
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
 
-    .info-note {
-      background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-      border-left: 4px solid #3b82f6;
-      padding: 1rem;
-      border-radius: 8px;
-      color: #1e40af;
-      font-size: 0.9rem;
-    }
+.alert {
+  border-radius: 12px;
+  border: none;
+  padding: 1rem 1.25rem;
+  font-weight: 500;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
 
-    /* Animations */
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
+.alert-success {
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  color: #065f46;
+}
 
-    .section-card {
-      animation: fadeInUp 0.5s ease forwards;
-    }
+.alert-danger {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  color: #991b1b;
+}
 
-    .section-card:nth-child(1) { animation-delay: 0.1s; }
-    .section-card:nth-child(2) { animation-delay: 0.2s; }
-    .section-card:nth-child(3) { animation-delay: 0.3s; }
+.modal-content {
+  border-radius: 20px;
+  border: none;
+  overflow: hidden;
+}
 
-    /* Mobile Responsive */
-    @media (max-width: 576px) {
-      body {
-        padding: 1rem 0;
-      }
+.modal-header {
+  background: linear-gradient(135deg,  #2c3e50 0%, #3498db 100%);
+  color: white;
+  padding: 1.5rem;
+  border: none;
+}
 
-      .profile-header {
-        padding: 1.5rem;
-        border-radius: 15px;
-      }
+.modal-header .modal-title {
+  font-weight: 700;
+  font-size: 1.25rem;
+}
 
-      .profile-avatar {
-        width: 60px;
-        height: 60px;
-        font-size: 1.5rem;
-      }
+.modal-header .close {
+  color: white;
+  opacity: 1;
+  font-size: 1.5rem;
+  text-shadow: none;
+}
 
-      .profile-info h3 {
-        font-size: 1.25rem;
-      }
+.modal-body {
+  padding: 2rem;
+}
 
-      .profile-info p {
-        font-size: 0.85rem;
-      }
+.modal-footer {
+  border-top: 2px solid #f0f3f7;
+  padding: 1.5rem 2rem;
+}
 
-      .role-badge {
-        padding: 0.4rem 1rem;
-        font-size: 0.85rem;
-      }
+.info-note {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border-left: 4px solid #3b82f6;
+  padding: 1rem;
+  border-radius: 8px;
+  color: #1e40af;
+  font-size: 0.9rem;
+}
 
-      .section-card {
-        padding: 1.5rem;
-        border-radius: 15px;
-      }
+.address-display {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8fafc;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  border: 2px solid #e2e8f0;
+}
 
-      .section-title {
-        font-size: 1.1rem;
-      }
+.address-text {
+  flex: 1;
+  color: #4a5568;
+  font-size: 0.95rem;
+}
 
-      .form-control {
-        padding: 0.1rem;
-        font-size: 0.9rem;
-      }
+.address-text.empty {
+  color: #94a3b8;
+  font-style: italic;
+}
 
-      .btn {
-        width: 100%;
-        margin-bottom: 0.5rem;
-      }
+/* Fix for Address Modal Dropdown Text Visibility */
+#addressModal select.form-control {
+  color: #2d3748 !important;
+  background-color: white !important;
+  -webkit-text-fill-color: #2d3748 !important;
+}
 
-      .action-buttons {
-        flex-direction: column;
-      }
+#addressModal select.form-control option {
+  color: #2d3748 !important;
+  background-color: white !important;
+  
+}
 
-      .modal-body {
-        padding: 1.5rem;
-      }
-    }
+#addressModal input.form-control {
+  color: #2d3748 !important;
+  background-color: white !important;
+}
 
-    /* Tablet Responsive */
-    @media (min-width: 577px) and (max-width: 991px) {
-      .profile-header {
-        padding: 1.75rem;
-      }
+#addressModal .form-control::placeholder {
+  color: #94a3b8 !important;
+}
 
-      .section-card {
-        padding: 1.75rem;
-      }
-    }
+#addressModal .form-control:disabled {
+  background-color: #f0f3f7 !important;
+  color: #94a3b8 !important;
+}
 
-    /* Desktop Optimization */
-    @media (min-width: 992px) {
-      body {
-        padding: 2.5rem 0;
-      }
+/* Ensure dropdown options are visible */
+#provinceSelect option,
+#municipalitySelect option,
+#barangaySelect option {
+  color: #2d3748 !important;
+  background-color: white !important;
+}
 
-      .profile-header {
-        padding: 2.5rem;
-      }
-    }
-    .bg-gradient-blue {
+/* Fix hover state for options */
+#provinceSelect option:hover,
+#municipalitySelect option:hover,
+#barangaySelect option:hover {
+  background-color: #f0f3f7 !important;
+}
+
+/* Override general form-control styles inside address modal */
+#addressModal .modal-body .form-control {
+  background: white !important;
+  color: #2d3748 !important;
+  border: 2px solid #e2e8f0;
+}
+
+#addressModal .modal-body .form-control:focus {
+  background: white !important;
+  color: #2d3748 !important;
+  border-color: #3498db;
+}
+
+/* Password Change Modal Styles */
+.bg-gradient-blue {
   background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
 }
 
@@ -691,80 +736,101 @@ function h($v){ return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
   cursor: not-allowed;
 }
 
-/* Tablet responsiveness */
-@media (max-width: 768px) {
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.section-card {
+  animation: fadeInUp 0.5s ease forwards;
+}
+
+.section-card:nth-child(1) { animation-delay: 0.1s; }
+.section-card:nth-child(2) { animation-delay: 0.2s; }
+.section-card:nth-child(3) { animation-delay: 0.3s; }
+
+/* Mobile Responsive */
+@media (max-width: 576px) {
+  body {
+    padding: 1rem 0;
+  }
+
+  .profile-header {
+    padding: 1.5rem;
+    border-radius: 15px;
+  }
+
+  .profile-avatar {
+    width: 60px;
+    height: 60px;
+    font-size: 1.5rem;
+  }
+
+  .profile-info h3 {
+    font-size: 1.25rem;
+  }
+
+  .profile-info p {
+    font-size: 0.85rem;
+  }
+
+  .role-badge {
+    padding: 0.4rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  .section-card {
+    padding: 1.5rem;
+    border-radius: 15px;
+  }
+
+  .section-title {
+    font-size: 1.1rem;
+  }
+
+  .form-control {
+    padding: 0.65rem;
+    font-size: 0.9rem;
+  }
+
+  .btn {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+  }
+
+  .modal-body {
+    padding: 1.5rem;
+  }
+
   #changePasswordModal .modal-dialog {
-    max-width: 540px;
-    margin: 1rem;
+    margin: 0.5rem;
   }
 
   #changePasswordModal .modal-header,
   #changePasswordModal .modal-body,
   #changePasswordModal .modal-footer {
-    padding: 24px;
-  }
-
-  #changePasswordModal .modal-title {
-    font-size: 20px;
-  }
-
-  #changePasswordModal .btn {
-    padding: 11px 24px;
-    font-size: 14px;
-  }
-}
-
-/* Mobile responsiveness */
-@media (max-width: 576px) {
-  #changePasswordModal .modal-dialog {
-    margin: 0.5rem;
-    max-width: 100%;
-  }
-  
-  #changePasswordModal .modal-header {
-    padding: 20px;
-  }
-
-  #changePasswordModal .modal-body {
     padding: 20px;
   }
 
   #changePasswordModal .modal-footer {
-    padding: 16px 20px;
     flex-direction: column-reverse;
     gap: 8px;
   }
 
-  #changePasswordModal .modal-title {
-    font-size: 18px;
-  }
-  
   #changePasswordModal .modal-footer .btn {
     width: 100%;
     margin: 0;
-  }
-
-  .password-input-group .form-control {
-    font-size: 16px; /* Prevents zoom on iOS */
-  }
-
-  .password-input-group .input-group-text {
-    padding: 0 12px;
-  }
-
-  .btn-toggle-password {
-    padding: 0 12px;
-  }
-}
-
-@media (max-width: 375px) {
-  #changePasswordModal .modal-header,
-  #changePasswordModal .modal-body {
-    padding: 16px;
-  }
-
-  .requirements-box {
-    padding: 16px;
   }
 }
   </style>
@@ -803,6 +869,11 @@ function h($v){ return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
   <form id="updateProfileForm">
     <input type="hidden" name="auth_id" value="<?php echo $auth_id; ?>">
     <input type="hidden" name="role" value="<?php echo h($role); ?>">
+    <input type="hidden" name="province" id="hiddenProvince">
+    <input type="hidden" name="municipality" id="hiddenMunicipality">
+    <input type="hidden" name="barangay" id="hiddenBarangay">
+    <input type="hidden" name="street" id="hiddenStreet">
+    <input type="hidden" name="house_number" id="hiddenHouseNumber">
 
     <!-- Account Information -->
     <div class="section-card">
@@ -846,12 +917,12 @@ function h($v){ return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
           </div>
           <div class="form-group col-md-2">
             <label><i class="fas fa-hashtag mr-1"></i> Age</label>
-            <input type="number" name="age" class="form-control" value="<?php echo h($user['age'] ?? ''); ?>">
+            <input type="number" name="age" class="form-control" value="<?php echo h($user['age'] ?? ''); ?>" readonly>
           </div>
           <div class="form-group col-md-3">
             <label><i class="fas fa-venus-mars mr-1"></i> Sex</label>
             <select name="sex" class="form-control">
-              <option value="">Select</option>
+              <option value="" <?php echo empty($user['sex'])?'selected':''; ?>>-- Select Sex --</option>
               <option value="Male"   <?php echo (isset($user['sex']) && $user['sex']==='Male')?'selected':''; ?>>Male</option>
               <option value="Female" <?php echo (isset($user['sex']) && $user['sex']==='Female')?'selected':''; ?>>Female</option>
             </select>
@@ -859,7 +930,7 @@ function h($v){ return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
           <div class="form-group col-md-3">
             <label><i class="fas fa-ring mr-1"></i> Civil Status</label>
             <select name="civil_status" class="form-control">
-              <option value="">Select</option>
+              <option value="" <?php echo empty($user['civil_status'])?'selected':''; ?>>-- Select Status --</option>
               <option value="Single"  <?php echo (isset($user['civil_status']) && $user['civil_status']==='Single')?'selected':''; ?>>Single</option>
               <option value="Married" <?php echo (isset($user['civil_status']) && $user['civil_status']==='Married')?'selected':''; ?>>Married</option>
             </select>
@@ -868,7 +939,14 @@ function h($v){ return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
         
         <div class="form-group">
           <label><i class="fas fa-map-marker-alt mr-1"></i> Address</label>
-          <input type="text" name="address" class="form-control" value="<?php echo h($user['address'] ?? ''); ?>">
+          <div class="address-display">
+            <span class="address-text <?php echo empty($user['address']) ? 'empty' : ''; ?>" id="addressDisplay">
+              <?php echo !empty($user['address']) ? h($user['address']) : 'No address set'; ?>
+            </span>
+            <button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#addressModal">
+              <i class="fas fa-edit mr-1"></i> Edit Address
+            </button>
+          </div>
         </div>
       </div>
     <?php elseif ($role === 'LGU Personnel'): ?>
@@ -913,6 +991,63 @@ function h($v){ return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
   </form>
 </div>
 
+<!-- Address Edit Modal -->
+<div class="modal fade" id="addressModal" tabindex="-1" role="dialog" data-backdrop="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="fas fa-map-marked-alt mr-2"></i>
+          Edit Address
+        </h5>
+        <button type="button" class="close" data-dismiss="modal">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group col-md-6">
+            <label>Province <span class="text-danger">*</span></label>
+            <select id="provinceSelect" class="form-control" required>
+              <option value="">-- Loading Provinces... --</option>
+            </select>
+          </div>
+          <div class="form-group col-md-6">
+            <label>Municipality/City <span class="text-danger">*</span></label>
+            <select id="municipalitySelect" class="form-control" required disabled>
+              <option value="">-- Select Municipality --</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group col-md-6">
+            <label>Barangay <span class="text-danger">*</span></label>
+            <select id="barangaySelect" class="form-control" required disabled>
+              <option value="">-- Select Barangay --</option>
+            </select>
+          </div>
+          <div class="form-group col-md-6">
+            <label>Street/Purok <span class="text-danger">*</span></label>
+            <input type="text" id="streetInput" class="form-control" placeholder="Enter street/purok name">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>House Number / Building Name (Optional)</label>
+          <input type="text" id="houseNumberInput" class="form-control" placeholder="e.g., Block 5 Lot 10">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+          <i class="fas fa-times mr-2"></i> Cancel
+        </button>
+        <button type="button" class="btn btn-success" id="saveAddressBtn">
+          <i class="fas fa-check mr-2"></i> Save Changes
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Change Password Modal -->
 <div class="modal fade" id="changePasswordModal" tabindex="-1" role="dialog" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document">
@@ -938,9 +1073,7 @@ function h($v){ return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
           </label>
           <div class="input-group password-input-group">
             <div class="input-group-prepend">
-              <span class="input-group-text">
-                <!-- <i class="fas fa-lock"></i> -->
-              </span>
+              <span class="input-group-text"></span>
             </div>
             <input type="password" 
                    name="current_password" 
@@ -968,9 +1101,7 @@ function h($v){ return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
           </label>
           <div class="input-group password-input-group">
             <div class="input-group-prepend">
-              <span class="input-group-text">
-                <!-- <i class="fas fa-key"></i> -->
-              </span>
+              <span class="input-group-text"></span>
             </div>
             <input type="password" 
                    name="new_password" 
@@ -1039,9 +1170,7 @@ function h($v){ return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
           </label>
           <div class="input-group password-input-group">
             <div class="input-group-prepend">
-              <span class="input-group-text">
-                <!-- <i class="fas fa-check-circle"></i> -->
-              </span>
+              <span class="input-group-text"></span>
             </div>
             <input type="password" 
                    name="confirm_password" 
@@ -1076,84 +1205,65 @@ function h($v){ return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
   </div>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Load jQuery and Bootstrap only if not already loaded -->
 <script>
-$(function(){
-  // AJAX profile update
-  $("#updateProfileForm").on("submit", function(e){
-    e.preventDefault();
-    $.ajax({
-      url: '../update_profile.php',
-      type: 'POST',
-      data: $(this).serialize(),
-      dataType: 'json',
-      success: function(json){
-        const cls = (json && json.status === 'success') ? 'success' : 'danger';
-        const msg = (json && json.message) ? json.message : 'Unexpected error.';
-        $('#ajaxAlert').html(`<div class="alert alert-${cls}"><i class="fas fa-${cls === 'success' ? 'check-circle' : 'exclamation-triangle'} mr-2"></i>${msg}</div>`);
-        
-        // Scroll to alert
-        $('html, body').animate({
-          scrollTop: $('#ajaxAlert').offset().top - 100
-        }, 500);
+if (typeof jQuery === 'undefined') {
+  document.write('<script src="https://code.jquery.com/jquery-3.6.0.min.js"><\/script>');
+}
+if (typeof bootstrap === 'undefined') {
+  document.write('<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"><\/script>');
+}
+</script>
 
-        // Auto-hide after 5 seconds
-        setTimeout(function() {
-          $('#ajaxAlert').fadeOut(500, function() {
-            $(this).html('');
-            $(this).show();
-          });
-        }, 5000);
-      },
-      error: function(){
-        $('#ajaxAlert').html('<div class="alert alert-danger"><i class="fas fa-exclamation-triangle mr-2"></i>Request failed.</div>');
-      }
-    });
-  });
+<script>
+// Prevent multiple script execution when loaded via AJAX
+if (typeof window.profileScriptsLoaded === 'undefined') {
+  window.profileScriptsLoaded = true;
 
-  // AJAX password change
-  $("#changePasswordForm").on("submit", function(e){
-    e.preventDefault();
-    $.ajax({
-      url: '../change_password.php',
-      type: 'POST',
-      data: $(this).serialize(),
-      dataType: 'json',
-      success: function(json){
-        $('#changePasswordModal').modal('hide');
+  // Only declare if not already declared
+  if (typeof window.API_BASE === 'undefined') {
+    window.API_BASE = 'https://psgc.gitlab.io/api';
+  }
+}
 
-        // Fix lingering backdrop
-        $('.modal-backdrop').remove();
-        $('body').removeClass('modal-open').css('padding-right','');
+// Always make these functions available globally
+const API_BASE = window.API_BASE;
 
-        const cls = (json && json.status === 'success') ? 'success' : 'danger';
-        const msg = (json && json.message) ? json.message : 'Unexpected error.';
-        $('#ajaxAlert').html(`<div class="alert alert-${cls}"><i class="fas fa-${cls === 'success' ? 'check-circle' : 'exclamation-triangle'} mr-2"></i>${msg}</div>`);
-        $('#changePasswordForm')[0].reset();
-
-        // Scroll to alert
-        $('html, body').animate({
-          scrollTop: $('#ajaxAlert').offset().top - 100
-        }, 500);
-
-        // Auto-hide after 5 seconds
-        setTimeout(function() {
-          $('#ajaxAlert').fadeOut(500, function() {
-            $(this).html('');
-            $(this).show();
-          });
-        }, 5000);
-      },
-      error: function(){
-        $('#changePasswordModal').modal('hide');
-        $('.modal-backdrop').remove();
-        $('body').removeClass('modal-open').css('padding-right','');
-        $('#ajaxAlert').html('<div class="alert alert-danger"><i class="fas fa-exclamation-triangle mr-2"></i>Request failed.</div>');
-      }
-    });
-  });
+// Auto-calculate age from birthday
+$('input[name="birthday"]').on('change', function() {
+  const birthday = new Date($(this).val());
+  const today = new Date();
+  const age = today.getFullYear() - birthday.getFullYear();
+  const monthDiff = today.getMonth() - birthday.getMonth();
+  
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthday.getDate())) {
+    $('input[name="age"]').val(age - 1);
+  } else {
+    $('input[name="age"]').val(age);
+  }
 });
+
+// MOVE ALL FUNCTION DECLARATIONS OUTSIDE THE IF BLOCK
+async function loadProvinces() {
+  try {
+    const response = await fetch(`${API_BASE}/provinces/`);
+    const provinces = await response.json();
+    
+    provinces.sort((a, b) => a.name.localeCompare(b.name));
+    
+    const select = $('#provinceSelect');
+    select.empty().append('<option value="">-- Select Province --</option>');
+    
+    provinces.forEach(province => {
+      select.append(`<option value="${province.code}" data-name="${province.name}">${province.name}</option>`);
+    });
+  } catch (error) {
+    console.error('Error loading provinces:', error);
+    alert('Failed to load provinces. Please try again.');
+  }
+}
+
+// Password toggle function
 function togglePassword(fieldId, button) {
   const field = document.getElementById(fieldId);
   const icon = button.querySelector('i');
@@ -1169,6 +1279,7 @@ function togglePassword(fieldId, button) {
   }
 }
 
+// Password validation
 function validatePassword() {
   const password = document.getElementById('newPassword').value;
   const strengthBar = document.getElementById('strengthBar');
@@ -1266,16 +1377,195 @@ function updateSubmitButton() {
   }
 }
 
-// Reset form when modal is closed
-$('#changePasswordModal').on('hidden.bs.modal', function () {
-  document.getElementById('changePasswordForm').reset();
-  document.getElementById('strengthBar').style.width = '0%';
-  document.getElementById('strengthText').textContent = '';
-  document.querySelectorAll('.password-requirements small').forEach(el => {
-    el.classList.remove('met');
+// Event handlers - bind once
+$(document).ready(function() {
+  // Unbind first to prevent duplicate bindings
+  $('#addressModal').off('show.bs.modal');
+  $('#provinceSelect').off('change');
+  $('#municipalitySelect').off('change');
+  $('#saveAddressBtn').off('click');
+  $('#updateProfileForm').off('submit');
+  $('#changePasswordForm').off('submit');
+  $('#changePasswordModal').off('hidden.bs.modal');
+  
+  // Force select visibility on page load
+  $('select.form-control').each(function() {
+    $(this).css({
+      'color': '#2d3748',
+      'background-color': 'white',
+      '-webkit-text-fill-color': '#2d3748'
+    });
   });
-  document.getElementById('matchMessage').innerHTML = '';
-  document.getElementById('submitBtn').disabled = true;
+  
+  // Load provinces when modal opens
+  $('#addressModal').on('show.bs.modal', function() {
+    loadProvinces();
+  });
+
+  $('#provinceSelect').on('change', async function() {
+    const provinceCode = $(this).val();
+    const municipalitySelect = $('#municipalitySelect');
+    const barangaySelect = $('#barangaySelect');
+    
+    // Reset dependent dropdowns
+    municipalitySelect.empty().append('<option value="">-- Select Municipality --</option>').prop('disabled', !provinceCode);
+    barangaySelect.empty().append('<option value="">-- Select Barangay --</option>').prop('disabled', true);
+    
+    if (!provinceCode) return;
+    
+    try {
+      const response = await fetch(`${API_BASE}/provinces/${provinceCode}/cities-municipalities/`);
+      const municipalities = await response.json();
+      
+      municipalities.sort((a, b) => a.name.localeCompare(b.name));
+      
+      municipalities.forEach(muni => {
+        municipalitySelect.append(`<option value="${muni.code}" data-name="${muni.name}">${muni.name}</option>`);
+      });
+    } catch (error) {
+      console.error('Error loading municipalities:', error);
+      alert('Failed to load municipalities. Please try again.');
+    }
+  });
+
+  $('#municipalitySelect').on('change', async function() {
+    const muniCode = $(this).val();
+    const barangaySelect = $('#barangaySelect');
+    
+    barangaySelect.empty().append('<option value="">-- Select Barangay --</option>').prop('disabled', !muniCode);
+    
+    if (!muniCode) return;
+    
+    try {
+      const response = await fetch(`${API_BASE}/cities-municipalities/${muniCode}/barangays/`);
+      const barangays = await response.json();
+      
+      barangays.sort((a, b) => a.name.localeCompare(b.name));
+      
+      barangays.forEach(brgy => {
+        barangaySelect.append(`<option value="${brgy.code}" data-name="${brgy.name}">${brgy.name}</option>`);
+      });
+    } catch (error) {
+      console.error('Error loading barangays:', error);
+      alert('Failed to load barangays. Please try again.');
+    }
+  });
+
+  // Save address button
+  $('#saveAddressBtn').on('click', function() {
+    const province = $('#provinceSelect option:selected').data('name');
+    const municipality = $('#municipalitySelect option:selected').data('name');
+    const barangay = $('#barangaySelect option:selected').data('name');
+    const street = $('#streetInput').val().trim();
+    const houseNumber = $('#houseNumberInput').val().trim();
+    
+    // Validation
+    if (!province || !municipality || !barangay || !street) {
+      alert('Please fill in all required fields (Province, Municipality, Barangay, and Street)');
+      return;
+    }
+    
+    // Build address string
+    const addressParts = [houseNumber, street, barangay, municipality, province].filter(Boolean);
+    const fullAddress = addressParts.join(', ');
+    
+    // Update display
+    $('#addressDisplay').text(fullAddress).removeClass('empty');
+    
+    // Update hidden fields
+    $('#hiddenProvince').val(province);
+    $('#hiddenMunicipality').val(municipality);
+    $('#hiddenBarangay').val(barangay);
+    $('#hiddenStreet').val(street);
+    $('#hiddenHouseNumber').val(houseNumber);
+    
+    // Close modal
+    $('#addressModal').modal('hide');
+  });
+
+  // Profile update form submission
+  $("#updateProfileForm").on("submit", function(e){
+    e.preventDefault();
+    $.ajax({
+      url: '../update_profile.php',
+      type: 'POST',
+      data: $(this).serialize(),
+      dataType: 'json',
+      success: function(json){
+        const cls = (json && json.status === 'success') ? 'success' : 'danger';
+        const msg = (json && json.message) ? json.message : 'Unexpected error.';
+        $('#ajaxAlert').html(`<div class="alert alert-${cls}"><i class="fas fa-${cls === 'success' ? 'check-circle' : 'exclamation-triangle'} mr-2"></i>${msg}</div>`);
+        
+        $('html, body').animate({
+          scrollTop: $('#ajaxAlert').offset().top - 100
+        }, 500);
+
+        setTimeout(function() {
+          $('#ajaxAlert').fadeOut(500, function() {
+            $(this).html('').show();
+          });
+        }, 5000);
+      },
+      error: function(){
+        $('#ajaxAlert').html('<div class="alert alert-danger"><i class="fas fa-exclamation-triangle mr-2"></i>Request failed.</div>');
+      }
+    });
+  });
+
+  // Password change form
+  $("#changePasswordForm").on("submit", function(e){
+    e.preventDefault();
+    $.ajax({
+      url: '../change_password.php',
+      type: 'POST',
+      data: $(this).serialize(),
+      dataType: 'json',
+      success: function(json){
+        $('#changePasswordModal').modal('hide');
+        $('.modal-backdrop').remove();
+        $('body').removeClass('modal-open').css('padding-right','');
+
+        const cls = (json && json.status === 'success') ? 'success' : 'danger';
+        const msg = (json && json.message) ? json.message : 'Unexpected error.';
+        $('#ajaxAlert').html(`<div class="alert alert-${cls}"><i class="fas fa-${cls === 'success' ? 'check-circle' : 'exclamation-triangle'} mr-2"></i>${msg}</div>`);
+        $('#changePasswordForm')[0].reset();
+
+        $('html, body').animate({
+          scrollTop: $('#ajaxAlert').offset().top - 100
+        }, 500);
+
+        setTimeout(function() {
+          $('#ajaxAlert').fadeOut(500, function() {
+            $(this).html('').show();
+          });
+        }, 5000);
+      },
+      error: function(){
+        $('#changePasswordModal').modal('hide');
+        $('.modal-backdrop').remove();
+        $('body').removeClass('modal-open').css('padding-right','');
+        $('#ajaxAlert').html('<div class="alert alert-danger"><i class="fas fa-exclamation-triangle mr-2"></i>Request failed.</div>');
+      }
+    });
+  });
+
+  // Reset form when modal is closed
+  $('#changePasswordModal').on('hidden.bs.modal', function () {
+    document.getElementById('changePasswordForm').reset();
+    document.getElementById('strengthBar').style.width = '0%';
+    document.getElementById('strengthText').textContent = '';
+    document.querySelectorAll('.password-requirements small').forEach(el => {
+      el.classList.remove('met');
+    });
+    document.getElementById('matchMessage').innerHTML = '';
+    document.getElementById('submitBtn').disabled = true;
+  });
+  
+  // Fix modal backdrop issue when loaded in AJAX
+  $('#addressModal').on('hidden.bs.modal', function () {
+    $('.modal-backdrop').remove();
+    $('body').removeClass('modal-open').css('padding-right', '');
+  });
 });
 </script>
 </body>

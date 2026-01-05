@@ -1,7 +1,12 @@
-//RESIDENT SUBMIT APPOINTMENT - WITHOUT VALID ID UPLOAD
+//RESIDENT SUBMIT APPOINTMENT - WITH EMAIL & SMS NOTIFICATIONS (FIXED)
 <?php
 session_start();
 include '../conn.php';
+
+// ADD THESE INCLUDES AT THE TOP
+require_once '../send_reset_email.php';
+require_once '../notification_service.php';
+
 ob_clean();
 header('Content-Type: application/json');
 
@@ -26,14 +31,13 @@ if (!$resident) {
 $resident_id = $resident['id'];
 $resident_name = $resident['first_name'] . ' ' . $resident['last_name'];
 
-// ✅ Collect form inputs (REMOVED valid_id from validation)
+// ✅ Collect form inputs
 $department_id = $_POST['department_id'] ?? null;
 $available_date_id = $_POST['available_date_id'] ?? null;
 $service_id = $_POST['service'] ?? null;
 $reason = $_POST['reason'] ?? '';
-$slot_period = $_POST['slot_period'] ?? null; // 'am' or 'pm'
+$slot_period = $_POST['slot_period'] ?? null;
 
-// UPDATED: Removed valid_id from required fields check
 if (!$department_id || !$available_date_id || !$service_id || !$reason || !$slot_period) {
     echo json_encode(['status' => 'error', 'message' => 'Missing required fields']);
     exit();
@@ -45,7 +49,6 @@ if (!in_array($slot_period, ['am', 'pm'])) {
 }
 
 function generateTransactionId($pdo, $department_id) {
-    // Fetch department acronym
     $stmt = $pdo->prepare("SELECT acronym FROM departments WHERE id = ? LIMIT 1");
     $stmt->execute([$department_id]);
     $dept = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -53,11 +56,9 @@ function generateTransactionId($pdo, $department_id) {
     $acronym = $dept && $dept['acronym'] ? strtoupper($dept['acronym']) : 'GEN';
 
     do {
-        // Format: APPT-ACRONYM-YYYYMMDD-RANDOM6
         $random = strtoupper(substr(bin2hex(random_bytes(4)), 0, 6));
         $transactionId = 'APPT-' . $acronym . '-' . date('Ymd') . '-' . $random;
 
-        // Ensure uniqueness
         $stmt = $pdo->prepare("SELECT COUNT(*) FROM appointments WHERE transaction_id = ?");
         $stmt->execute([$transactionId]);
         $exists = $stmt->fetchColumn();
@@ -67,10 +68,8 @@ function generateTransactionId($pdo, $department_id) {
 }
 
 try {
-    // ✅ Begin transaction for data consistency
     $pdo->beginTransaction();
 
-    // ✅ Fetch the selected available date row
     $stmt = $pdo->prepare("SELECT * FROM available_dates WHERE id = ?");
     $stmt->execute([$available_date_id]);
     $available = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -93,7 +92,6 @@ try {
     $base_date = date('Y-m-d', strtotime($available['date_time']));
     $scheduled_for = $base_date . ($slot_period === 'am' ? ' 09:00:00' : ' 14:00:00');
 
-    // ✅ Assign random personnel from the same department
     $stmt = $pdo->prepare("
         SELECT lp.id, lp.auth_id
         FROM lgu_personnel lp
@@ -115,7 +113,6 @@ try {
 
     $transactionId = generateTransactionId($pdo, $department_id);
 
-    // ✅ Insert appointment (REMOVED valid_id_path field)
     $stmt = $pdo->prepare("INSERT INTO appointments (
         transaction_id, resident_id, department_id, service_id, available_date_id,
         reason, status, requested_at, personnel_id, scheduled_for
@@ -135,11 +132,9 @@ try {
 
     $appointmentId = $pdo->lastInsertId();
 
-    // ✅ Update booked slots
     $pdo->prepare("UPDATE available_dates SET {$booked_key} = {$booked_key} + 1 WHERE id = ?")
         ->execute([$available_date_id]);
 
-    // ✅ Create notification for assigned personnel
     $slot_text = strtoupper($slot_period);
     $formatted_date = date('F d, Y', strtotime($base_date));
     $notification_message = "New appointment booked by {$resident_name} for {$formatted_date} ({$slot_text} slot)";
@@ -156,19 +151,24 @@ try {
         $notification_message
     ]);
 
-    // ✅ Commit transaction
     $pdo->commit();
 
-    // ==================== EMAIL NOTIFICATION ====================
-    // After successful booking, send confirmation email to resident
+    // ==================== RESIDENT NOTIFICATION (EMAIL + SMS) ====================
+    $notifier = new NotificationService(true, true);
+    
     try {
-        // Get resident email
-        $emailQuery = "SELECT email FROM auth WHERE id = ?";
-        $emailStmt = $pdo->prepare($emailQuery);
-        $emailStmt->execute([$auth_id]);
-        $authData = $emailStmt->fetch(PDO::FETCH_ASSOC);
+        // FIXED: Get phone from RESIDENTS table, not auth table
+        $residentQuery = "
+            SELECT a.email, r.phone_number as phone 
+            FROM auth a
+            INNER JOIN residents r ON a.id = r.auth_id
+            WHERE a.id = ?
+        ";
+        $residentStmt = $pdo->prepare($residentQuery);
+        $residentStmt->execute([$auth_id]);
+        $residentData = $residentStmt->fetch(PDO::FETCH_ASSOC);
         
-        if ($authData && $authData['email']) {
+        if ($residentData) {
             // Get department name
             $deptQuery = "SELECT name FROM departments WHERE id = ?";
             $deptStmt = $pdo->prepare($deptQuery);
@@ -187,101 +187,125 @@ try {
             $reqStmt->execute([$service_id]);
             $requirements = $reqStmt->fetchAll(PDO::FETCH_COLUMN);
             
-            // Format appointment details
-            $timeSlot = ($slot_period === 'am') ? '9:00 AM - 12:00 PM' : '2:00 PM - 5:00 PM';
+            // Format time slot
+            $timeSlot = ($slot_period === 'am') ? '8:00 AM - 11:00 AM' : '1:00 PM - 4:00 PM';
             
-            $appointmentDetails = [
-                'service_name' => $serviceData['service_name'] ?? 'N/A',
+            // Prepare notification data
+            $notificationData = [
+                'email' => $residentData['email'] ?? null,
+                'phone' => $residentData['phone'] ?? null,  // FIXED: Now using phone_number from residents
+                'name' => $resident_name,
+                'service_name' => $serviceData['service_name'] ?? 'Service',
                 'date' => $formatted_date,
                 'time' => $timeSlot,
-                'department_name' => $deptData['name'] ?? 'N/A',
                 'transaction_id' => $transactionId,
-                'requirements' => $requirements
+                'department_name' => $deptData['name'] ?? 'Department',
+                'requirements' => !empty($requirements) ? $requirements : ['Valid Government ID']
             ];
             
-            // Send email
-            require_once '../send_reset_email.php';
-            sendAppointmentConfirmation($authData['email'], $resident_name, $appointmentDetails);
+            // Send Email + SMS notification
+            $result = $notifier->sendAppointmentConfirmation($notificationData);
+            
+            // Log results
+            if ($result['email']) {
+                error_log("✓ Resident email sent to: " . $residentData['email']);
+            } else {
+                error_log("✗ Resident email FAILED");
+            }
+            
+            if ($result['sms']) {
+                error_log("✓ Resident SMS sent to: " . $residentData['phone']);
+            } else {
+                error_log("✗ Resident SMS FAILED - Phone: " . ($residentData['phone'] ?? 'NULL'));
+            }
+            
+            if (!empty($result['errors'])) {
+                error_log("⚠ Notification errors: " . implode(', ', $result['errors']));
+            }
         }
-    } catch (Exception $emailError) {
-        // Log email error but don't fail the appointment
-        error_log("Email notification error: " . $emailError->getMessage());
+    } catch (Exception $notifyError) {
+        error_log("Resident notification error: " . $notifyError->getMessage());
     }
-    // ==================== END EMAIL NOTIFICATION ====================
 
-    // ==================== PERSONNEL EMAIL NOTIFICATION ====================
-// Send email to assigned personnel about the new appointment
-try {
-    // Get personnel email
-    $personnelEmailQuery = "SELECT email FROM auth WHERE id = ?";
-    $personnelEmailStmt = $pdo->prepare($personnelEmailQuery);
-    $personnelEmailStmt->execute([$personnel_auth_id]);
-    $personnelAuthData = $personnelEmailStmt->fetch(PDO::FETCH_ASSOC);
-    
-    if ($personnelAuthData && $personnelAuthData['email']) {
-        // Get personnel full name
-        $personnelNameQuery = "SELECT first_name, last_name FROM lgu_personnel WHERE id = ?";
-        $personnelNameStmt = $pdo->prepare($personnelNameQuery);
-        $personnelNameStmt->execute([$personnel_id]);
-        $personnelData = $personnelNameStmt->fetch(PDO::FETCH_ASSOC);
-        $personnel_full_name = $personnelData['first_name'] . ' ' . $personnelData['last_name'];
+    // ==================== PERSONNEL NOTIFICATION (EMAIL + SMS) ====================
+    try {
+        // FIXED: Get phone from auth table OR lgu_personnel table
+        $personnelQuery = "
+            SELECT a.email, a.phone,
+                   lp.first_name, lp.last_name
+            FROM auth a
+            INNER JOIN lgu_personnel lp ON a.id = lp.auth_id
+            WHERE a.id = ?
+        ";
+        $personnelStmt = $pdo->prepare($personnelQuery);
+        $personnelStmt->execute([$personnel_auth_id]);
+        $personnelAuthData = $personnelStmt->fetch(PDO::FETCH_ASSOC);
         
-        // Get department name (already queried for resident email, but we'll get it again for clarity)
-        $deptQuery = "SELECT name FROM departments WHERE id = ?";
-        $deptStmt = $pdo->prepare($deptQuery);
-        $deptStmt->execute([$department_id]);
-        $deptData = $deptStmt->fetch(PDO::FETCH_ASSOC);
-        
-        // Get service name (already queried for resident email)
-        $serviceQuery = "SELECT service_name FROM department_services WHERE id = ?";
-        $serviceStmt = $pdo->prepare($serviceQuery);
-        $serviceStmt->execute([$service_id]);
-        $serviceData = $serviceStmt->fetch(PDO::FETCH_ASSOC);
-        
-        // Get service requirements (already queried for resident email)
-        $reqQuery = "SELECT requirement FROM service_requirements WHERE service_id = ?";
-        $reqStmt = $pdo->prepare($reqQuery);
-        $reqStmt->execute([$service_id]);
-        $requirements = $reqStmt->fetchAll(PDO::FETCH_COLUMN);
-        
-        // Format time slot
-        $timeSlot = ($slot_period === 'am') ? '9:00 AM - 12:00 PM' : '2:00 PM - 5:00 PM';
-        
-        // Prepare personnel appointment details
-        $personnelAppointmentDetails = [
-            'resident_name' => $resident_name,
-            'service_name' => $serviceData['service_name'] ?? 'N/A',
-            'date' => $formatted_date,
-            'time' => $timeSlot,
-            'department_name' => $deptData['name'] ?? 'N/A',
-            'transaction_id' => $transactionId,
-            'reason' => $reason,
-            'requirements' => $requirements
-        ];
-        
-        // Send email to personnel
-        require_once '../send_reset_email.php';
-        sendPersonnelAppointmentNotification(
-            $personnelAuthData['email'], 
-            $personnel_full_name, 
-            $personnelAppointmentDetails
-        );
+        if ($personnelAuthData) {
+            $personnel_full_name = $personnelAuthData['first_name'] . ' ' . $personnelAuthData['last_name'];
+            
+            // Get department, service, requirements (same as resident)
+            $deptQuery = "SELECT name FROM departments WHERE id = ?";
+            $deptStmt = $pdo->prepare($deptQuery);
+            $deptStmt->execute([$department_id]);
+            $deptData = $deptStmt->fetch(PDO::FETCH_ASSOC);
+            
+            $serviceQuery = "SELECT service_name FROM department_services WHERE id = ?";
+            $serviceStmt = $pdo->prepare($serviceQuery);
+            $serviceStmt->execute([$service_id]);
+            $serviceData = $serviceStmt->fetch(PDO::FETCH_ASSOC);
+            
+            $reqQuery = "SELECT requirement FROM service_requirements WHERE service_id = ?";
+            $reqStmt = $pdo->prepare($reqQuery);
+            $reqStmt->execute([$service_id]);
+            $requirements = $reqStmt->fetchAll(PDO::FETCH_COLUMN);
+            
+            $timeSlot = ($slot_period === 'am') ? '8:00 AM - 11:00 AM' : '1:00 PM - 4:00 PM';
+            
+            $personnelNotificationData = [
+                'personnel_email' => $personnelAuthData['email'] ?? null,
+                'personnel_phone' => $personnelAuthData['phone'] ?? null,
+                'personnel_name' => $personnel_full_name,
+                'resident_name' => $resident_name,
+                'service_name' => $serviceData['service_name'] ?? 'Service',
+                'date' => $formatted_date,
+                'time' => $timeSlot,
+                'transaction_id' => $transactionId,
+                'department_name' => $deptData['name'] ?? 'Department',
+                'reason' => $reason,
+                'requirements' => !empty($requirements) ? $requirements : ['Valid Government ID']
+            ];
+            
+            $personnelResult = $notifier->sendPersonnelAppointmentNotification($personnelNotificationData);
+            
+            if ($personnelResult['email']) {
+                error_log("✓ Personnel email sent to: " . $personnelAuthData['email']);
+            } else {
+                error_log("✗ Personnel email FAILED");
+            }
+            
+            if ($personnelResult['sms']) {
+                error_log("✓ Personnel SMS sent to: " . ($personnelAuthData['phone'] ?? 'NULL'));
+            } else {
+                error_log("✗ Personnel SMS FAILED - Phone: " . ($personnelAuthData['phone'] ?? 'NULL'));
+            }
+            
+            if (!empty($personnelResult['errors'])) {
+                error_log("⚠ Personnel errors: " . implode(', ', $personnelResult['errors']));
+            }
+        }
+    } catch (Exception $personnelNotifyError) {
+        error_log("Personnel notification error: " . $personnelNotifyError->getMessage());
     }
-} catch (Exception $emailError) {
-    // Log email error but don't fail the appointment
-    error_log("Personnel email notification error: " . $emailError->getMessage());
-}
-// ==================== END PERSONNEL EMAIL NOTIFICATION ====================
 
     echo json_encode([
         'status' => 'success',
         'appointment_id' => $appointmentId,
         'transaction_id' => $transactionId,
-        'message' => 'Appointment booked successfully!'
+        'message' => 'Appointment booked successfully! Check your email and phone for confirmation.'
     ]);
 
 } catch (Exception $e) {
-    // ✅ Rollback on error
     if ($pdo->inTransaction()) {
         $pdo->rollBack();
     }

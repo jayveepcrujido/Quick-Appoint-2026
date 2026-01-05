@@ -2,77 +2,103 @@
 // validate_id.php - Validates uploaded ID against selected ID type using Tesseract OCR
 
 class IDValidator {
-    private $tesseractPath = 'C:\\Program Files\\Tesseract-OCR\\tesseract.exe'; // Adjust path as needed
+    private $tesseractPath = 'C:\\Program Files\\Tesseract-OCR\\tesseract.exe';
     
-    // Keywords for each ID type
+    // Updated keywords for all ID types
     private $idKeywords = [
-        'National ID (Card type)' => [
-            'required' => ['philippine identification', 'philsys', 'pcn', 'psa'],
-            'optional' => ['national id', 'republic', 'philippines']
+        'Integrated Bar of the Philippines' => [
+            'required' => ['integrated bar', 'ibp', 'lawyer'],
+            'optional' => ['attorney', 'philippines', 'member']
         ],
-        'National ID (Paper type) / Digital National ID / ePhilID' => [
-            'required' => ['philippine identification', 'philsys', 'pcn'],
-            'optional' => ['national id', 'psa', 'republic']
+        'Overseas Workers Welfare Administration' => [
+            'required' => ['owwa', 'overseas', 'worker'],
+            'optional' => ['welfare', 'administration', 'ofw']
         ],
-        'Passport' => [
-            'required' => ['passport', 'republic of the philippines', 'dfa'],
-            'optional' => ['passport no', 'surname', 'given name']
+        'Person with Disability' => [
+            'required' => ['pwd', 'disability', 'person with disability'],
+            'optional' => ['ncda', 'republic', 'philippines']
         ],
-        'HDMF (Pag-IBIG Loyalty Plus) ID' => [
-            'required' => ['pag-ibig', 'hdmf'],
-            'optional' => ['loyalty', 'fund', 'member']
-        ],
-        "Driver's License (including BLTO Driver's License)" => [
+        "PH Driver's License" => [
             'required' => ['driver', 'license', 'lto'],
             'optional' => ['land transportation', 'restriction', 'dl no']
         ],
-        'Philippine Postal ID' => [
-            'required' => ['postal', 'phlpost'],
-            'optional' => ['philippine postal', 'corporation', 'id']
+        'PH National ID' => [
+            'required' => ['philippine identification', 'philsys', 'national id'],
+            'optional' => ['psa', 'republic', 'philippines']
         ],
-        'PRC ID (Professional Regulation Commission ID)' => [
+        'PhilHealth' => [
+            'required' => ['philhealth', 'philippine health'],
+            'optional' => ['insurance', 'member', 'phic']
+        ],
+        'Philippine Passport' => [
+            'required' => ['passport', 'republic of the philippines', 'dfa'],
+            'optional' => ['passport no', 'surname', 'given name']
+        ],
+        'Philippine Statistics Authority Live Birth' => [
+            'required' => ['psa', 'birth certificate', 'live birth'],
+            'optional' => ['philippine statistics', 'registry', 'certificate']
+        ],
+        'Postal ID' => [
+            'required' => ['postal', 'phlpost'],
+            'optional' => ['philippine postal', 'corporation', 'identification']
+        ],
+        'Professional Regulation Commission' => [
             'required' => ['prc', 'professional regulation'],
             'optional' => ['commission', 'license', 'professional']
         ],
-        'UMID (Unified Multi-Purpose ID)' => [
+        "Seaman's Book" => [
+            'required' => ['seaman', 'maritime', 'marina'],
+            'optional' => ['seafarer', 'book', 'continuous']
+        ],
+        'Senior Citizen' => [
+            'required' => ['senior citizen', 'senior'],
+            'optional' => ['osca', 'elderly', 'identification']
+        ],
+        'Social Security System' => [
+            'required' => ['sss', 'social security'],
+            'optional' => ['system', 'member', 'ss no']
+        ],
+        'Solo Parent' => [
+            'required' => ['solo parent', 'single parent'],
+            'optional' => ['dswd', 'identification', 'parent']
+        ],
+        'Tax Identification Number' => [
+            'required' => ['tin', 'bir', 'tax'],
+            'optional' => ['bureau', 'internal revenue', 'taxpayer']
+        ],
+        'Unified Multi-purpose ID' => [
             'required' => ['umid', 'unified'],
             'optional' => ['multi-purpose', 'sss', 'gsis', 'philhealth']
         ],
-        'SSS ID' => [
-            'required' => ['sss', 'social security'],
-            'optional' => ['system', 'member', 'ss no']
+        "Voter's ID" => [
+            'required' => ['comelec', 'voter', 'election'],
+            'optional' => ['commission', 'precinct', 'voter\'s']
         ]
     ];
     
     public function extractTextFromImage($imagePath) {
         try {
-            // Check if Tesseract executable exists
             if (!file_exists($this->tesseractPath)) {
                 throw new Exception('Tesseract OCR not found at: ' . $this->tesseractPath);
             }
             
-            // Check if image file exists
             if (!file_exists($imagePath)) {
                 throw new Exception('Image file not found: ' . $imagePath);
             }
             
-            // Prepare temporary file for tesseract output
             $outputFile = sys_get_temp_dir() . '/' . uniqid('ocr_');
             
-            // Escape the paths for command line
             $escapedImagePath = escapeshellarg($imagePath);
             $escapedOutputFile = escapeshellarg($outputFile);
             $escapedTesseract = escapeshellarg($this->tesseractPath);
             
-            // Run Tesseract OCR
             $command = "$escapedTesseract $escapedImagePath $escapedOutputFile";
             exec($command . ' 2>&1', $output, $returnCode);
             
-            // Read the output file
             $textFile = $outputFile . '.txt';
             if (file_exists($textFile)) {
                 $extractedText = file_get_contents($textFile);
-                unlink($textFile); // Clean up
+                unlink($textFile);
                 return $extractedText;
             }
             
@@ -84,7 +110,6 @@ class IDValidator {
     
     public function validateID($imagePath, $selectedIDType) {
         try {
-            // Extract text from image
             $extractedText = $this->extractTextFromImage($imagePath);
             
             if (empty($extractedText)) {
@@ -96,10 +121,8 @@ class IDValidator {
                 ];
             }
             
-            // Convert to lowercase for case-insensitive matching
             $extractedText = strtolower($extractedText);
             
-            // Get keywords for selected ID type
             if (!isset($this->idKeywords[$selectedIDType])) {
                 return [
                     'valid' => false,
@@ -113,12 +136,10 @@ class IDValidator {
             $requiredKeywords = $keywords['required'];
             $optionalKeywords = $keywords['optional'];
             
-            // Score calculation
             $requiredMatches = 0;
             $optionalMatches = 0;
             $matchedKeywords = [];
             
-            // Check required keywords
             foreach ($requiredKeywords as $keyword) {
                 if (strpos($extractedText, strtolower($keyword)) !== false) {
                     $requiredMatches++;
@@ -126,7 +147,6 @@ class IDValidator {
                 }
             }
             
-            // Check optional keywords
             foreach ($optionalKeywords as $keyword) {
                 if (strpos($extractedText, strtolower($keyword)) !== false) {
                     $optionalMatches++;
@@ -134,13 +154,11 @@ class IDValidator {
                 }
             }
             
-            // Calculate percentage score
             $totalRequired = count($requiredKeywords);
             $requiredScore = ($totalRequired > 0) ? ($requiredMatches / $totalRequired) * 70 : 0;
             $optionalScore = (count($optionalKeywords) > 0) ? ($optionalMatches / count($optionalKeywords)) * 30 : 0;
             $totalScore = $requiredScore + $optionalScore;
             
-            // Validation threshold: at least 50% match required
             $isValid = $totalScore >= 50;
             
             $message = $isValid 
@@ -165,5 +183,101 @@ class IDValidator {
             ];
         }
     }
+}
+
+// ============================================
+// AJAX REQUEST HANDLER
+// ============================================
+// If this file is called directly via HTTP (not included)
+if (basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME'])) {
+    header('Content-Type: application/json');
+    
+    // Only allow POST requests
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Invalid request method'
+        ]);
+        exit;
+    }
+    
+    // Check if required files are uploaded
+    if (!isset($_FILES['id_front']) || !isset($_FILES['selfie_with_id']) || !isset($_POST['id_type'])) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Missing required files or ID type'
+        ]);
+        exit;
+    }
+    
+    try {
+        $id_type = $_POST['id_type'];
+        $id_front_file = $_FILES['id_front'];
+        $selfie_file = $_FILES['selfie_with_id'];
+        
+        // Validate file uploads
+        if ($id_front_file['error'] !== UPLOAD_ERR_OK) {
+            throw new Exception('Error uploading ID front image');
+        }
+        
+        if ($selfie_file['error'] !== UPLOAD_ERR_OK) {
+            throw new Exception('Error uploading selfie image');
+        }
+        
+        // Create temporary directory if it doesn't exist
+        $tempDir = sys_get_temp_dir() . '/id_validation/';
+        if (!is_dir($tempDir)) {
+            mkdir($tempDir, 0777, true);
+        }
+        
+        // Save uploaded files temporarily
+        $temp_id_path = $tempDir . uniqid() . '_' . basename($id_front_file['name']);
+        $temp_selfie_path = $tempDir . uniqid() . '_' . basename($selfie_file['name']);
+        
+        if (!move_uploaded_file($id_front_file['tmp_name'], $temp_id_path)) {
+            throw new Exception('Failed to save ID image');
+        }
+        
+        if (!move_uploaded_file($selfie_file['tmp_name'], $temp_selfie_path)) {
+            // Clean up first file
+            if (file_exists($temp_id_path)) unlink($temp_id_path);
+            throw new Exception('Failed to save selfie image');
+        }
+        
+        // Perform OCR validation
+        $validator = new IDValidator();
+        $validationResult = $validator->validateID($temp_id_path, $id_type);
+        
+        // Clean up temporary files
+        if (file_exists($temp_id_path)) unlink($temp_id_path);
+        if (file_exists($temp_selfie_path)) unlink($temp_selfie_path);
+        
+        if ($validationResult['valid']) {
+            echo json_encode([
+                'success' => true,
+                'message' => $validationResult['message'],
+                'score' => $validationResult['score'],
+                'id_type' => $id_type
+            ]);
+        } else {
+            echo json_encode([
+                'success' => false,
+                'message' => $validationResult['message'],
+                'score' => $validationResult['score'],
+                'id_type' => $id_type
+            ]);
+        }
+        
+    } catch (Exception $e) {
+        // Log error for debugging
+        error_log('ID Validation Error: ' . $e->getMessage());
+        
+        echo json_encode([
+            'success' => false,
+            'message' => 'Validation error: ' . $e->getMessage()
+        ]);
+    }
+    
+    exit; // Important: Stop execution after handling AJAX request
 }
 ?>
