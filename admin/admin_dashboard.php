@@ -4,6 +4,9 @@ if (!isset($_SESSION['auth_id']) || $_SESSION['role'] !== 'Admin') {
     header("Location: ../login.php");
     exit();
 }
+
+include_once '../includes/auto_mark_noshow.php';
+
 ?>
 
 <!DOCTYPE html>

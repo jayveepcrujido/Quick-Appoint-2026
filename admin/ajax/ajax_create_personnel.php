@@ -1,6 +1,7 @@
 <?php
 session_start();
 include '../../conn.php';
+include '../../send_reset_email.php'; // ADD THIS LINE
 
 header('Content-Type: application/json');
 
@@ -23,6 +24,7 @@ try {
     $middle_name = trim($_POST['middle_name'] ?? '');
     $last_name = trim($_POST['last_name'] ?? '');
     $department_id = intval($_POST['department_id'] ?? 0);
+    $department_name = trim($_POST['department_name'] ?? ''); // ADD THIS LINE
     $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
     $is_department_head = isset($_POST['is_department_head']) ? 1 : 0;
@@ -88,7 +90,7 @@ try {
     $stmt->execute([$email, $hashedPassword]);
     $authId = $pdo->lastInsertId();
 
-    // Insert into lgu_personnel - REMOVED created_by_admin column
+    // Insert into lgu_personnel
     $stmt = $pdo->prepare("
         INSERT INTO lgu_personnel 
         (auth_id, first_name, middle_name, last_name, department_id, is_department_head, created_by_personnel_id)
@@ -105,10 +107,41 @@ try {
 
     $pdo->commit();
     
+    // ============================================
+    // SEND WELCOME EMAIL - ADD THIS SECTION
+    // ============================================
+    $fullName = trim("$first_name " . ($middle_name ? "$middle_name " : "") . "$last_name");
+    
+    // Get the actual domain (change this to your actual domain)
+    $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
+    $domain = $_SERVER['HTTP_HOST'];
+    $loginLink = $protocol . "://" . $domain . "/login.php"; // Adjust path if needed
+    
+    // Or use a fixed link:
+    // $loginLink = "https://yourdomain.com/login.php";
+    
+    $emailSent = sendPersonnelWelcomeEmail($email, $fullName, [
+        'email' => $email,
+        'password' => $password, // Plain password (only sent once)
+        'department_name' => $department_name ?: 'Not Assigned',
+        'is_department_head' => $is_department_head,
+        'login_link' => $loginLink
+    ]);
+    
+    // Prepare success message
     $role_text = $is_department_head ? 'Department Head' : 'LGU Personnel';
+    $message = $role_text . ' created successfully!';
+    
+    if (!$emailSent) {
+        $message .= ' (Note: Welcome email could not be sent. Please provide credentials manually.)';
+    } else {
+        $message .= ' A welcome email with login credentials has been sent to ' . $email;
+    }
+    // ============================================
+    
     echo json_encode([
         'success' => true, 
-        'message' => $role_text . ' created successfully!'
+        'message' => $message
     ]);
 
 } catch (Exception $e) {

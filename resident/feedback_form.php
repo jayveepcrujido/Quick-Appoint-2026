@@ -71,8 +71,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Appointment Feedback</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css"/>
-    <style>
-            :root {
+        <style>
+    :root {
         --primary-blue: #1e40af;
         --secondary-blue: #3b82f6;
         --light-blue: #dbeafe;
@@ -85,95 +85,97 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     body {
-        background: linear-gradient(135deg, #1b2d69ff 0%, #0D92F4, #27548A 100%);
+        background: linear-gradient(135deg, rgba(27, 45, 105, 0.85) 0%, rgba(13, 146, 244, 0.85), rgba(39, 84, 138, 0.85) 100%),
+                    url('../assets/images/LGU_Unisan.jpg') center/cover fixed;
         min-height: 100vh;
-        padding: 2rem 0;
+        padding: 1.5rem 0;
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
     .feedback-container {
-        max-width: 1000px;
+        max-width: 850px;
         margin: 0 auto;
         padding: 0 1rem;
     }
 
     .feedback-card {
-        background: white;
-        border-radius: 24px;
-        padding: 3rem;
-        box-shadow: 0 20px 60px rgba(30, 64, 175, 0.3);
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 15px 45px rgba(30, 64, 175, 0.25);
     }
 
-    /* Logo Section */
     .logo-section {
         text-align: center;
-        margin-bottom: 2rem;
-        padding-bottom: 1.5rem;
-        border-bottom: 3px solid var(--light-blue);
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--light-blue);
     }
 
     .logo-container {
         display: inline-block;
         background: var(--light-blue);
-        padding: 1.5rem;
-        border-radius: 20px;
-        margin-bottom: 1rem;
-        box-shadow: 0 4px 12px rgba(30, 64, 175, 0.1);
+        padding: 1rem;
+        border-radius: 16px;
+        margin-bottom: 0.75rem;
+        box-shadow: 0 3px 10px rgba(30, 64, 175, 0.1);
     }
 
     .logo-container img {
-        max-width: 120px;
+        max-width: 80px;
         height: auto;
         display: block;
     }
 
     .logo-placeholder {
-        width: 120px;
-        height: 120px;
+        width: 80px;
+        height: 80px;
         background: white;
-        border: 3px dashed var(--secondary-blue);
-        border-radius: 12px;
+        border: 2px dashed var(--secondary-blue);
+        border-radius: 10px;
         display: flex;
         align-items: center;
         justify-content: center;
         color: var(--text-muted);
-        font-size: 0.875rem;
+        font-size: 0.75rem;
         text-align: center;
-        padding: 1rem;
+        padding: 0.75rem;
     }
 
     .lgu-name {
-        font-size: 1.5rem;
+        font-size: 1.125rem;
         font-weight: 700;
         color: #27548A;
-        margin: 0.5rem 0;
+        margin: 0.375rem 0;
     }
 
     .feedback-header {
         text-align: center;
-        margin-bottom: 2rem;
-        padding-bottom: 1.5rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
     }
 
     .feedback-header h2 {
         color: var(--text-dark);
         font-weight: 700;
-        margin-bottom: 0.5rem;
-        font-size: 1.75rem;
+        margin-bottom: 0.375rem;
+        font-size: 1.375rem;
     }
 
     .feedback-header h2 i {
         color: var(--secondary-blue);
-        margin-right: 0.5rem;
+        margin-right: 0.375rem;
+        font-size: 1.25rem;
     }
 
     .appointment-info {
         background: linear-gradient(135deg, #0D92F4, #27548A);
-        padding: 1.5rem;
-        border-radius: 16px;
+        padding: 1rem;
+        border-radius: 12px;
         color: white;
-        margin-bottom: 2.5rem;
-        box-shadow: 0 8px 24px rgba(30, 64, 175, 0.2);
+        margin-bottom: 1.75rem;
+        box-shadow: 0 6px 18px rgba(30, 64, 175, 0.2);
     }
 
     .appointment-info-row {
@@ -181,41 +183,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         justify-content: space-between;
         align-items: center;
         flex-wrap: wrap;
-        gap: 1.25rem;
+        gap: 0.875rem;
     }
 
     .appointment-info-item {
         display: flex;
         align-items: center;
-        gap: 0.625rem;
+        gap: 0.5rem;
+        font-size: 0.875rem;
     }
 
     .appointment-info-item i {
-        font-size: 1.125rem;
-        min-width: 20px;
+        font-size: 0.9375rem;
+        min-width: 18px;
         text-align: center;
     }
 
-    /* CC Section Styles */
     .cc-section {
-        background: var(--bg-light);
+        background: rgba(248, 250, 252, 0.9);
         border: 2px solid var(--border-color);
-        border-radius: 16px;
-        padding: 2rem;
-        margin-bottom: 2.5rem;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.75rem;
     }
 
     .cc-header {
         display: flex;
         align-items: center;
-        gap: 0.75rem;
-        margin-bottom: 1.5rem;
-        padding-bottom: 1rem;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
         border-bottom: 2px solid var(--border-color);
     }
 
     .cc-header i {
-        font-size: 1.75rem;
+        font-size: 1.25rem;
         color: var(--secondary-blue);
     }
 
@@ -223,45 +225,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         color: var(--text-dark);
         font-weight: 700;
         margin: 0;
-        font-size: 1.25rem;
+        font-size: 1rem;
     }
 
     .cc-instructions, .sqd-instructions {
         background: white;
-        padding: 1.25rem;
-        border-radius: 12px;
-        border-left: 4px solid var(--secondary-blue);
-        margin-bottom: 2rem;
+        padding: 0.875rem;
+        border-radius: 10px;
+        border-left: 3px solid var(--secondary-blue);
+        margin-bottom: 1.25rem;
         color: var(--text-dark);
-        line-height: 1.6;
+        line-height: 1.5;
+        font-size: 0.8125rem;
     }
 
     .cc-question {
         background: white;
-        padding: 1.5rem;
-        border-radius: 12px;
-        margin-bottom: 1.5rem;
-        box-shadow: 0 2px 8px rgba(30, 64, 175, 0.08);
+        padding: 1rem;
+        border-radius: 10px;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 6px rgba(30, 64, 175, 0.08);
     }
 
     .cc-question-label {
         font-weight: 600;
         color: var(--text-dark);
-        margin-bottom: 1rem;
-        font-size: 1rem;
+        margin-bottom: 0.75rem;
+        font-size: 0.875rem;
         line-height: 1.5;
     }
 
     .cc-options {
         display: flex;
         flex-direction: column;
-        gap: 0.75rem;
+        gap: 0.5rem;
     }
 
     .cc-options.two-columns {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
-        gap: 0.75rem;
+        gap: 0.5rem;
     }
 
     .cc-option {
@@ -270,7 +273,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     .cc-option.selected {
-        transform: translateX(4px);
+        transform: translateX(3px);
     }
 
     .cc-option input[type="radio"] {
@@ -282,15 +285,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     .cc-option label {
         display: flex;
         align-items: center;
-        padding: 1rem 1.25rem;
+        padding: 0.75rem 0.875rem;
         background: var(--bg-light);
         border: 2px solid var(--border-color);
-        border-radius: 10px;
+        border-radius: 8px;
         cursor: pointer;
         transition: all 0.3s ease;
         margin: 0;
         font-weight: 500;
         color: var(--text-dark);
+        font-size: 0.8125rem;
     }
 
     .cc-option label:hover {
@@ -302,16 +306,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
         color: white;
         border-color: var(--primary-blue);
-        box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);
+        box-shadow: 0 3px 10px rgba(30, 64, 175, 0.3);
     }
 
     .cc-option label::before {
         content: '';
-        width: 20px;
-        height: 20px;
+        width: 16px;
+        height: 16px;
         border: 2px solid var(--border-color);
         border-radius: 50%;
-        margin-right: 0.75rem;
+        margin-right: 0.625rem;
         transition: all 0.3s ease;
         flex-shrink: 0;
     }
@@ -319,32 +323,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     .cc-option input[type="radio"]:checked + label::before {
         background: white;
         border-color: white;
-        box-shadow: inset 0 0 0 4px var(--primary-blue);
+        box-shadow: inset 0 0 0 3px var(--primary-blue);
     }
 
-    /* Question Section */
     .question-section {
         background: white;
-        padding: 2rem;
-        border-radius: 16px;
-        margin-bottom: 2rem;
-        box-shadow: 0 4px 16px rgba(30, 64, 175, 0.08);
+        padding: 1.25rem;
+        border-radius: 12px;
+        margin-bottom: 1.25rem;
+        box-shadow: 0 3px 12px rgba(30, 64, 175, 0.08);
         border: 1px solid var(--border-color);
     }
 
     .question-label {
         font-weight: 600;
         color: var(--text-dark);
-        margin-bottom: 1.5rem;
-        font-size: 1.0625rem;
-        line-height: 1.6;
+        margin-bottom: 1rem;
+        font-size: 0.875rem;
+        line-height: 1.5;
         text-align: center;
     }
 
     .emoji-options {
         display: flex;
         justify-content: center;
-        gap: 1rem;
+        gap: 0.625rem;
         flex-wrap: wrap;
     }
 
@@ -361,21 +364,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 0.625rem;
-        padding: 1.25rem 0.875rem;
-        border-radius: 12px;
+        gap: 0.375rem;
+        padding: 0.75rem 0.5rem;
+        border-radius: 10px;
         background: var(--bg-light);
         border: 2px solid var(--border-color);
         transition: all 0.3s ease;
         cursor: pointer;
-        min-width: 90px;
+        min-width: 65px;
     }
 
     .emoji-label:hover {
         background: var(--light-blue);
         border-color: var(--accent-blue);
-        transform: translateY(-4px);
-        box-shadow: 0 6px 16px rgba(30, 64, 175, 0.15);
+        transform: translateY(-3px);
+        box-shadow: 0 4px 12px rgba(30, 64, 175, 0.15);
     }
 
     .emoji-option input[type="radio"]:checked + .emoji-label {
@@ -383,52 +386,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         color: white;
         border-color: var(--primary-blue);
         transform: scale(1.05);
-        box-shadow: 0 8px 24px rgba(30, 64, 175, 0.35);
+        box-shadow: 0 6px 18px rgba(30, 64, 175, 0.35);
     }
 
     .emoji-icon {
-        font-size: 2.5rem;
-        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+        font-size: 1.75rem;
+        filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.1));
     }
 
     .emoji-text {
-        font-size: 0.8125rem;
+        font-size: 0.6875rem;
         font-weight: 600;
         text-align: center;
-        line-height: 1.3;
+        line-height: 1.2;
     }
 
-    /* Suggestions Section */
     .suggestions-section {
-        background: var(--bg-light);
-        padding: 2rem;
-        border-radius: 16px;
-        margin-bottom: 2rem;
+        background: rgba(248, 250, 252, 0.9);
+        padding: 1.25rem;
+        border-radius: 12px;
+        margin-bottom: 1.5rem;
         border: 2px solid var(--border-color);
     }
 
     .suggestions-header {
         font-weight: 600;
         color: var(--text-dark);
-        margin-bottom: 1rem;
-        font-size: 1.0625rem;
+        margin-bottom: 0.75rem;
+        font-size: 0.875rem;
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 0.375rem;
     }
 
     .suggestions-header::before {
         content: '💡';
-        font-size: 1.5rem;
+        font-size: 1.125rem;
     }
 
     .suggestions-textarea {
         width: 100%;
-        padding: 1rem;
+        padding: 0.75rem;
         border: 2px solid var(--border-color);
-        border-radius: 12px;
+        border-radius: 10px;
         font-family: inherit;
-        font-size: 0.9375rem;
+        font-size: 0.8125rem;
         resize: vertical;
         transition: all 0.3s ease;
         background: white;
@@ -443,24 +445,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     .submit-btn {
         background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
         color: white;
-        padding: 1.125rem 3rem;
+        padding: 0.875rem 2.5rem;
         border: none;
-        border-radius: 12px;
+        border-radius: 10px;
         font-weight: 600;
-        font-size: 1.125rem;
+        font-size: 0.9375rem;
         cursor: pointer;
         transition: all 0.3s ease;
         width: 100%;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 0.625rem;
-        box-shadow: 0 8px 24px rgba(30, 64, 175, 0.3);
+        gap: 0.5rem;
+        box-shadow: 0 6px 18px rgba(30, 64, 175, 0.3);
     }
 
     .submit-btn:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 12px 32px rgba(30, 64, 175, 0.4);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(30, 64, 175, 0.4);
     }
 
     .submit-btn:active {
@@ -470,36 +472,70 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     .back-btn {
         display: inline-flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 0.375rem;
         color: white;
         text-decoration: none;
         font-weight: 600;
-        margin-bottom: 1.5rem;
-        padding: 0.625rem 1.25rem;
+        margin-bottom: 1rem;
+        padding: 0.5rem 1rem;
         background: rgba(255, 255, 255, 0.2);
-        border-radius: 10px;
+        border-radius: 8px;
         transition: all 0.3s ease;
         backdrop-filter: blur(10px);
+        font-size: 0.875rem;
     }
 
     .back-btn:hover {
         background: rgba(255, 255, 255, 0.3);
         color: white;
         text-decoration: none;
-        transform: translateX(-5px);
+        transform: translateX(-4px);
     }
 
     .alert {
-        border-radius: 12px;
-        margin-bottom: 1.5rem;
+        border-radius: 10px;
+        margin-bottom: 1.25rem;
         border: none;
-        padding: 1rem 1.25rem;
+        padding: 0.875rem 1rem;
+        font-size: 0.875rem;
     }
 
-    /* Responsive Design */
+    .language-toggle {
+        position: fixed;
+        top: 15px;
+        right: 15px;
+        z-index: 1000;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 40px;
+        padding: 6px 16px;
+        box-shadow: 0 3px 10px rgba(30, 64, 175, 0.2);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .language-toggle:hover {
+        box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);
+        transform: translateY(-2px);
+    }
+
+    .language-toggle i {
+        color: var(--secondary-blue);
+        font-size: 1rem;
+    }
+
+    .language-toggle .lang-text {
+        font-weight: 600;
+        color: var(--text-dark);
+        font-size: 0.8125rem;
+    }
+
     @media (max-width: 992px) {
         .feedback-card {
-            padding: 2rem;
+            padding: 1.75rem;
         }
 
         .cc-options.two-columns {
@@ -514,73 +550,83 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         .feedback-card {
             padding: 1.5rem;
-            border-radius: 20px;
+            border-radius: 16px;
         }
 
         .logo-container img,
         .logo-placeholder {
-            width: 100px;
-            height: 100px;
+            width: 70px;
+            height: 70px;
         }
 
         .lgu-name {
-            font-size: 1.25rem;
+            font-size: 1rem;
         }
 
         .feedback-header h2 {
-            font-size: 1.5rem;
+            font-size: 1.25rem;
+        }
+
+        .feedback-header h2 i {
+            font-size: 1.125rem;
         }
 
         .appointment-info {
-            padding: 1.25rem;
+            padding: 0.875rem;
         }
 
         .appointment-info-row {
             flex-direction: column;
             align-items: flex-start;
-            gap: 0.875rem;
+            gap: 0.625rem;
         }
 
         .cc-section {
-            padding: 1.5rem;
-        }
-
-        .cc-header h4 {
-            font-size: 1.125rem;
-        }
-
-        .cc-question {
             padding: 1.25rem;
         }
 
+        .cc-header h4 {
+            font-size: 0.9375rem;
+        }
+
+        .cc-question {
+            padding: 0.875rem;
+        }
+
         .question-section {
-            padding: 1.5rem;
+            padding: 1rem;
         }
 
         .emoji-options {
-            gap: 0.75rem;
+            gap: 0.5rem;
         }
 
         .emoji-label {
-            padding: 1rem 0.75rem;
-            min-width: 75px;
+            padding: 0.625rem 0.5rem;
+            min-width: 60px;
         }
 
         .emoji-icon {
-            font-size: 2rem;
+            font-size: 1.5rem;
         }
 
         .emoji-text {
-            font-size: 0.75rem;
+            font-size: 0.625rem;
         }
 
         .suggestions-section {
-            padding: 1.5rem;
+            padding: 1rem;
         }
 
         .submit-btn {
-            padding: 1rem 2rem;
-            font-size: 1rem;
+            padding: 0.75rem 2rem;
+            font-size: 0.875rem;
+        }
+
+        .language-toggle {
+            top: 10px;
+            right: 10px;
+            padding: 5px 14px;
         }
     }
 
@@ -590,68 +636,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         .logo-container {
-            padding: 1rem;
+            padding: 0.75rem;
         }
 
         .emoji-label {
-            min-width: 65px;
-            padding: 0.875rem 0.5rem;
+            min-width: 55px;
+            padding: 0.5rem 0.375rem;
         }
 
         .emoji-icon {
-            font-size: 1.75rem;
+            font-size: 1.375rem;
         }
 
         .cc-option label {
-            padding: 0.875rem 1rem;
-            font-size: 0.9375rem;
-        }
-    }
-       .language-toggle {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 1000;
-        background: white;
-        border-radius: 50px;
-        padding: 8px 20px;
-        box-shadow: 0 4px 12px rgba(30, 64, 175, 0.2);
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-
-    .language-toggle:hover {
-        box-shadow: 0 6px 16px rgba(30, 64, 175, 0.3);
-        transform: translateY(-2px);
-    }
-
-    .language-toggle i {
-        color: var(--secondary-blue);
-        font-size: 1.25rem;
-    }
-
-    .language-toggle .lang-text {
-        font-weight: 600;
-        color: var(--text-dark);
-        font-size: 0.9rem;
-    }
-
-    @media (max-width: 768px) {
-        .language-toggle {
-            top: 10px;
-            right: 10px;
-            padding: 6px 15px;
-        }
-        
-        .language-toggle i {
-            font-size: 1rem;
-        }
-        
-        .language-toggle .lang-text {
-            font-size: 0.8rem;
+            padding: 0.625rem 0.75rem;
+            font-size: 0.75rem;
         }
     }
     </style>

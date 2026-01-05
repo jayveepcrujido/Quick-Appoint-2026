@@ -4,6 +4,7 @@ if (!isset($_SESSION['auth_id']) || $_SESSION['role'] !== 'Resident') {
     header("Location: ../login.php");
     exit();
 }
+include '../includes/auto_mark_noshow.php';
 ?>
 
 <!DOCTYPE html>
@@ -723,6 +724,7 @@ if (!isset($_SESSION['auth_id']) || $_SESSION['role'] !== 'Resident') {
             <div id="appointmentDropdown" class="dropdown-submenu" style="display:none;">
                 <a href="#" class="nav_link sub_link" onclick="loadContent('residents_pending_appointments.php')">Pending Appointments</a>
                 <a href="#" class="nav_link sub_link" onclick="loadContent('residents_completed_appointments.php')">Completed Appointments</a>
+                <a href="#" class="nav_link sub_link" onclick="loadContent('residents_noshow_appointments.php')">No Show Appointments</a>
             </div>
             <a href="#" class="nav_link" onclick="loadContent('residents_view_departments.php')">
                 <i class='bx bx-user'></i> <span>Book an Appointment</span>
@@ -779,7 +781,7 @@ if (!isset($_SESSION['auth_id']) || $_SESSION['role'] !== 'Resident') {
 
                 <!-- Submit Feedback -->
                 <div class="col-lg-3 col-md-6 mb-4">
-                    <div class="feature-card" onclick="loadContent('residents_select_form.php')">
+                    <div class="feature-card" onclick="loadContent('residents_completed_appointments.php')">
                         <div class="feature-icon icon-warning">
                             <i class='bx bx-message-square-dots'></i>
                         </div>

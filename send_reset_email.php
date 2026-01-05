@@ -36,9 +36,9 @@ function sendResetEmail($recipientEmail, $recipientName, $resetLink) {
         );
 
         // Sender and recipient
-        $mail->setFrom('testtesttestter5@gmail.com', 'LGU Quick Appoint');
+        $mail->setFrom('jvcrujido@gmail.com', 'LGU Quick Appoint');
         $mail->addAddress($recipientEmail, $recipientName);
-        $mail->addReplyTo('testtesttestter5@gmail.com', 'LGU Support');
+        $mail->addReplyTo('jvcrujido@gmail.com', 'LGU Support');
 
         // Email content
         $mail->isHTML(true);
@@ -387,8 +387,7 @@ function sendPersonnelRescheduleNotification($recipientEmail, $recipientName, $d
     }
 }
 
-
-function sendPersonnelAppointmentNotification($recipientEmail, $recipientName, $appointmentDetails) {
+function sendPersonnelWelcomeEmail($recipientEmail, $recipientName, $details) {
     $mail = new PHPMailer(true);
 
     try {
@@ -401,24 +400,18 @@ function sendPersonnelAppointmentNotification($recipientEmail, $recipientName, $
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = 587;
 
-        // Sender and recipient
         $mail->setFrom('jvcrujido@gmail.com', 'LGU Quick Appoint');
         $mail->addAddress($recipientEmail, $recipientName);
         $mail->addReplyTo('jvcrujido@gmail.com', 'LGU Support');
 
-        // Format requirements list
-        $requirementsList = '';
-        if (!empty($appointmentDetails['requirements'])) {
-            foreach ($appointmentDetails['requirements'] as $req) {
-                $requirementsList .= "<li style='margin: 8px 0; color: #2c3e50;'>{$req}</li>";
-            }
-        } else {
-            $requirementsList = "<li style='margin: 8px 0; color: #2c3e50;'>Valid ID</li>";
-        }
+        // Role badge
+        $roleBadge = $details['is_department_head'] 
+            ? "<span style='background: #f59e0b; color: white; padding: 5px 12px; border-radius: 15px; font-size: 12px; font-weight: bold;'>👑 Department Head</span>"
+            : "<span style='background: #3498db; color: white; padding: 5px 12px; border-radius: 15px; font-size: 12px; font-weight: bold;'>👤 Personnel</span>";
 
-        // Email content
         $mail->isHTML(true);
-        $mail->Subject = 'New Appointment: ' . $appointmentDetails['resident_name'] . ' - ' . $appointmentDetails['date'];
+        $mail->Subject = 'Welcome to LGU Quick Appoint - Account Created';
+        
         $mail->Body = "
         <!DOCTYPE html>
         <html>
@@ -431,57 +424,50 @@ function sendPersonnelAppointmentNotification($recipientEmail, $recipientName, $
                 <tr>
                     <td align='center'>
                         <table width='600' cellpadding='0' cellspacing='0' style='background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);'>
+                            <!-- Header -->
                             <tr>
-                                <td style='background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%); padding: 30px; text-align: center;'>
-                                    <h1 style='color: #ffffff; margin: 0; font-size: 28px;'>New Appointment Alert</h1>
-                                    <p style='color: #ffffff; margin: 10px 0 0 0; font-size: 14px;'>A new appointment has been assigned to you</p>
+                                <td style='background: linear-gradient(135deg, #0D92F4, #27548A); padding: 30px; text-align: center;'>
+                                    <h1 style='color: #ffffff; margin: 0; font-size: 28px;'>Welcome to LGU Quick Appoint!</h1>
+                                    <p style='color: #ffffff; margin: 10px 0 0 0; font-size: 14px;'>Your account has been successfully created</p>
                                 </td>
                             </tr>
                             
+                            <!-- Body -->
                             <tr>
                                 <td style='padding: 40px 30px;'>
                                     <p style='color: #333; font-size: 16px; line-height: 1.6; margin: 0 0 15px 0;'>
-                                        Dear <strong>{$recipientName}</strong>,
+                                        Hi <strong>{$recipientName}</strong>,
                                     </p>
                                     <p style='color: #555; font-size: 15px; line-height: 1.6; margin: 0 0 25px 0;'>
-                                        A new appointment has been booked and assigned to you. Please review the details below:
+                                        Your account has been created as an LGU Personnel. You can now access the system using the credentials below.
                                     </p>
                                     
-                                    <table width='100%' cellpadding='0' cellspacing='0' style='background: linear-gradient(135deg, #f8f9fa, #e9ecef); border-radius: 8px; margin: 20px 0; border: 2px solid #3498db;'>
+                                    <!-- Account Info Box -->
+                                    <table width='100%' cellpadding='0' cellspacing='0' style='background: linear-gradient(135deg, #f8f9fa, #e9ecef); border-radius: 8px; margin: 20px 0; border: 2px solid #0D92F4;'>
                                         <tr>
-                                            <td style='padding: 20px;'>
-                                                <h3 style='color: #2c3e50; margin: 0 0 15px 0; font-size: 18px;'>Appointment Details</h3>
+                                            <td style='padding: 25px;'>
+                                                <h3 style='color: #2c3e50; margin: 0 0 15px 0; font-size: 18px; text-align: center;'>
+                                                    🔐 Your Login Credentials
+                                                </h3>
                                                 
-                                                <table width='100%' cellpadding='8' cellspacing='0'>
+                                                <table width='100%' cellpadding='10' cellspacing='0'>
                                                     <tr>
-                                                        <td style='color: #6c757d; font-size: 14px; padding: 8px 0;'><strong>Resident:</strong></td>
-                                                        <td style='color: #2c3e50; font-size: 14px; padding: 8px 0;'>{$appointmentDetails['resident_name']}</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td style='color: #6c757d; font-size: 14px; padding: 8px 0;'><strong>Service:</strong></td>
-                                                        <td style='color: #2c3e50; font-size: 14px; padding: 8px 0;'>{$appointmentDetails['service_name']}</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td style='color: #6c757d; font-size: 14px; padding: 8px 0;'><strong>Date:</strong></td>
-                                                        <td style='color: #2c3e50; font-size: 14px; padding: 8px 0;'>{$appointmentDetails['date']}</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td style='color: #6c757d; font-size: 14px; padding: 8px 0;'><strong>Time:</strong></td>
-                                                        <td style='color: #2c3e50; font-size: 14px; padding: 8px 0;'>{$appointmentDetails['time']}</td>
+                                                        <td style='color: #6c757d; font-size: 14px; padding: 8px 0;'><strong>Role:</strong></td>
+                                                        <td style='padding: 8px 0;'>{$roleBadge}</td>
                                                     </tr>
                                                     <tr>
                                                         <td style='color: #6c757d; font-size: 14px; padding: 8px 0;'><strong>Department:</strong></td>
-                                                        <td style='color: #2c3e50; font-size: 14px; padding: 8px 0;'>{$appointmentDetails['department_name']}</td>
+                                                        <td style='color: #2c3e50; font-size: 14px; padding: 8px 0;'>{$details['department_name']}</td>
                                                     </tr>
                                                     <tr>
-                                                        <td style='color: #6c757d; font-size: 14px; padding: 8px 0; vertical-align: top;'><strong>Reason:</strong></td>
-                                                        <td style='color: #2c3e50; font-size: 14px; padding: 8px 0;'>{$appointmentDetails['reason']}</td>
+                                                        <td style='color: #6c757d; font-size: 14px; padding: 8px 0;'><strong>Email:</strong></td>
+                                                        <td style='color: #2c3e50; font-size: 14px; padding: 8px 0; font-family: monospace;'>{$details['email']}</td>
                                                     </tr>
                                                     <tr>
-                                                        <td colspan='2' style='padding: 15px 0 8px 0;'>
-                                                            <div style='background: white; padding: 15px; border-radius: 6px; text-align: center; border: 2px dashed #3498db;'>
-                                                                <p style='color: #6c757d; font-size: 12px; margin: 0 0 5px 0;'>Transaction Number</p>
-                                                                <p style='color: #2c3e50; font-size: 24px; font-weight: bold; margin: 0; letter-spacing: 2px;'>{$appointmentDetails['transaction_id']}</p>
+                                                        <td style='color: #6c757d; font-size: 14px; padding: 8px 0;'><strong>Password:</strong></td>
+                                                        <td style='padding: 8px 0;'>
+                                                            <div style='background: white; padding: 10px; border-radius: 6px; border: 2px dashed #0D92F4;'>
+                                                                <code style='color: #e74c3c; font-size: 16px; font-weight: bold;'>{$details['password']}</code>
                                                             </div>
                                                         </td>
                                                     </tr>
@@ -490,37 +476,43 @@ function sendPersonnelAppointmentNotification($recipientEmail, $recipientName, $
                                         </tr>
                                     </table>
                                     
-                                    <div style='background: #e3f2fd; border-left: 4px solid #2196f3; padding: 15px; margin: 20px 0; border-radius: 4px;'>
-                                        <p style='color: #1565c0; font-size: 14px; margin: 0 0 10px 0;'><strong>ℹ️ Action Required:</strong></p>
-                                        <ul style='color: #1565c0; font-size: 14px; margin: 0; padding-left: 20px;'>
-                                            <li style='margin: 5px 0;'>Review the appointment details</li>
-                                            <li style='margin: 5px 0;'>Prepare necessary materials</li>
-                                            <li style='margin: 5px 0;'>Ensure required documents are ready</li>
-                                        </ul>
-                                    </div>
+                                    <!-- Login Button -->
+                                    <table width='100%' cellpadding='0' cellspacing='0'>
+                                        <tr>
+                                            <td align='center' style='padding: 20px 0;'>
+                                                <a href='https://unisan-lgu-quick-appoint.page.gd/login.php' style='display: inline-block; padding: 14px 40px; background: linear-gradient(135deg, #0D92F4, #27548A); color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;'>
+                                                    Login to Your Account
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    </table>
                                     
-                                    <div style='background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;'>
-                                        <h3 style='color: #2c3e50; margin: 0 0 15px 0; font-size: 16px;'>📄 Required Documents to Check:</h3>
-                                        <ul style='margin: 0; padding-left: 20px;'>
-                                            {$requirementsList}
+                                    <!-- Security Warning -->
+                                    <div style='background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 4px;'>
+                                        <p style='color: #856404; font-size: 14px; margin: 0 0 10px 0;'><strong>⚠️ Security Reminder:</strong></p>
+                                        <ul style='color: #856404; font-size: 13px; margin: 0; padding-left: 20px;'>
+                                            <li style='margin: 5px 0;'>Please change your password after your first login</li>
+                                            <li style='margin: 5px 0;'>Never share your credentials with anyone</li>
+                                            <li style='margin: 5px 0;'>Use a strong, unique password</li>
                                         </ul>
                                     </div>
                                     
                                     <hr style='border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;'>
                                     
                                     <p style='color: #999; font-size: 13px; line-height: 1.6; margin: 0;'>
-                                        Please log in to the system to view more details or update the appointment status.
+                                        If you have any questions or didn't expect this email, please contact the administrator immediately.
                                     </p>
                                 </td>
                             </tr>
                             
+                            <!-- Footer -->
                             <tr>
                                 <td style='background-color: #f8f9fa; padding: 20px 30px; text-align: center; border-top: 1px solid #e0e0e0;'>
                                     <p style='color: #888; font-size: 12px; margin: 0 0 5px 0;'>
                                         © 2025 LGU Quick Appoint. All rights reserved.
                                     </p>
                                     <p style='color: #999; font-size: 11px; margin: 0;'>
-                                        This is an automated notification. Please do not reply.
+                                        This is an automated message, please do not reply.
                                     </p>
                                 </td>
                             </tr>
@@ -532,10 +524,487 @@ function sendPersonnelAppointmentNotification($recipientEmail, $recipientName, $
         </html>
         ";
 
+        // Plain text alternative
+        $mail->AltBody = "Welcome to LGU Quick Appoint!\n\n"
+                       . "Hi {$recipientName},\n\n"
+                       . "Your account has been created.\n\n"
+                       . "Login Credentials:\n"
+                       . "Email: {$details['email']}\n"
+                       . "Password: {$details['password']}\n"
+                       . "Department: {$details['department_name']}\n\n"
+                       . "Login here: {$details['login_link']}\n\n"
+                       . "IMPORTANT: Please change your password after your first login.\n\n"
+                       . "LGU Quick Appoint Team";
+
         $mail->send();
         return true;
     } catch (Exception $e) {
-        error_log("Personnel Notification Email Error: " . $mail->ErrorInfo);
+        error_log("Personnel Welcome Email Error: " . $mail->ErrorInfo);
+        return false;
+    }
+}
+
+function sendCoPersonnelWelcomeEmail($recipientEmail, $recipientName, $details) {
+    $mail = new PHPMailer(true);
+
+    try {
+        // Server settings
+        $mail->isSMTP();
+        $mail->Host       = 'smtp.gmail.com';
+        $mail->SMTPAuth   = true;
+        $mail->Username   = 'jvcrujido@gmail.com';
+        $mail->Password   = 'jqwcysmffzbxoeaj';
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port       = 587;
+
+        $mail->setFrom('jvcrujido@gmail.com', 'LGU Quick Appoint');
+        $mail->addAddress($recipientEmail, $recipientName);
+        $mail->addReplyTo('jvcrujido@gmail.com', 'LGU Support');
+
+        $mail->isHTML(true);
+        $mail->Subject = 'Welcome to LGU Quick Appoint - Co-Personnel Account Created';
+        
+        $mail->Body = "
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset='UTF-8'>
+            <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+        </head>
+        <body style='margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;'>
+            <table width='100%' cellpadding='0' cellspacing='0' style='background-color: #f4f4f4; padding: 20px;'>
+                <tr>
+                    <td align='center'>
+                        <table width='600' cellpadding='0' cellspacing='0' style='background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);'>
+                            <!-- Header -->
+                            <tr>
+                                <td style='background: linear-gradient(135deg, #10b981, #059669); padding: 30px; text-align: center;'>
+                                    <h1 style='color: #ffffff; margin: 0; font-size: 28px;'>Welcome to the Team!</h1>
+                                    <p style='color: #ffffff; margin: 10px 0 0 0; font-size: 14px;'>Your co-personnel account has been created</p>
+                                </td>
+                            </tr>
+                            
+                            <!-- Body -->
+                            <tr>
+                                <td style='padding: 40px 30px;'>
+                                    <p style='color: #333; font-size: 16px; line-height: 1.6; margin: 0 0 15px 0;'>
+                                        Hi <strong>{$recipientName}</strong>,
+                                    </p>
+                                    <p style='color: #555; font-size: 15px; line-height: 1.6; margin: 0 0 10px 0;'>
+                                        <strong>{$details['created_by']}</strong> has added you as a co-personnel member in the <strong>{$details['department_name']}</strong> department.
+                                    </p>
+                                    <p style='color: #555; font-size: 15px; line-height: 1.6; margin: 0 0 25px 0;'>
+                                        You can now access the LGU Quick Appoint system using the credentials below.
+                                    </p>
+                                    
+                                    <!-- Account Info Box -->
+                                    <table width='100%' cellpadding='0' cellspacing='0' style='background: linear-gradient(135deg, #f8f9fa, #e9ecef); border-radius: 8px; margin: 20px 0; border: 2px solid #10b981;'>
+                                        <tr>
+                                            <td style='padding: 25px;'>
+                                                <h3 style='color: #2c3e50; margin: 0 0 15px 0; font-size: 18px; text-align: center;'>
+                                                    🔐 Your Login Credentials
+                                                </h3>
+                                                
+                                                <table width='100%' cellpadding='10' cellspacing='0'>
+                                                    <tr>
+                                                        <td style='color: #6c757d; font-size: 14px; padding: 8px 0;'><strong>Role:</strong></td>
+                                                        <td style='padding: 8px 0;'>
+                                                            <span style='background: #d1fae5; color: #065f46; padding: 5px 12px; border-radius: 15px; font-size: 12px; font-weight: bold;'>
+                                                                👥 Co-Personnel
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style='color: #6c757d; font-size: 14px; padding: 8px 0;'><strong>Department:</strong></td>
+                                                        <td style='color: #2c3e50; font-size: 14px; padding: 8px 0;'>{$details['department_name']}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style='color: #6c757d; font-size: 14px; padding: 8px 0;'><strong>Created By:</strong></td>
+                                                        <td style='color: #2c3e50; font-size: 14px; padding: 8px 0;'>{$details['created_by']}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style='color: #6c757d; font-size: 14px; padding: 8px 0;'><strong>Email:</strong></td>
+                                                        <td style='color: #2c3e50; font-size: 14px; padding: 8px 0; font-family: monospace;'>{$details['email']}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style='color: #6c757d; font-size: 14px; padding: 8px 0;'><strong>Password:</strong></td>
+                                                        <td style='padding: 8px 0;'>
+                                                            <div style='background: white; padding: 10px; border-radius: 6px; border: 2px dashed #10b981;'>
+                                                                <code style='color: #e74c3c; font-size: 16px; font-weight: bold;'>{$details['password']}</code>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                    
+                                    <!-- Login Button -->
+                                    <table width='100%' cellpadding='0' cellspacing='0'>
+                                        <tr>
+                                            <td align='center' style='padding: 20px 0;'>
+                                                <a href='http://localhost/capstone-2/capstone/login.php' style='display: inline-block; padding: 14px 40px; background: linear-gradient(135deg, #10b981, #059669); color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;'>
+                                                    Login to Your Account
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                    
+                                    <!-- What You Can Do -->
+                                    <div style='background: #f0f9ff; border-left: 4px solid #0ea5e9; padding: 15px; margin: 20px 0; border-radius: 4px;'>
+                                        <p style='color: #0369a1; font-size: 14px; margin: 0 0 10px 0;'><strong>📋 What You Can Do:</strong></p>
+                                        <ul style='color: #0369a1; font-size: 13px; margin: 0; padding-left: 20px;'>
+                                            <li style='margin: 5px 0;'>Manage appointments in your department</li>
+                                            <li style='margin: 5px 0;'>Update appointment statuses</li>
+                                            <li style='margin: 5px 0;'>View department schedules</li>
+                                            <li style='margin: 5px 0;'>Collaborate with your department head</li>
+                                        </ul>
+                                    </div>
+                                    
+                                    <!-- Security Warning -->
+                                    <div style='background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 4px;'>
+                                        <p style='color: #856404; font-size: 14px; margin: 0 0 10px 0;'><strong>⚠️ Security Reminder:</strong></p>
+                                        <ul style='color: #856404; font-size: 13px; margin: 0; padding-left: 20px;'>
+                                            <li style='margin: 5px 0;'>Please change your password after your first login</li>
+                                            <li style='margin: 5px 0;'>Never share your credentials with anyone</li>
+                                            <li style='margin: 5px 0;'>Use a strong, unique password</li>
+                                        </ul>
+                                    </div>
+                                    
+                                    <hr style='border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;'>
+                                    
+                                    <p style='color: #999; font-size: 13px; line-height: 1.6; margin: 0;'>
+                                        If you have any questions or didn't expect this email, please contact your department head or administrator.
+                                    </p>
+                                </td>
+                            </tr>
+                            
+                            <!-- Footer -->
+                            <tr>
+                                <td style='background-color: #f8f9fa; padding: 20px 30px; text-align: center; border-top: 1px solid #e0e0e0;'>
+                                    <p style='color: #888; font-size: 12px; margin: 0 0 5px 0;'>
+                                        © 2025 LGU Quick Appoint. All rights reserved.
+                                    </p>
+                                    <p style='color: #999; font-size: 11px; margin: 0;'>
+                                        This is an automated message, please do not reply.
+                                    </p>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </body>
+        </html>
+        ";
+
+        // Plain text alternative
+        $mail->AltBody = "Welcome to LGU Quick Appoint!\n\n"
+                       . "Hi {$recipientName},\n\n"
+                       . "{$details['created_by']} has added you as a co-personnel member.\n\n"
+                       . "Login Credentials:\n"
+                       . "Email: {$details['email']}\n"
+                       . "Password: {$details['password']}\n"
+                       . "Department: {$details['department_name']}\n\n"
+                       . "Login here: {$details['login_link']}\n\n"
+                       . "IMPORTANT: Please change your password after your first login.\n\n"
+                       . "LGU Quick Appoint Team";
+
+        $mail->send();
+        return true;
+    } catch (Exception $e) {
+        error_log("Co-Personnel Welcome Email Error: " . $mail->ErrorInfo);
+        return false;
+    }
+}
+
+function sendRescheduleApprovedEmail($recipientEmail, $recipientName, $details) {
+    $mail = new PHPMailer(true);
+    
+    try {
+        // SMTP Settings
+        $mail->isSMTP();
+        $mail->Host       = 'smtp.gmail.com';
+        $mail->SMTPAuth   = true;
+        $mail->Username   = 'jvcrujido@gmail.com';
+        $mail->Password   = 'jqwcysmffzbxoeaj';
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port       = 587;
+
+        $mail->setFrom('jvcrujido@gmail.com', 'LGU Quick Appoint');
+        $mail->addAddress($recipientEmail, $recipientName);
+        $mail->addReplyTo('jvcrujido@gmail.com', 'LGU Support');
+
+        $mail->isHTML(true);
+        $mail->Subject = 'Reschedule Request Approved - ' . $details['service_name'];
+        
+        $mail->Body = "
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset='UTF-8'>
+            <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+        </head>
+        <body style='margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;'>
+            <table width='100%' cellpadding='0' cellspacing='0' style='background-color: #f4f4f4; padding: 20px;'>
+                <tr>
+                    <td align='center'>
+                        <table width='600' cellpadding='0' cellspacing='0' style='background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);'>
+                            <!-- Header -->
+                            <tr>
+                                <td style='background: linear-gradient(135deg, #0D92F4, #27548A); padding: 30px; text-align: center;'>
+                                    <h1 style='color: #ffffff; margin: 0; font-size: 28px;'>Request Approved</h1>
+                                    <p style='color: #ffffff; margin: 10px 0 0 0; font-size: 14px;'>Your reschedule request has been accepted</p>
+                                </td>
+                            </tr>
+                            
+                            <!-- Body -->
+                            <tr>
+                                <td style='padding: 40px 30px;'>
+                                    <p style='color: #333; font-size: 16px; line-height: 1.6; margin: 0 0 15px 0;'>
+                                        Dear <strong>{$recipientName}</strong>,
+                                    </p>
+                                    <p style='color: #555; font-size: 15px; line-height: 1.6; margin: 0 0 25px 0;'>
+                                        Your request to reschedule your appointment has been approved by the department personnel.
+                                    </p>
+                                    
+                                    <!-- Success Alert -->
+                                    <div style='background: linear-gradient(135deg, #d6eaf8, #aed6f1); border-left: 4px solid #0D92F4; padding: 15px; margin: 20px 0; border-radius: 8px;'>
+                                        <p style='color: #1b4f72; font-size: 14px; margin: 0;'>
+                                            <strong>Your appointment has been successfully rescheduled</strong>
+                                        </p>
+                                    </div>
+                                    
+                                    <!-- Appointment Details Box -->
+                                    <table width='100%' cellpadding='0' cellspacing='0' style='background: linear-gradient(135deg, #f8f9fa, #e9ecef); border-radius: 8px; margin: 20px 0; border: 2px solid #0D92F4;'>
+                                        <tr>
+                                            <td style='padding: 25px;'>
+                                                <h3 style='color: #2c3e50; margin: 0 0 15px 0; font-size: 18px;'>New Appointment Details</h3>
+                                                
+                                                <table width='100%' cellpadding='8' cellspacing='0'>
+                                                    <tr>
+                                                        <td style='color: #6c757d; font-size: 14px; padding: 8px 0; width: 40%;'><strong>Service:</strong></td>
+                                                        <td style='color: #2c3e50; font-size: 14px; padding: 8px 0;'>{$details['service_name']}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style='color: #6c757d; font-size: 14px; padding: 8px 0;'><strong>Department:</strong></td>
+                                                        <td style='color: #2c3e50; font-size: 14px; padding: 8px 0;'>{$details['department_name']}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style='color: #6c757d; font-size: 14px; padding: 8px 0;'><strong>New Date:</strong></td>
+                                                        <td style='color: #0D92F4; font-size: 15px; font-weight: bold; padding: 8px 0;'>{$details['new_date']}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style='color: #6c757d; font-size: 14px; padding: 8px 0;'><strong>New Time:</strong></td>
+                                                        <td style='color: #0D92F4; font-size: 15px; font-weight: bold; padding: 8px 0;'>{$details['new_time']}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td colspan='2' style='padding: 15px 0 8px 0;'>
+                                                            <div style='background: white; padding: 15px; border-radius: 6px; text-align: center; border: 2px dashed #0D92F4;'>
+                                                                <p style='color: #6c757d; font-size: 12px; margin: 0 0 5px 0;'>Reference Number</p>
+                                                                <p style='color: #2c3e50; font-size: 24px; font-weight: bold; margin: 0; letter-spacing: 2px;'>{$details['transaction_id']}</p>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                    
+                                    <!-- Important Reminders -->
+                                    <div style='background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 8px;'>
+                                        <p style='color: #856404; font-size: 14px; margin: 0 0 10px 0;'><strong>Important Reminders:</strong></p>
+                                        <ul style='color: #856404; font-size: 13px; margin: 0; padding-left: 20px;'>
+                                            <li style='margin: 5px 0;'>Please arrive <strong>15 minutes early</strong></li>
+                                            <li style='margin: 5px 0;'>Bring your reference number and valid ID</li>
+                                            <li style='margin: 5px 0;'>Bring all required documents</li>
+                                            <li style='margin: 5px 0;'>Late arrivals may result in appointment cancellation</li>
+                                        </ul>
+                                    </div>
+                                    
+                                    <hr style='border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;'>
+                                    
+                                    <p style='color: #999; font-size: 13px; line-height: 1.6; margin: 0;'>
+                                        If you have any questions about your appointment, please contact the {$details['department_name']}.
+                                    </p>
+                                </td>
+                            </tr>
+                            
+                            <!-- Footer -->
+                            <tr>
+                                <td style='background-color: #f8f9fa; padding: 20px 30px; text-align: center; border-top: 1px solid #e0e0e0;'>
+                                    <p style='color: #888; font-size: 12px; margin: 0 0 5px 0;'>
+                                        © 2025 LGU Quick Appoint. All rights reserved.
+                                    </p>
+                                    <p style='color: #999; font-size: 11px; margin: 0;'>
+                                        This is an automated message, please do not reply.
+                                    </p>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </body>
+        </html>
+        ";
+
+        $mail->AltBody = "Dear {$recipientName},\n\n"
+                       . "Your reschedule request has been approved.\n\n"
+                       . "New Appointment Details:\n"
+                       . "Service: {$details['service_name']}\n"
+                       . "Date: {$details['new_date']}\n"
+                       . "Time: {$details['new_time']}\n"
+                       . "Reference: {$details['transaction_id']}\n\n"
+                       . "Please arrive 15 minutes early with all required documents.\n\n"
+                       . "LGU Quick Appoint Team";
+
+        $mail->send();
+        return true;
+    } catch (Exception $e) {
+        error_log("Reschedule Approved Email Error: " . $mail->ErrorInfo);
+        return false;
+    }
+}
+
+function sendRescheduleRejectedEmail($recipientEmail, $recipientName, $details) {
+    $mail = new PHPMailer(true);
+    
+    try {
+        $mail->isSMTP();
+        $mail->Host       = 'smtp.gmail.com';
+        $mail->SMTPAuth   = true;
+        $mail->Username   = 'jvcrujido@gmail.com';
+        $mail->Password   = 'jqwcysmffzbxoeaj';
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port       = 587;
+
+        $mail->setFrom('jvcrujido@gmail.com', 'LGU Quick Appoint');
+        $mail->addAddress($recipientEmail, $recipientName);
+        $mail->addReplyTo('jvcrujido@gmail.com', 'LGU Support');
+
+        $mail->isHTML(true);
+        $mail->Subject = 'Reschedule Request Declined - ' . $details['service_name'];
+        
+        $mail->Body = "
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset='UTF-8'>
+            <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+        </head>
+        <body style='margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;'>
+            <table width='100%' cellpadding='0' cellspacing='0' style='background-color: #f4f4f4; padding: 20px;'>
+                <tr>
+                    <td align='center'>
+                        <table width='600' cellpadding='0' cellspacing='0' style='background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);'>
+                            <!-- Header -->
+                            <tr>
+                                <td style='background: linear-gradient(135deg, #e74c3c, #c0392b); padding: 30px; text-align: center;'>
+                                    <h1 style='color: #ffffff; margin: 0; font-size: 28px;'>Request Declined</h1>
+                                    <p style='color: #ffffff; margin: 10px 0 0 0; font-size: 14px;'>Your reschedule request was not approved</p>
+                                </td>
+                            </tr>
+                            
+                            <!-- Body -->
+                            <tr>
+                                <td style='padding: 40px 30px;'>
+                                    <p style='color: #333; font-size: 16px; line-height: 1.6; margin: 0 0 15px 0;'>
+                                        Dear <strong>{$recipientName}</strong>,
+                                    </p>
+                                    <p style='color: #555; font-size: 15px; line-height: 1.6; margin: 0 0 25px 0;'>
+                                        We regret to inform you that your request to reschedule your appointment has been declined by the department personnel.
+                                    </p>
+                                    
+                                    <!-- Original Appointment Details -->
+                                    <table width='100%' cellpadding='0' cellspacing='0' style='background: linear-gradient(135deg, #f8f9fa, #e9ecef); border-radius: 8px; margin: 20px 0; border: 2px solid #e74c3c;'>
+                                        <tr>
+                                            <td style='padding: 25px;'>
+                                                <h3 style='color: #2c3e50; margin: 0 0 15px 0; font-size: 18px;'>Original Appointment</h3>
+                                                
+                                                <table width='100%' cellpadding='8' cellspacing='0'>
+                                                    <tr>
+                                                        <td style='color: #6c757d; font-size: 14px; padding: 8px 0; width: 40%;'><strong>Service:</strong></td>
+                                                        <td style='color: #2c3e50; font-size: 14px; padding: 8px 0;'>{$details['service_name']}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style='color: #6c757d; font-size: 14px; padding: 8px 0;'><strong>Department:</strong></td>
+                                                        <td style='color: #2c3e50; font-size: 14px; padding: 8px 0;'>{$details['department_name']}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style='color: #6c757d; font-size: 14px; padding: 8px 0;'><strong>Status:</strong></td>
+                                                        <td style='color: #e74c3c; font-size: 14px; font-weight: bold; padding: 8px 0;'>No Show</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td colspan='2' style='padding: 15px 0 8px 0;'>
+                                                            <div style='background: white; padding: 15px; border-radius: 6px; text-align: center; border: 2px dashed #e74c3c;'>
+                                                                <p style='color: #6c757d; font-size: 12px; margin: 0 0 5px 0;'>Reference Number</p>
+                                                                <p style='color: #2c3e50; font-size: 24px; font-weight: bold; margin: 0; letter-spacing: 2px;'>{$details['transaction_id']}</p>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                    
+                                    <!-- Rejection Reason -->
+                                    <div style='background: #fee; border-left: 4px solid #e74c3c; padding: 15px; margin: 20px 0; border-radius: 8px;'>
+                                        <p style='color: #c0392b; font-size: 14px; margin: 0 0 10px 0;'><strong>Reason for Rejection:</strong></p>
+                                        <p style='color: #922b21; font-size: 14px; margin: 0; line-height: 1.6;'>{$details['rejection_reason']}</p>
+                                    </div>
+                                    
+                                    <!-- Next Steps -->
+                                    <div style='background: #f0f9ff; border-left: 4px solid #0ea5e9; padding: 15px; margin: 20px 0; border-radius: 8px;'>
+                                        <p style='color: #0369a1; font-size: 14px; margin: 0 0 10px 0;'><strong>What You Can Do:</strong></p>
+                                        <ul style='color: #0c4a6e; font-size: 13px; margin: 0; padding-left: 20px;'>
+                                            <li style='margin: 5px 0;'>Review the rejection reason provided above</li>
+                                            <li style='margin: 5px 0;'>Contact the {$details['department_name']} for clarification</li>
+                                            <li style='margin: 5px 0;'>Book a new appointment if needed</li>
+                                            <li style='margin: 5px 0;'>Submit another reschedule request with different details</li>
+                                        </ul>
+                                    </div>
+                                    
+                                    <hr style='border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;'>
+                                    
+                                    <p style='color: #999; font-size: 13px; line-height: 1.6; margin: 0;'>
+                                        If you have questions about this decision, please contact the {$details['department_name']} directly for more information.
+                                    </p>
+                                </td>
+                            </tr>
+                            
+                            <!-- Footer -->
+                            <tr>
+                                <td style='background-color: #f8f9fa; padding: 20px 30px; text-align: center; border-top: 1px solid #e0e0e0;'>
+                                    <p style='color: #888; font-size: 12px; margin: 0 0 5px 0;'>
+                                        © 2025 LGU Quick Appoint. All rights reserved.
+                                    </p>
+                                    <p style='color: #999; font-size: 11px; margin: 0;'>
+                                        This is an automated message, please do not reply.
+                                    </p>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </body>
+        </html>
+        ";
+
+        $mail->AltBody = "Dear {$recipientName},\n\n"
+                       . "Your reschedule request has been rejected.\n\n"
+                       . "Original Appointment:\n"
+                       . "Service: {$details['service_name']}\n"
+                       . "Reference: {$details['transaction_id']}\n\n"
+                       . "Reason for Rejection:\n{$details['rejection_reason']}\n\n"
+                       . "You may contact the {$details['department_name']} for more information or submit a new request.\n\n"
+                       . "LGU Quick Appoint Team";
+
+        $mail->send();
+        return true;
+    } catch (Exception $e) {
+        error_log("Reschedule Rejected Email Error: " . $mail->ErrorInfo);
         return false;
     }
 }

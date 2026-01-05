@@ -187,6 +187,22 @@ try {
             width: 100%;
         }
     }
+    /* Add these new classes to your existing CSS */
+    .icon-rejected {
+        background-color: #fee2e2;
+        color: #dc2626;
+    }
+
+    .icon-approved {
+        background-color: #d1fae5;
+        color: #059669;
+    }
+
+    /* Optional: specific badge for rejection */
+    .badge-danger {
+        background-color: #dc3545;
+        color: #fff;
+    }
 </style>
 
 <div class="container-fluid py-4">
@@ -223,139 +239,147 @@ try {
     </div>
 
     <!-- Notifications List -->
-    <div class="notifications-list">
-        <?php if (count($notifications) > 0): ?>
-            <?php foreach ($notifications as $notification): ?>
-                <?php
-                // Determine icon and color based on appointment status
-                $iconClass = 'icon-info';
-                $iconName = 'bx-bell';
-                $notificationType = strtolower($notification['appointment_status']);
-                
-                if ($notification['appointment_status'] === 'Completed') {
-                    $iconClass = 'icon-completed';
-                    $iconName = 'bx-check-circle';
-                } elseif ($notification['appointment_status'] === 'Pending') {
-                    $iconClass = 'icon-pending';
-                    $iconName = 'bx-time';
-                }
-                
-                // Calculate time ago
-                $timeAgo = time() - strtotime($notification['created_at']);
-                if ($timeAgo < 60) {
-                    $timeText = 'Just now';
-                } elseif ($timeAgo < 3600) {
-                    $timeText = floor($timeAgo / 60) . ' minute' . (floor($timeAgo / 60) > 1 ? 's' : '') . ' ago';
-                } elseif ($timeAgo < 86400) {
-                    $timeText = floor($timeAgo / 3600) . ' hour' . (floor($timeAgo / 3600) > 1 ? 's' : '') . ' ago';
-                } elseif ($timeAgo < 604800) {
-                    $timeText = floor($timeAgo / 86400) . ' day' . (floor($timeAgo / 86400) > 1 ? 's' : '') . ' ago';
-                } else {
-                    $timeText = date('M d, Y', strtotime($notification['created_at']));
-                }
-                
-                // Parse scheduled_for datetime
-                $appointmentDate = '';
-                $appointmentTime = '';
-                if ($notification['scheduled_for']) {
-                    $scheduledDateTime = new DateTime($notification['scheduled_for']);
-                    $appointmentDate = $scheduledDateTime->format('M d, Y');
-                    $appointmentTime = $scheduledDateTime->format('h:i A');
-                }
-                
-                // Department display
-                $departmentDisplay = $notification['department_acronym'] 
-                    ? $notification['department_acronym'] 
-                    : $notification['department_name'];
-                ?>
-                
-                <div class="card notification-card <?php echo $notification['is_read'] ? 'read' : 'unread'; ?>" 
-                    data-type="<?php echo $notificationType; ?>"
-                    onclick="viewAppointment(<?php echo $notification['appointment_id']; ?>, '<?php echo $notificationType; ?>')">
-                    <div class="card-body">
-                        <div class="d-flex">
-                            <div class="notification-icon <?php echo $iconClass; ?> mr-3">
-                                <i class='bx <?php echo $iconName; ?>'></i>
+<div class="notifications-list">
+    <?php if (count($notifications) > 0): ?>
+        <?php foreach ($notifications as $notification): ?>
+            <?php
+            // 1. Initialize variables
+            $iconClass = 'icon-info';
+            $iconName = 'bx-bell';
+            $statusClass = 'secondary';
+            $statusText = $notification['appointment_status']; // Default
+            $notificationType = strtolower($notification['appointment_status']);
+
+            // 2. Check Message Content for Reschedule Logic
+            $msgLower = strtolower($notification['message']);
+            $isRescheduleApproved = strpos($msgLower, 'reschedule request has been approved') !== false;
+            $isRescheduleRejected = strpos($msgLower, 'reschedule request has been rejected') !== false;
+
+            // 3. Determine Styling based on specific logic
+            if ($isRescheduleRejected) {
+                // REJECTED STATE
+                $iconClass = 'icon-rejected';
+                $iconName = 'bx-x-circle';
+                $statusText = 'Reschedule Rejected';
+                $statusClass = 'danger';
+            } 
+            elseif ($isRescheduleApproved) {
+                // APPROVED STATE
+                $iconClass = 'icon-approved';
+                $iconName = 'bx-calendar-check';
+                $statusText = 'Reschedule Approved';
+                $statusClass = 'success';
+            } 
+            elseif ($notification['appointment_status'] === 'Completed') {
+                // COMPLETED STATE
+                $iconClass = 'icon-completed';
+                $iconName = 'bx-check-circle';
+                $statusClass = 'success';
+            } 
+            elseif ($notification['appointment_status'] === 'Pending') {
+                // PENDING STATE
+                $iconClass = 'icon-pending';
+                $iconName = 'bx-time';
+                $statusClass = 'warning';
+            }
+            
+            // 4. Calculate time ago (Your existing logic)
+            $timeAgo = time() - strtotime($notification['created_at']);
+            if ($timeAgo < 60) {
+                $timeText = 'Just now';
+            } elseif ($timeAgo < 3600) {
+                $timeText = floor($timeAgo / 60) . ' minute' . (floor($timeAgo / 60) > 1 ? 's' : '') . ' ago';
+            } elseif ($timeAgo < 86400) {
+                $timeText = floor($timeAgo / 3600) . ' hour' . (floor($timeAgo / 3600) > 1 ? 's' : '') . ' ago';
+            } elseif ($timeAgo < 604800) {
+                $timeText = floor($timeAgo / 86400) . ' day' . (floor($timeAgo / 86400) > 1 ? 's' : '') . ' ago';
+            } else {
+                $timeText = date('M d, Y', strtotime($notification['created_at']));
+            }
+            
+            // 5. Parse scheduled_for
+            $appointmentDate = '';
+            $appointmentTime = '';
+            if ($notification['scheduled_for']) {
+                $scheduledDateTime = new DateTime($notification['scheduled_for']);
+                $appointmentDate = $scheduledDateTime->format('M d, Y');
+                $appointmentTime = $scheduledDateTime->format('h:i A');
+            }
+            
+            // 6. Department Display
+            $departmentDisplay = $notification['department_acronym'] 
+                ? $notification['department_acronym'] 
+                : $notification['department_name'];
+            ?>
+            
+            <div class="card notification-card <?php echo $notification['is_read'] ? 'read' : 'unread'; ?>" 
+                data-type="<?php echo $notificationType; ?>"
+                onclick="viewAppointment(<?php echo $notification['appointment_id']; ?>, '<?php echo $notificationType; ?>')">
+                <div class="card-body">
+                    <div class="d-flex">
+                        <div class="notification-icon <?php echo $iconClass; ?> mr-3">
+                            <i class='bx <?php echo $iconName; ?>'></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-start mb-2 flex-wrap">
+                                <h5 class="mb-1">
+                                    <?php echo htmlspecialchars($departmentDisplay); ?>
+                                    <?php if (!$notification['is_read']): ?>
+                                    <span class="badge badge-primary badge-pill ml-2">New</span>
+                                    <?php endif; ?>
+                                </h5>
+                                <span class="notification-time">
+                                    <i class='bx bx-time-five'></i> <?php echo $timeText; ?>
+                                </span>
                             </div>
-                            <div class="flex-grow-1">
-                                <div class="d-flex justify-content-between align-items-start mb-2 flex-wrap">
-                                    <h5 class="mb-1">
-                                        <?php echo htmlspecialchars($departmentDisplay); ?>
-                                        <?php if (!$notification['is_read']): ?>
-                                        <span class="badge badge-primary badge-pill ml-2">New</span>
-                                        <?php endif; ?>
-                                    </h5>
-                                    <span class="notification-time">
-                                        <i class='bx bx-time-five'></i> <?php echo $timeText; ?>
-                                    </span>
-                                </div>
+                            
+                            <p class="mb-2">
+                                <?php echo htmlspecialchars($notification['message']); ?>
+                            </p>
+                            
+                            <div class="d-flex align-items-center flex-wrap gap-2">
+                                <?php if ($notification['transaction_id']): ?>
+                                <span class="badge badge-light mr-2 mb-1">
+                                    <i class='bx bx-receipt'></i> 
+                                    <?php echo htmlspecialchars($notification['transaction_id']); ?>
+                                </span>
+                                <?php endif; ?>
                                 
-                                <p class="mb-2">
-                                    <?php if ($notification['appointment_status'] === 'Completed'): ?>
-                                        Your appointment for 
-                                        <strong><?php echo htmlspecialchars($notification['service_name'] ?: $departmentDisplay); ?></strong>
-                                        has been completed.
-                                    <?php else: ?>
-                                        You have an appointment for 
-                                        <strong><?php echo htmlspecialchars($notification['service_name'] ?: $departmentDisplay); ?></strong>
-                                    <?php endif; ?>
-                                </p>
+                                <?php if ($notification['service_name']): ?>
+                                <span class="badge badge-info mr-2 mb-1">
+                                    <i class='bx bx-briefcase'></i> 
+                                    <?php echo htmlspecialchars($notification['service_name']); ?>
+                                </span>
+                                <?php endif; ?>
                                 
-                                <div class="d-flex align-items-center flex-wrap gap-2">
-                                    <?php if ($notification['transaction_id']): ?>
-                                    <span class="badge badge-light mr-2 mb-1">
-                                        <i class='bx bx-receipt'></i> 
-                                        <?php echo htmlspecialchars($notification['transaction_id']); ?>
-                                    </span>
-                                    <?php endif; ?>
-                                    
-                                    <?php if ($notification['service_name']): ?>
-                                    <span class="badge badge-info mr-2 mb-1">
-                                        <i class='bx bx-briefcase'></i> 
-                                        <?php echo htmlspecialchars($notification['service_name']); ?>
-                                    </span>
-                                    <?php endif; ?>
-                                    
-                                    <?php if ($appointmentDate): ?>
-                                    <span class="badge badge-light mr-2 mb-1">
-                                        <i class='bx bx-calendar'></i> 
-                                        <?php echo $appointmentDate; ?>
-                                    </span>
-                                    <?php endif; ?>
-                                    
-                                    <?php if ($appointmentTime): ?>
-                                    <span class="badge badge-light mr-2 mb-1">
-                                        <i class='bx bx-time'></i> 
-                                        <?php echo $appointmentTime; ?>
-                                    </span>
-                                    <?php endif; ?>
-                                    
-                                    <?php
-                                    $statusClass = 'secondary';
-                                    $statusText = $notification['appointment_status'];
-                                    if ($notification['appointment_status'] === 'Pending') {
-                                        $statusClass = 'warning';
-                                    } elseif ($notification['appointment_status'] === 'Completed') {
-                                        $statusClass = 'success';
-                                    }
-                                    ?>
-                                    <span class="badge badge-<?php echo $statusClass; ?> mb-1">
-                                        <?php echo ucfirst($statusText); ?>
-                                    </span>
-                                </div>
+                                <?php if ($appointmentDate && !$isRescheduleRejected): ?>
+                                <span class="badge badge-light mr-2 mb-1">
+                                    <i class='bx bx-calendar'></i> 
+                                    <?php echo $appointmentDate; ?>
+                                </span>
+                                <span class="badge badge-light mr-2 mb-1">
+                                    <i class='bx bx-time'></i> 
+                                    <?php echo $appointmentTime; ?>
+                                </span>
+                                <?php endif; ?>
+                                
+                                <span class="badge badge-<?php echo $statusClass; ?> mb-1">
+                                    <?php echo ucfirst($statusText); ?>
+                                </span>
                             </div>
                         </div>
                     </div>
                 </div>
-            <?php endforeach; ?>
-        <?php else: ?>
-            <div class="empty-state">
-                <i class='bx bx-bell-off'></i>
-                <h4>No Notifications</h4>
-                <p>You're all caught up! You'll be notified here when there are updates to your appointments.</p>
             </div>
-        <?php endif; ?>
-    </div>
+        <?php endforeach; ?>
+    <?php else: ?>
+        <div class="empty-state">
+            <i class='bx bx-bell-off'></i>
+            <h4>No Notifications</h4>
+            <p>You're all caught up! You'll be notified here when there are updates to your appointments.</p>
+        </div>
+    <?php endif; ?>
+</div>
 </div>
 
 <script>
@@ -384,6 +408,8 @@ try {
             loadContent('residents_completed_appointments.php?highlight=' + appointmentId);
         } else if (status === 'pending') {
             loadContent('residents_pending_appointments.php?highlight=' + appointmentId);
+        }else if (status === 'rejected') {
+            loadContent('residents_noshow_appointments.php?highlight=' + appointmentId);
         } else {
             // Default fallback
             loadContent('residents_view_appointments.php?id=' + appointmentId);

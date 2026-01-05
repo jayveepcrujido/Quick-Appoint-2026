@@ -1,5 +1,7 @@
 <?php
 include '../conn.php';
+include_once '../includes/auto_mark_noshow.php';
+
 // Add session configuration BEFORE session_start()
 ini_set('session.gc_maxlifetime', 86400); // 24 hours
 ini_set('session.cookie_lifetime', 86400); // 24 hours
@@ -1384,6 +1386,9 @@ function loadContent(page) {
             </div>
             <a href="javascript:void(0);" class="nav_link" onclick="return loadContent('personnel_view_appointments_status.php');">
                 <i class='bx bx-calendar-check'></i> <span>All Appointments</span>
+            </a>
+            <a href="javascript:void(0);" class="nav_link" onclick="return loadContent('reschedule_requests.php');">
+                <i class='bx bx-calendar-check'></i> <span>Reschedule Appointments</span>
             </a>
             <a href="javascript:void(0);" class="nav_link" onclick="return loadContent('create_available_dates.php');">
                 <i class='bx bx-calendar-plus'></i> <span>Create Available Dates</span>

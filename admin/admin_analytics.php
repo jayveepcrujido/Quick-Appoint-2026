@@ -5,7 +5,6 @@ if (!isset($_SESSION['auth_id']) || $_SESSION['role'] !== 'Admin') {
     exit();
 }
 
-// DB Connection
 $host = "localhost";
 $username = "root";
 $password = "";
@@ -15,7 +14,6 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// ====== SUMMARY COUNTS ======
 function getCount($conn, $sql) {
     $result = mysqli_query($conn, $sql);
     $row = mysqli_fetch_assoc($result);
@@ -29,11 +27,7 @@ $todaysAppointments = getCount($conn, "SELECT COUNT(*) FROM appointments WHERE D
 $registeredResidents = getCount($conn, "SELECT COUNT(*) FROM auth WHERE role='Resident'");
 $lguPersonnel = getCount($conn, "SELECT COUNT(*) FROM auth WHERE role='LGU Personnel'");
 $totalDepartments = getCount($conn, "SELECT COUNT(*) FROM departments");
-// $totalFeedbacks = getCount($conn, "SELECT COUNT(*) FROM feedback");
-// $totalCommendations = getCount($conn, "SELECT COUNT(*) FROM commendations");
-// $totalComplaints = getCount($conn, "SELECT COUNT(*) FROM complaints");
 
-// ====== APPOINTMENTS BY DEPARTMENT WITH DATES ======
 $deptLabels = [];
 $deptByDate = [];
 $res = $conn->query("SELECT d.name, DATE_FORMAT(a.requested_at, '%Y-%m-%d') as date, COUNT(a.id) AS total 
@@ -48,7 +42,6 @@ while ($row = $res->fetch_assoc()) {
     $deptByDate[] = $row;
 }
 
-// ====== APPOINTMENTS BY SERVICE WITH DATES ======
 $serviceByDate = [];
 $res = $conn->query("SELECT s.service_name, DATE_FORMAT(a.requested_at, '%Y-%m-%d') as date, COUNT(a.id) AS total 
                      FROM appointments a 
@@ -59,7 +52,6 @@ while ($row = $res->fetch_assoc()) {
     $serviceByDate[] = $row;
 }
 
-// ====== MONTHLY TREND WITH DATES ======
 $monthlyTrend = [];
 $res = $conn->query("SELECT DATE_FORMAT(requested_at, '%Y-%m-%d') as date, COUNT(*) as total
                      FROM appointments 
@@ -69,7 +61,6 @@ while ($row = $res->fetch_assoc()) {
     $monthlyTrend[] = $row;
 }
 
-// ====== RESIDENT SEX WITH DATES ======
 $sexByDate = [];
 $res = $conn->query("SELECT r.sex, DATE_FORMAT(r.created_at, '%Y-%m-%d') as date, COUNT(*) as total 
                      FROM residents r 
@@ -79,7 +70,6 @@ while ($row = $res->fetch_assoc()) {
     $sexByDate[] = $row;
 }
 
-// ====== AGE GROUPS WITH DATES ======
 $ageByDate = [];
 $res = $conn->query("SELECT 
                         CASE 
@@ -98,7 +88,6 @@ while ($row = $res->fetch_assoc()) {
     $ageByDate[] = $row;
 }
 
-// ====== APPOINTMENTS WITH DATES (for filtering) ======
 $appointmentsWithDates = [];
 $res = $conn->query("SELECT DATE_FORMAT(requested_at, '%Y-%m-%d') as date, status, COUNT(*) as total 
                      FROM appointments 
@@ -108,7 +97,6 @@ while ($row = $res->fetch_assoc()) {
     $appointmentsWithDates[] = $row;
 }
 
-// ====== RESIDENTS WITH DATES (for filtering) ======
 $residentsWithDates = [];
 $res = $conn->query("SELECT DATE_FORMAT(created_at, '%Y-%m-%d') as date, COUNT(*) as total 
                      FROM residents 
@@ -118,7 +106,7 @@ while ($row = $res->fetch_assoc()) {
     $residentsWithDates[] = $row;
 }
 
-// ====== LGU PERSONNEL WITH DATES (for filtering) ======
+
 $personnelWithDates = [];
 $res = $conn->query("SELECT DATE_FORMAT(created_at, '%Y-%m-%d') as date, COUNT(*) as total 
                      FROM lgu_personnel 
@@ -128,7 +116,7 @@ while ($row = $res->fetch_assoc()) {
     $personnelWithDates[] = $row;
 }
 
-// ====== DEPARTMENTS WITH DATES (for filtering) ======
+
 $departmentsWithDates = [];
 $res = $conn->query("SELECT DATE_FORMAT(created_at, '%Y-%m-%d') as date, COUNT(*) as total 
                      FROM departments 
@@ -147,530 +135,511 @@ while ($row = $res->fetch_assoc()) {
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* Enhanced Header & Responsive Analytics CSS */
-
-body { 
-    font-family: "Segoe UI", sans-serif; 
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-    margin: 0;
-    padding: 0;
-}
-
-/* Enhanced Header */
-.analytics-header { 
-    background: linear-gradient(135deg, #0D92F4 0%, #27548A 100%);
-    padding: 20px 30px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    position: relative;
-    top: 1;
-    backdrop-filter: blur(10px);
-    border-radius: 15px;
-}
-
-.header-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    max-width: 1400px;
-    margin: 0 auto;
-    flex-wrap: wrap;
-    gap: 15px;
-}
-
-
-
-
-.title { 
-    display: flex; 
-    align-items: center; 
-    gap: 12px; 
-    font-weight: 700; 
-    font-size: 2rem; 
-    color: #ffffff;
-    margin: 0;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-}
-
-.title:hover {
-    transform: translateY(-2px);
-}
-
-.title i { 
-    font-size: 2.5rem;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
-}
-
-.datetime { 
-    font-size: 1rem; 
-    font-weight: 600; 
-    color: rgba(255, 255, 255, 0.95);
-    background: rgba(255, 255, 255, 0.15);
-    padding: 10px 20px;
-    border-radius: 25px;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.datetime i {
-    font-size: 1.1rem;
-}
-
-/* Summary Cards - Responsive Grid */
-.summary { 
-    display: grid; 
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
-    gap: 20px; 
-    margin: 30px;
-    padding: 0 10px;
-}
-
-.summary-card { 
-    background: #fff; 
-    padding: 20px; 
-    border-radius: 15px; 
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); 
-    text-align: left; 
-    display: flex; 
-    flex-direction: column; 
-    gap: 12px; 
-    border-left: 6px solid transparent; 
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.summary-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 100px;
-    height: 100px;
-    background: radial-gradient(circle, rgba(0, 0, 0, 0.03) 0%, transparent 70%);
-    border-radius: 50%;
-    transform: translate(30%, -30%);
-}
-
-.summary-card:hover { 
-    transform: translateY(-8px); 
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
-}
-
-.summary-card .icon { 
-    width: 50px; 
-    height: 50px; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    border-radius: 12px; 
-    color: #fff; 
-    font-size: 22px;
-    transition: all 0.3s ease;
-}
-
-.summary-card:hover .icon {
-    transform: scale(1.1) rotate(5deg);
-}
-
-.summary-card .value { 
-    font-size: 28px; 
-    font-weight: 700; 
-    color: #333;
-    line-height: 1;
-}
-
-.summary-card .label { 
-    font-size: 14px; 
-    font-weight: 600; 
-    color: #666; 
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-/* Color Themes */
-.purple { border-left-color: #6a11cb; } 
-.purple .icon { background: linear-gradient(135deg, #6a11cb, #2575fc); }
-
-.pink { border-left-color: #ff6a88; } 
-.pink .icon { background: linear-gradient(135deg, #ff6a88, #ff99ac); }
-
-.blue { border-left-color: #36d1dc; } 
-.blue .icon { background: linear-gradient(135deg, #36d1dc, #5b86e5); }
-
-.green { border-left-color: #2ecc71; } 
-.green .icon { background: linear-gradient(135deg, #2ecc71, #27ae60); }
-
-.orange { border-left-color: #ff9800; } 
-.orange .icon { background: linear-gradient(135deg, #ff9800, #ffb74d); }
-
-.red { border-left-color: #e74c3c; } 
-.red .icon { background: linear-gradient(135deg, #e74c3c, #ff6b6b); }
-
-/* Small Cards Variant */
-.summary.small-cards {
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    margin-top: 10px;
-}
-
-.summary-card.small {
-    padding: 15px;
-    border-radius: 10px;
-    gap: 8px;
-}
-
-.summary-card.small .icon {
-    width: 38px;
-    height: 38px;
-    font-size: 18px;
-    border-radius: 8px;
-}
-
-.summary-card.small .value {
-    font-size: 20px;
-}
-
-.summary-card.small .label {
-    font-size: 12px;
-}
-
-/* Charts Section - Responsive Grid */
-.charts { 
-    margin: 30px; 
-    padding: 0 10px;
-    display: grid; 
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); 
-    gap: 20px;
-}
-
-.card { 
-    background: #fff; 
-    padding: 20px; 
-    border-radius: 15px; 
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    transition: all 0.3s ease;
-}
-
-.card:hover {
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
-    transform: translateY(-4px);
-}
-
-.card h5 { 
-    font-weight: 700; 
-    font-size: 16px; 
-    color: #333; 
-    margin-bottom: 15px; 
-    display: flex; 
-    align-items: center; 
-    gap: 8px; 
-    border-bottom: 2px solid #f0f0f0; 
-    padding-bottom: 10px;
-}
-
-.card h5 i { 
-    color: #0D92F4; 
-    font-size: 18px;
-}
-
-canvas { 
-    height: 220px !important;
-    max-width: 100%;
-}
-
-/* Tablet Responsive (768px - 1024px) */
-@media (max-width: 1024px) {
-    .summary { 
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); 
-        gap: 15px;
-        margin: 20px;
+    body { 
+        font-family: "Segoe UI", sans-serif; 
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        margin: 0;
+        padding: 0;
     }
-    
-    .charts { 
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        margin: 20px;
-    }
-    
-    header {
-        padding: 18px 20px;
-    }
-    
-    .title {
-        font-size: 1.75rem;
-    }
-    
-    .title i {
-        font-size: 2.2rem;
-    }
-}
 
-/* Mobile Responsive (up to 767px) */
-@media (max-width: 767px) {
-    header {
-        padding: 15px;
+    .analytics-header { 
+        background: linear-gradient(135deg, #0D92F4 0%, #27548A 100%);
+        padding: 20px 30px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        position: relative;
+        top: 1;
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
     }
-    
+
     .header-container {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-    }
-    
-    .title {
-        font-size: 1.5rem;
-        gap: 10px;
-    }
-    
-    .title i {
-        font-size: 1.8rem;
-    }
-    
-    .datetime {
-        font-size: 0.9rem;
-        padding: 8px 16px;
-        width: 100%;
-        justify-content: center;
-    }
-    
-    /* Single column layout for summary cards */
-    .summary {
-        grid-template-columns: 1fr;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        max-width: 1400px;
+        margin: 0 auto;
+        flex-wrap: wrap;
         gap: 15px;
-        margin: 15px;
-        padding: 0;
     }
-    
-    .summary-card {
-        padding: 18px;
-    }
-    
-    .summary-card .value {
-        font-size: 24px;
-    }
-    
-    /* Small cards on mobile */
-    .summary.small-cards {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    
-    .summary-card.small {
-        padding: 12px;
-    }
-    
-    .summary-card.small .value {
-        font-size: 18px;
-    }
-    
-    /* Single column for charts */
-    .charts {
-        grid-template-columns: 1fr;
-        gap: 15px;
-        margin: 15px;
-        padding: 0;
-    }
-    
-    .card {
-        padding: 15px;
-    }
-    
-    .card h5 {
-        font-size: 15px;
-    }
-    
-    canvas {
-        height: 200px !important;
-    }
-}
 
-/* Extra small devices (up to 480px) */
-@media (max-width: 480px) {
-    .summary {
-        margin: 10px;
+    .title { 
+        display: flex; 
+        align-items: center; 
+        gap: 12px; 
+        font-weight: 700; 
+        font-size: 2rem; 
+        color: #ffffff;
+        margin: 0;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
     }
-    
-    .charts {
-        margin: 10px;
+
+    .title:hover {
+        transform: translateY(-2px);
     }
-    
-    .summary-card {
+
+    .title i { 
+        font-size: 2.5rem;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+    }
+
+    .datetime { 
+        font-size: 1rem; 
+        font-weight: 600; 
+        color: rgba(255, 255, 255, 0.95);
+        background: rgba(255, 255, 255, 0.15);
+        padding: 10px 20px;
+        border-radius: 25px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .datetime i {
+        font-size: 1.1rem;
+    }
+
+    .summary { 
+        display: grid; 
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
+        gap: 20px; 
+        margin: 30px;
+        padding: 0 10px;
+    }
+
+    .summary-card { 
+        background: #fff; 
+        padding: 20px; 
+        border-radius: 15px; 
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); 
+        text-align: left; 
+        display: flex; 
+        flex-direction: column; 
+        gap: 12px; 
+        border-left: 6px solid transparent; 
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .summary-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 100px;
+        height: 100px;
+        background: radial-gradient(circle, rgba(0, 0, 0, 0.03) 0%, transparent 70%);
+        border-radius: 50%;
+        transform: translate(30%, -30%);
+    }
+
+    .summary-card:hover { 
+        transform: translateY(-8px); 
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+    }
+
+    .summary-card .icon { 
+        width: 50px; 
+        height: 50px; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        border-radius: 12px; 
+        color: #fff; 
+        font-size: 22px;
+        transition: all 0.3s ease;
+    }
+
+    .summary-card:hover .icon {
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    .summary-card .value { 
+        font-size: 28px; 
+        font-weight: 700; 
+        color: #333;
+        line-height: 1;
+    }
+
+    .summary-card .label { 
+        font-size: 14px; 
+        font-weight: 600; 
+        color: #666; 
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .purple { border-left-color: #6a11cb; } 
+    .purple .icon { background: linear-gradient(135deg, #6a11cb, #2575fc); }
+
+    .pink { border-left-color: #ff6a88; } 
+    .pink .icon { background: linear-gradient(135deg, #ff6a88, #ff99ac); }
+
+    .blue { border-left-color: #36d1dc; } 
+    .blue .icon { background: linear-gradient(135deg, #36d1dc, #5b86e5); }
+
+    .green { border-left-color: #2ecc71; } 
+    .green .icon { background: linear-gradient(135deg, #2ecc71, #27ae60); }
+
+    .orange { border-left-color: #ff9800; } 
+    .orange .icon { background: linear-gradient(135deg, #ff9800, #ffb74d); }
+
+    .red { border-left-color: #e74c3c; } 
+    .red .icon { background: linear-gradient(135deg, #e74c3c, #ff6b6b); }
+
+    .summary.small-cards {
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        margin-top: 10px;
+    }
+
+    .summary-card.small {
         padding: 15px;
-        gap: 10px;
+        border-radius: 10px;
+        gap: 8px;
     }
-    
-    .summary-card .icon {
-        width: 42px;
-        height: 42px;
+
+    .summary-card.small .icon {
+        width: 38px;
+        height: 38px;
+        font-size: 18px;
+        border-radius: 8px;
+    }
+
+    .summary-card.small .value {
         font-size: 20px;
     }
-    
-    .summary-card .value {
-        font-size: 22px;
-    }
-    
-    .summary-card .label {
-        font-size: 13px;
-    }
-    
-    /* Keep 2 columns for small cards even on tiny screens */
-    .summary.small-cards {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-    }
-    
-    .summary-card.small .icon {
-        width: 32px;
-        height: 32px;
-        font-size: 16px;
-    }
-    
-    canvas {
-        height: 180px !important;
-    }
-}
 
-/* Landscape mobile adjustments */
-@media (max-width: 767px) and (orientation: landscape) {
-    .summary {
-        grid-template-columns: repeat(2, 1fr);
+    .summary-card.small .label {
+        font-size: 12px;
     }
-    
-    .charts {
-        grid-template-columns: repeat(2, 1fr);
+
+    .charts { 
+        margin: 30px; 
+        padding: 0 10px;
+        display: grid; 
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); 
+        gap: 20px;
     }
-}
 
-/* Animation for cards on load */
-.summary-card {
-    animation: fadeInUp 0.6s ease forwards;
-    opacity: 0;
-}
+    .card { 
+        background: #fff; 
+        padding: 20px; 
+        border-radius: 15px; 
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+    }
 
-.summary-card:nth-child(1) { animation-delay: 0.1s; }
-.summary-card:nth-child(2) { animation-delay: 0.2s; }
-.summary-card:nth-child(3) { animation-delay: 0.3s; }
-.summary-card:nth-child(4) { animation-delay: 0.4s; }
-.summary-card:nth-child(5) { animation-delay: 0.5s; }
-.summary-card:nth-child(6) { animation-delay: 0.6s; }
+    .card:hover {
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        transform: translateY(-4px);
+    }
 
-@keyframes fadeInUp {
-    from {
+    .card h5 { 
+        font-weight: 700; 
+        font-size: 16px; 
+        color: #333; 
+        margin-bottom: 15px; 
+        display: flex; 
+        align-items: center; 
+        gap: 8px; 
+        border-bottom: 2px solid #f0f0f0; 
+        padding-bottom: 10px;
+    }
+
+    .card h5 i { 
+        color: #0D92F4; 
+        font-size: 18px;
+    }
+
+    canvas { 
+        height: 220px !important;
+        max-width: 100%;
+    }
+
+    @media (max-width: 1024px) {
+        .summary { 
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); 
+            gap: 15px;
+            margin: 20px;
+        }
+        
+        .charts { 
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            margin: 20px;
+        }
+        
+        header {
+            padding: 18px 20px;
+        }
+        
+        .title {
+            font-size: 1.75rem;
+        }
+        
+        .title i {
+            font-size: 2.2rem;
+        }
+    }
+
+    @media (max-width: 767px) {
+        header {
+            padding: 15px;
+        }
+        
+        .header-container {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        
+        .title {
+            font-size: 1.5rem;
+            gap: 10px;
+        }
+        
+        .title i {
+            font-size: 1.8rem;
+        }
+        
+        .datetime {
+            font-size: 0.9rem;
+            padding: 8px 16px;
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .summary {
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin: 15px;
+            padding: 0;
+        }
+        
+        .summary-card {
+            padding: 18px;
+        }
+        
+        .summary-card .value {
+            font-size: 24px;
+        }
+        
+        .summary.small-cards {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .summary-card.small {
+            padding: 12px;
+        }
+        
+        .summary-card.small .value {
+            font-size: 18px;
+        }
+        
+        .charts {
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin: 15px;
+            padding: 0;
+        }
+        
+        .card {
+            padding: 15px;
+        }
+        
+        .card h5 {
+            font-size: 15px;
+        }
+        
+        canvas {
+            height: 200px !important;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .summary {
+            margin: 10px;
+        }
+        
+        .charts {
+            margin: 10px;
+        }
+        
+        .summary-card {
+            padding: 15px;
+            gap: 10px;
+        }
+        
+        .summary-card .icon {
+            width: 42px;
+            height: 42px;
+            font-size: 20px;
+        }
+        
+        .summary-card .value {
+            font-size: 22px;
+        }
+        
+        .summary-card .label {
+            font-size: 13px;
+        }
+        
+        .summary.small-cards {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        
+        .summary-card.small .icon {
+            width: 32px;
+            height: 32px;
+            font-size: 16px;
+        }
+        
+        canvas {
+            height: 180px !important;
+        }
+    }
+
+    @media (max-width: 767px) and (orientation: landscape) {
+        .summary {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .charts {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    .summary-card {
+        animation: fadeInUp 0.6s ease forwards;
         opacity: 0;
-        transform: translateY(30px);
     }
-    to {
-        opacity: 1;
-        transform: translateY(0);
+
+    .summary-card:nth-child(1) { animation-delay: 0.1s; }
+    .summary-card:nth-child(2) { animation-delay: 0.2s; }
+    .summary-card:nth-child(3) { animation-delay: 0.3s; }
+    .summary-card:nth-child(4) { animation-delay: 0.4s; }
+    .summary-card:nth-child(5) { animation-delay: 0.5s; }
+    .summary-card:nth-child(6) { animation-delay: 0.6s; }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
-}
-.global-filter-bar {
-    background: linear-gradient(135deg, #ffffff, #f8f9fa);
-    padding: 20px 30px;
-    margin: 0 30px 25px 30px;
-    border-radius: 16px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 15px;
-    border: 2px solid rgba(102, 126, 234, 0.1);
-}
-
-.global-filter-bar .filter-title {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-size: 16px;
-    font-weight: 700;
-    color: #333;
-}
-
-.global-filter-bar .filter-title i {
-    font-size: 24px;
-    color: #667eea;
-    animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-}
-
-.global-filter-bar .filter-buttons {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
-.filter-btn {
-    padding: 8px 16px;
-    border: 2px solid #e0e0e0;
-    background: #fff;
-    color: #666;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 12px;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.filter-btn:hover {
-    border-color: #0D92F4;
-    color: #0D92F4;
-    transform: translateY(-2px);
-}
-
-.filter-btn.active {
-    background: linear-gradient(135deg, #0D92F4, #27548A);
-    color: #fff;
-    border-color: #0D92F4;
-    box-shadow: 0 4px 12px rgba(13, 146, 244, 0.3);
-}
-
-/* Mobile responsive */
-@media (max-width: 768px) {
     .global-filter-bar {
-        padding: 15px 18px;
-        margin: 0 15px 18px 15px;
-        flex-direction: column;
-        align-items: flex-start;
+        background: linear-gradient(135deg, #ffffff, #f8f9fa);
+        padding: 20px 30px;
+        margin: 0 30px 25px 30px;
+        border-radius: 16px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 15px;
+        border: 2px solid rgba(102, 126, 234, 0.1);
     }
-    
-    .global-filter-bar .filter-title {
-        font-size: 15px;
-        width: 100%;
-    }
-    
-    .global-filter-bar .filter-buttons {
-        width: 100%;
-        justify-content: flex-start;
-    }
-    
-    .filter-btn {
-        flex: 1;
-        min-width: auto;
-    }
-}
-@keyframes pulse {
-    0% {
-        transform: scale(1);
-    }
-    50% {
-        transform: scale(1.05);
-    }
-    100% {
-        transform: scale(1);
-    }
-}
 
-.summary-card .value {
-    transition: all 0.3s ease;
-}
+    .global-filter-bar .filter-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 16px;
+        font-weight: 700;
+        color: #333;
+    }
+
+    .global-filter-bar .filter-title i {
+        font-size: 24px;
+        color: #667eea;
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+    }
+
+    .global-filter-bar .filter-buttons {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .filter-btn {
+        padding: 8px 16px;
+        border: 2px solid #e0e0e0;
+        background: #fff;
+        color: #666;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .filter-btn:hover {
+        border-color: #0D92F4;
+        color: #0D92F4;
+        transform: translateY(-2px);
+    }
+
+    .filter-btn.active {
+        background: linear-gradient(135deg, #0D92F4, #27548A);
+        color: #fff;
+        border-color: #0D92F4;
+        box-shadow: 0 4px 12px rgba(13, 146, 244, 0.3);
+    }
+
+    /* Mobile responsive */
+    @media (max-width: 768px) {
+        .global-filter-bar {
+            padding: 15px 18px;
+            margin: 0 15px 18px 15px;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .global-filter-bar .filter-title {
+            font-size: 15px;
+            width: 100%;
+        }
+        
+        .global-filter-bar .filter-buttons {
+            width: 100%;
+            justify-content: flex-start;
+        }
+        
+        .filter-btn {
+            flex: 1;
+            min-width: auto;
+        }
+    }
+    @keyframes pulse {
+        0% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.05);
+        }
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    .summary-card .value {
+        transition: all 0.3s ease;
+    }
     </style>
 </head>
 <body>
@@ -681,7 +650,6 @@ canvas {
     </div>
 </header>
 
-<!-- Summary Cards -->
 <div class="summary">
     <div class="summary-card purple">
         <div class="icon"><i class='bx bx-calendar-check'></i></div>
@@ -708,7 +676,6 @@ canvas {
     </div>   
 </div>
 
-<!-- Global Filter Bar -->
 <div class="global-filter-bar">
     <div class="filter-title">
         <i class='bx bx-filter-alt'></i>
@@ -721,26 +688,7 @@ canvas {
         <button class="filter-btn" data-period="all">All Time</button>
     </div>
 </div>
-<!-- Feedback Row -->
-<!-- <div class="summary small-cards">
-    <div class="summary-card orange small">
-        <div class="icon"><i class='bx bx-message-detail'></i></div>
-        <div class="value"><?= $totalFeedbacks ?></div>
-        <div class="label">Feedback</div>
-    </div>
-    <div class="summary-card blue small">
-        <div class="icon"><i class='bx bx-like'></i></div>
-        <div class="value"><?= $totalCommendations ?></div>
-        <div class="label">Commendations</div>
-    </div>
-    <div class="summary-card red small">
-        <div class="icon"><i class='bx bx-dislike'></i></div>
-        <div class="value"><?= $totalComplaints ?></div>
-        <div class="label">Complaints</div>
-    </div>
-</div> -->
 
-<!-- Charts Section -->
 <div class="charts">
     <div class="card">
         <h5><i class='bx bx-bar-chart-alt-2'></i> Appointments by Department</h5>
@@ -766,7 +714,6 @@ canvas {
 
 <script>
 
-// Date & Time - More robust version
 let dateTimeInterval = null;
 
 function updateDateTime() {
@@ -781,45 +728,36 @@ function updateDateTime() {
 }
 
 function initDateTime() {
-    // Clear any existing interval
+
     if (dateTimeInterval) {
         clearInterval(dateTimeInterval);
     }
     
-    // Update immediately
     updateDateTime();
     
-    // Set up new interval
     dateTimeInterval = setInterval(updateDateTime, 1000);
 }
 
-// Initialize when DOM is ready
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initDateTime);
 } else {
-    // DOM already loaded
     initDateTime();
 }
 
-// Re-initialize when page becomes visible (handles back navigation)
 document.addEventListener('visibilitychange', function() {
     if (!document.hidden) {
         initDateTime();
     }
 });
 
-// Initialize date/time when page loads
 document.addEventListener('DOMContentLoaded', function() {
     updateDateTime();
     setInterval(updateDateTime, 1000);
 });
 
-// Also initialize immediately in case DOMContentLoaded already fired
 updateDateTime();
 setInterval(updateDateTime, 1000);
 
-// Store chart data
-// Store summary data
 const appointmentsWithDatesData = <?= json_encode($appointmentsWithDates) ?>;
 const residentsWithDatesData = <?= json_encode($residentsWithDates) ?>;
 const personnelWithDatesData = <?= json_encode($personnelWithDates) ?>;
@@ -834,7 +772,6 @@ const ageByDateData = <?= json_encode($ageByDate) ?>;
 let currentPeriod = 'weekly';
 window.chartInstances = {};
 
-// Filter data by time period
 function filterDataByPeriod(data, period) {
     if (!data || data.length === 0) return [];
     
@@ -860,7 +797,6 @@ function filterDataByPeriod(data, period) {
     });
 }
 
-// Process department data
 function processDeptData(period) {
     const filtered = filterDataByPeriod(deptByDateData, period);
     const deptTotals = {};
@@ -875,7 +811,6 @@ function processDeptData(period) {
     };
 }
 
-// Process service data
 function processServiceData(period) {
     const filtered = filterDataByPeriod(serviceByDateData, period);
     const serviceTotals = {};
@@ -884,7 +819,6 @@ function processServiceData(period) {
         serviceTotals[item.service_name] = (serviceTotals[item.service_name] || 0) + parseInt(item.total);
     });
     
-    // Sort by total and get top 8
     const sorted = Object.entries(serviceTotals)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 8);
@@ -895,7 +829,6 @@ function processServiceData(period) {
     };
 }
 
-// Process monthly trend
 function processMonthlyData(period) {
     const filtered = filterDataByPeriod(monthlyTrendData, period);
     const groupedData = {};
@@ -943,7 +876,6 @@ function processMonthlyData(period) {
     };
 }
 
-// Process sex data
 function processSexData(period) {
     const filtered = filterDataByPeriod(sexByDateData, period);
     const sexTotals = {};
@@ -959,7 +891,6 @@ function processSexData(period) {
     };
 }
 
-// Process age data
 function processAgeData(period) {
     const filtered = filterDataByPeriod(ageByDateData, period);
     const ageTotals = {};
@@ -968,7 +899,6 @@ function processAgeData(period) {
         ageTotals[item.age_group] = (ageTotals[item.age_group] || 0) + parseInt(item.total);
     });
     
-    // Ensure all age groups are present
     const ageGroups = ['<18', '18-30', '31-50', '50+'];
     ageGroups.forEach(group => {
         if (!ageTotals[group]) ageTotals[group] = 0;
@@ -988,29 +918,23 @@ function processSummaryData(data, period) {
     return filtered.reduce((sum, item) => sum + parseInt(item.total || 0), 0);
 }
 
-// Update summary cards
+
 function updateSummaryCards(period) {
-    // Update Total Appointments
     const totalAppts = processSummaryData(appointmentsWithDatesData, period);
     document.getElementById('total-appointments').textContent = totalAppts || 0;
     
-    // Update Registered Residents
     const totalResidents = processSummaryData(residentsWithDatesData, period);
     document.getElementById('total-residents').textContent = totalResidents || 0;
     
-    // Update LGU Personnel
     const totalPersonnel = processSummaryData(personnelWithDatesData, period);
     document.getElementById('total-personnel').textContent = totalPersonnel || 0;
     
-    // Update Total Departments
     const totalDepts = processSummaryData(departmentsWithDatesData, period);
     document.getElementById('total-departments').textContent = totalDepts || 0;
     
-    // Add animation effect
     animateSummaryCards();
 }
 
-// Animate summary card values
 function animateSummaryCards() {
     const cards = document.querySelectorAll('.summary-card .value');
     cards.forEach((valueEl) => {
@@ -1018,15 +942,11 @@ function animateSummaryCards() {
     });
 }
 
-
-// Update all charts and summaries
 function updateAllCharts(period) {
     currentPeriod = period;
     
-    // Update Summary Cards
     updateSummaryCards(period);
     
-    // Update Department Chart
     const deptData = processDeptData(period);
     if (window.chartInstances.deptChart && deptData.labels.length > 0) {
         window.chartInstances.deptChart.data.labels = deptData.labels;
@@ -1034,7 +954,6 @@ function updateAllCharts(period) {
         window.chartInstances.deptChart.update('active');
     }
     
-    // Update Service Chart
     const serviceData = processServiceData(period);
     if (window.chartInstances.serviceChart && serviceData.labels.length > 0) {
         window.chartInstances.serviceChart.data.labels = serviceData.labels;
@@ -1042,7 +961,6 @@ function updateAllCharts(period) {
         window.chartInstances.serviceChart.update('active');
     }
     
-    // Update Monthly Trend
     const monthData = processMonthlyData(period);
     if (window.chartInstances.monthChart) {
         window.chartInstances.monthChart.data.labels = monthData.labels;
@@ -1050,7 +968,6 @@ function updateAllCharts(period) {
         window.chartInstances.monthChart.update('active');
     }
     
-    // Update Sex Chart
     const sexData = processSexData(period);
     if (window.chartInstances.sexChart && sexData.labels.length > 0) {
         window.chartInstances.sexChart.data.labels = sexData.labels;
@@ -1058,7 +975,6 @@ function updateAllCharts(period) {
         window.chartInstances.sexChart.update('active');
     }
     
-    // Update Age Chart
     const ageData = processAgeData(period);
     if (window.chartInstances.ageChart) {
         window.chartInstances.ageChart.data.labels = ageData.labels;
@@ -1067,7 +983,6 @@ function updateAllCharts(period) {
     }
 }
 
-// Initialize charts
 window.initializeCharts = function() {
     Object.values(window.chartInstances).forEach(chart => {
         if (chart) chart.destroy();
@@ -1076,14 +991,12 @@ window.initializeCharts = function() {
 
     if (!document.getElementById('deptChart')) return;
 
-    // Get initial data
     const deptData = processDeptData('weekly');
     const serviceData = processServiceData('weekly');
     const monthData = processMonthlyData('weekly');
     const sexData = processSexData('weekly');
     const ageData = processAgeData('weekly');
 
-    // Department Chart
     window.chartInstances.deptChart = new Chart(document.getElementById('deptChart'), {
         type: 'bar',
         data: { 
@@ -1103,7 +1016,6 @@ window.initializeCharts = function() {
         }
     });
 
-    // Service Chart
     window.chartInstances.serviceChart = new Chart(document.getElementById('serviceChart'), {
         type: 'bar',
         data: { 
@@ -1124,7 +1036,6 @@ window.initializeCharts = function() {
         }
     });
 
-    // Monthly Trend Chart
     window.chartInstances.monthChart = new Chart(document.getElementById('monthChart'), {
         type: 'line',
         data: { 
@@ -1149,7 +1060,6 @@ window.initializeCharts = function() {
         }
     });
 
-    // Sex Chart
     window.chartInstances.sexChart = new Chart(document.getElementById('sexChart'), {
         type: 'pie',
         data: { 
@@ -1165,7 +1075,6 @@ window.initializeCharts = function() {
         }
     });
 
-    // Age Chart
     window.chartInstances.ageChart = new Chart(document.getElementById('ageChart'), {
         type: 'bar',
         data: { 
@@ -1185,7 +1094,6 @@ window.initializeCharts = function() {
         }
     });
 
-    // Global filter buttons
     document.querySelectorAll('#global-filter .filter-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             document.querySelectorAll('#global-filter .filter-btn').forEach(b => b.classList.remove('active'));
@@ -1195,7 +1103,6 @@ window.initializeCharts = function() {
     });
 };
 
-// Initialize on page load
 initializeCharts();
 </script>
 </body>

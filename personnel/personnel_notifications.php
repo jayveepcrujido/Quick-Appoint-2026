@@ -42,25 +42,26 @@ try {
 // Fetch all notifications
 try {
     $stmt = $pdo->prepare("
-        SELECT 
-            n.id,
-            n.message,
-            n.created_at,
-            n.is_read,
-            n.appointment_id,
-            a.scheduled_for,
-            a.status as appointment_status,
-            a.transaction_id,
-            r.first_name,
-            r.last_name,
-            (SELECT email FROM auth WHERE id = r.auth_id) as email
-        FROM notifications n
-        INNER JOIN appointments a ON n.appointment_id = a.id
-        INNER JOIN residents r ON n.resident_id = r.id
-        WHERE a.personnel_id = ?
-        ORDER BY n.created_at DESC
-        LIMIT 100
-    ");
+            SELECT 
+                n.id,
+                n.message,
+                n.created_at,
+                n.is_read,
+                n.appointment_id,
+                a.scheduled_for,
+                a.status as appointment_status,
+                a.transaction_id,
+                r.first_name,
+                r.last_name,
+                (SELECT email FROM auth WHERE id = r.auth_id) as email
+            FROM notifications n
+            INNER JOIN appointments a ON n.appointment_id = a.id
+            INNER JOIN residents r ON a.resident_id = r.id  -- Changed this JOIN
+            WHERE n.personnel_id = ? 
+            AND n.recipient_type = 'Personnel'              -- Added this filter
+            ORDER BY n.created_at DESC
+            LIMIT 100
+        ");
     
     $stmt->execute([$personnelId]);
     $notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -183,9 +184,6 @@ try {
         </button>
         <button class="btn btn-outline-primary filter-btn" data-filter="new">
             <i class='bx bx-calendar-plus'></i> New Appointments
-        </button>
-        <button class="btn btn-outline-primary filter-btn" data-filter="cancelled">
-            <i class='bx bx-calendar-x'></i> Cancelled
         </button>
         <button class="btn btn-outline-primary filter-btn" data-filter="rescheduled">
             <i class='bx bx-calendar-edit'></i> Rescheduled

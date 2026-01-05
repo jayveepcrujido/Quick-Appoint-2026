@@ -105,20 +105,29 @@ try {
     $resInfo = $resStmt->fetch(PDO::FETCH_ASSOC);
 
     // ==========================================
-    // 10. INSERT WEB NOTIFICATION (UPDATED MESSAGE)
+    // 10. INSERT WEB NOTIFICATIONS
     // ==========================================
     if ($resInfo) {
         $formattedDate = date('F j, Y', strtotime($newDate['date']));
         $formattedTime = date('g:i A', strtotime($new_time_slot));
         
-        // This is the specific phrasing you requested for the Web Notification:
-        $notifMessage = "Your appointment for {$resInfo['service_name']} has been rescheduled to {$formattedDate} at {$formattedTime}.";
+        // 10.A Notification for RESIDENT
+        $residentMsg = "Your appointment for {$resInfo['service_name']} has been rescheduled to {$formattedDate} at {$formattedTime}.";
         
         $notifStmt = $pdo->prepare("
-            INSERT INTO notifications (appointment_id, resident_id, message, created_at, is_read) 
-            VALUES (?, ?, ?, NOW(), 0)
+            INSERT INTO notifications (appointment_id, resident_id, recipient_type, message, created_at, is_read) 
+            VALUES (?, ?, 'Resident', ?, NOW(), 0)
         ");
-        $notifStmt->execute([$appointment_id, $resInfo['resident_id'], $notifMessage]);
+        $notifStmt->execute([$appointment_id, $resInfo['resident_id'], $residentMsg]);
+
+        // 10.B Notification for PERSONNEL (NEW BLOCK)
+        $personnelMsg = "You rescheduled the appointment for {$resInfo['first_name']} {$resInfo['last_name']} to {$formattedDate} at {$formattedTime}.";
+        
+        $auditStmt = $pdo->prepare("
+            INSERT INTO notifications (appointment_id, personnel_id, recipient_type, message, created_at, is_read) 
+            VALUES (?, ?, 'Personnel', ?, NOW(), 0)
+        ");
+        $auditStmt->execute([$appointment_id, $personnel_id, $personnelMsg]);
     }
 
     $pdo->commit();

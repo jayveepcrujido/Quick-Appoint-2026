@@ -1047,6 +1047,126 @@ body {
         margin-bottom: 0.75rem;
     }
 }
+/* Custom Alert Styles */
+.custom-alert {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    min-width: 350px;
+    max-width: 500px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    z-index: 9999;
+    padding: 20px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    animation: slideInRight 0.3s ease;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.custom-alert-success {
+    border-left: 5px solid #10b981;
+}
+
+.custom-alert-error {
+    border-left: 5px solid #ef4444;
+}
+
+.custom-alert .alert-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    flex: 1;
+}
+
+.custom-alert .alert-content i {
+    font-size: 28px;
+    margin-top: 2px;
+}
+
+.custom-alert-success .alert-content i {
+    color: #10b981;
+}
+
+.custom-alert-error .alert-content i {
+    color: #ef4444;
+}
+
+.custom-alert .alert-text {
+    flex: 1;
+}
+
+.custom-alert .alert-text strong {
+    display: block;
+    font-size: 16px;
+    color: #1f2937;
+    margin-bottom: 5px;
+}
+
+.custom-alert .alert-text p {
+    margin: 0;
+    font-size: 14px;
+    color: #6b7280;
+    line-height: 1.5;
+}
+
+.custom-alert .alert-close {
+    background: transparent;
+    border: none;
+    color: #9ca3af;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.custom-alert .alert-close:hover {
+    background: #f3f4f6;
+    color: #1f2937;
+}
+
+/* Mobile responsiveness for alerts */
+@media (max-width: 480px) {
+    .custom-alert {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        min-width: auto;
+        max-width: none;
+        padding: 15px;
+    }
+    
+    .custom-alert .alert-content i {
+        font-size: 24px;
+    }
+    
+    .custom-alert .alert-text strong {
+        font-size: 14px;
+    }
+    
+    .custom-alert .alert-text p {
+        font-size: 13px;
+    }
+}
     </style>
 </head>
 <body>
@@ -1378,6 +1498,10 @@ $("#addForm").submit(function(e) {
     
     const isDeptHead = $('#is_department_head').is(':checked');
     
+    // GET THE DEPARTMENT NAME
+    const deptSelect = $(this).find('[name="department_id"]');
+    const deptName = deptSelect.find('option:selected').text();
+    
     let confirmMsg = "Are you sure you want to add this personnel";
     if (isDeptHead) {
         confirmMsg += " as a Department Head";
@@ -1385,43 +1509,145 @@ $("#addForm").submit(function(e) {
     confirmMsg += "?";
     
     if (confirm(confirmMsg)) {
+        // Show loading state
+        const submitBtn = $(this).find('button[type="submit"]');
+        const originalBtnText = submitBtn.html();
+        submitBtn.html('<i class="bx bx-loader-alt bx-spin"></i> Creating...').prop('disabled', true);
+        
+        // ADD DEPARTMENT NAME TO FORM DATA
+        let formData = $(this).serialize();
+        formData += '&department_name=' + encodeURIComponent(deptName);
+        
         $.ajax({
             url: "ajax/ajax_create_personnel.php",
             method: "POST",
-            data: $(this).serialize(),
+            data: formData,
             dataType: 'json',
             success: function(response) {
+                // Reset button state
+                submitBtn.html(originalBtnText).prop('disabled', false);
+                
                 if (response.success) {
-                    // Reset form first
-                    $('#addForm')[0].reset();
-                    
-                    // Close modal
+                    // Close modal FIRST - completely and cleanly
                     $('#addModal').modal('hide');
-
-                    $('.modal-backdrop').remove();
-                    $('body').removeClass('modal-open');
-                    $('body').css('padding-right', '');
                     
-                    // Wait for modal to fully close before showing alert
-                    $('#addModal').one('hidden.bs.modal', function() {
-                        alert(response.message);
+                    // Wait a moment for modal to close
+                    setTimeout(function() {
+                        // Remove ALL modal backdrops (in case multiple exist)
+                        $('.modal-backdrop').remove();
+                        
+                        // Reset body
+                        $('body').removeClass('modal-open');
+                        $('body').css('padding-right', '');
+                        $('body').css('overflow', '');
+                        
+                        // Reset form
+                        $('#addForm')[0].reset();
+                        
+                        // Show success alert with custom styling
+                        showSuccessAlert(response.message);
+                        
+                        // Reload table
                         loadPersonnelTable();
-                    });
+                    }, 300); // Wait 300ms for smooth modal close
+                    
                 } else {
-                    alert('Error: ' + response.message);
+                    // Show error without closing modal
+                    showErrorAlert(response.message);
                 }
             },
             error: function(xhr) {
+                // Reset button state
+                submitBtn.html(originalBtnText).prop('disabled', false);
+                
                 try {
                     const response = JSON.parse(xhr.responseText);
-                    alert('Error: ' + response.message);
+                    showErrorAlert('Error: ' + response.message);
                 } catch(e) {
                     console.error('Raw error:', xhr.responseText);
-                    alert('An error occurred. Check console for details.');
+                    showErrorAlert('An error occurred. Check console for details.');
                 }
             }
         });
     }
+});
+
+// Custom Success Alert Function
+function showSuccessAlert(message) {
+    // Remove any existing alerts
+    $('.custom-alert').remove();
+    
+    const alertHtml = `
+        <div class="custom-alert custom-alert-success">
+            <div class="alert-content">
+                <i class='bx bx-check-circle'></i>
+                <div class="alert-text">
+                    <strong>Success!</strong>
+                    <p>${message}</p>
+                </div>
+            </div>
+            <button class="alert-close" onclick="$(this).parent().fadeOut(300, function(){ $(this).remove(); })">
+                <i class='bx bx-x'></i>
+            </button>
+        </div>
+    `;
+    
+    $('body').append(alertHtml);
+    
+    // Animate in
+    $('.custom-alert').hide().fadeIn(300);
+    
+    // Auto close after 5 seconds
+    setTimeout(function() {
+        $('.custom-alert').fadeOut(300, function() {
+            $(this).remove();
+        });
+    }, 5000);
+}
+
+// Custom Error Alert Function
+function showErrorAlert(message) {
+    // Remove any existing alerts
+    $('.custom-alert').remove();
+    
+    const alertHtml = `
+        <div class="custom-alert custom-alert-error">
+            <div class="alert-content">
+                <i class='bx bx-error-circle'></i>
+                <div class="alert-text">
+                    <strong>Error!</strong>
+                    <p>${message}</p>
+                </div>
+            </div>
+            <button class="alert-close" onclick="$(this).parent().fadeOut(300, function(){ $(this).remove(); })">
+                <i class='bx bx-x'></i>
+            </button>
+        </div>
+    `;
+    
+    $('body').append(alertHtml);
+    
+    // Animate in
+    $('.custom-alert').hide().fadeIn(300);
+    
+    // Auto close after 5 seconds
+    setTimeout(function() {
+        $('.custom-alert').fadeOut(300, function() {
+            $(this).remove();
+        });
+    }, 5000);
+}
+
+// Clean up modal when it's hidden (extra safety measure)
+$('#addModal').on('hidden.bs.modal', function () {
+    // Reset form
+    $('#addForm')[0].reset();
+    
+    // Clean up any lingering backdrops
+    $('.modal-backdrop').remove();
+    $('body').removeClass('modal-open');
+    $('body').css('padding-right', '');
+    $('body').css('overflow', '');
 });
 
 // FILL EDIT MODAL

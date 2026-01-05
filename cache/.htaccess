@@ -1,0 +1,6 @@
+# Deny all access to cache files
+Deny from all
+
+<Files ".htaccess">
+    Allow from all
+</Files>
