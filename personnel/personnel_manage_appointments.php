@@ -277,6 +277,9 @@ $stats = $statsQuery->fetch(PDO::FETCH_ASSOC);
 <script>
 $(document).ready(function () {
 
+    // ============================================
+    // SCROLL TO HIGHLIGHTED APPOINTMENT
+    // ============================================
     const highlightTransactionId = sessionStorage.getItem('highlightAppointment');
     
     if (highlightTransactionId) {
@@ -289,11 +292,9 @@ $(document).ready(function () {
             
             if (targetRow.length > 0) {
                 console.log('Found appointment row, scrolling...');
-                
                 targetRow.addClass('table-warning');
                 
                 $('html, body').animate({
-                    scrollTop: targetRow.offset().top - 150
                     scrollTop: targetRow.offset().top - 150
                 }, 800, function() {
                     targetRow.addClass('table-success');
@@ -306,18 +307,12 @@ $(document).ready(function () {
             }
             
             sessionStorage.removeItem('highlightAppointment');
-            
         }, 500);
     }
 
-    function removeRowAndRefresh(id) {
-        const row = $('#row_' + id);
-        const totalEl = $('#statTotal');
-        let currentTotal = parseInt(totalEl.text());
-        if(!isNaN(currentTotal) && currentTotal > 0) {
-        }
-    }
-
+    // ============================================
+    // VIEW DETAILS
+    // ============================================
     $('.btn-view-details').click(function() {
         const data = $(this).data('details');
         $('#viewTransId').text(data.transaction_id);
@@ -351,6 +346,9 @@ $(document).ready(function () {
         $('#fullImageModal').modal('show');
     });
 
+    // ============================================
+    // RESCHEDULE LOGIC
+    // ============================================
     $('.btn-open-reschedule').click(function() {
         const btn = $(this);
         
@@ -449,7 +447,6 @@ $(document).ready(function () {
                     const apptId = $('#reschApptId').val();
                     const row = $('#row_' + apptId);
                     const newTime = $('#reschSummaryText').text();
-                    const newTime = $('#reschSummaryText').text();
                     
                     const parts = newTime.split(' at ');
                     const datePart = parts[0];
@@ -472,6 +469,9 @@ $(document).ready(function () {
         });
     });
 
+    // ============================================
+    // COMPLETE & DELETE ACTIONS (UPDATED!)
+    // ============================================
     $(document).on('click', '.btn-complete-action, .btn-delete-action', function() {
         const id = $(this).data('id');
         const isDelete = $(this).hasClass('btn-delete-action');
@@ -482,17 +482,100 @@ $(document).ready(function () {
         const originalHtml = btn.html();
         
         if(confirm(msg)) {
-            $.post(url, { appointment_id: id }, function(res) {
-                $('#row_' + id).fadeOut(400, function() { $(this).remove(); });
-                $('#sharedViewModal').modal('hide');
-                
-                const totalEl = $('#statTotal');
-                let currentTotal = parseInt(totalEl.text());
-                if(!isNaN(currentTotal) && currentTotal > 0) totalEl.text(currentTotal - 1);
+            // Disable button and show loading
+            btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Processing...');
+            
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: { appointment_id: id },
+                dataType: 'json', // CRITICAL: Parse JSON response
+                success: function(res) {
+                    console.log('Response:', res);
+                    
+                    if(res.success) {
+                        // Success animation
+                        $('#row_' + id).addClass('table-success');
+                        
+                        setTimeout(function() {
+                            $('#row_' + id).fadeOut(400, function() { 
+                                $(this).remove(); 
+                                
+                                // Check if table is empty
+                                if($('#appointments-tbody tr:visible').length === 0) {
+                                    $('#appointments-tbody').html(
+                                        '<tr id="no-results-row">' +
+                                        '<td colspan="6" class="text-center py-5">' +
+                                        '<div class="empty-state">' +
+                                        '<i class="fas fa-check-circle fa-3x text-success mb-3"></i>' +
+                                        '<p>No pending appointments</p>' +
+                                        '</div></td></tr>'
+                                    );
+                                }
+                            });
+                        }, 500);
+                        
+                        $('#sharedViewModal').modal('hide');
+                        
+                        // Update stats
+                        const totalEl = $('#statTotal');
+                        let currentTotal = parseInt(totalEl.text());
+                        if(!isNaN(currentTotal) && currentTotal > 0) {
+                            totalEl.text(currentTotal - 1);
+                        }
+                        
+                        // Build notification message
+                        let notificationMsg = res.message || (actionName + ' successful!');
+                        let notificationDetails = [];
+                        
+                        if(res.notifications) {
+                            if(res.notifications.email_sent) {
+                                notificationDetails.push('✅ Email sent');
+                            } else {
+                                notificationDetails.push('⚠️ Email failed');
+                            }
+                            
+                            if(res.notifications.sms_sent) {
+                                notificationDetails.push('✅ SMS sent');
+                            } else {
+                                notificationDetails.push('⚠️ SMS failed');
+                            }
+                        }
+                        
+                        if(notificationDetails.length > 0) {
+                            alert(notificationMsg + '\n\n' + notificationDetails.join('\n'));
+                        } else {
+                            alert(notificationMsg);
+                        }
+                        
+                    } else {
+                        alert('Error: ' + (res.message || 'Failed to process request'));
+                        btn.prop('disabled', false).html(originalHtml);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('AJAX Error:', status, error);
+                    console.error('Response Text:', xhr.responseText);
+                    console.error('Status Code:', xhr.status);
+                    
+                    let errorMsg = 'System error occurred.';
+                    try {
+                        const errorData = JSON.parse(xhr.responseText);
+                        errorMsg = errorData.message || errorMsg;
+                    } catch(e) {
+                        errorMsg += ' Check console for details.';
+                    }
+                    
+                    alert(errorMsg);
+                    btn.prop('disabled', false).html(originalHtml);
+                }
             });
         }
     });
 
+    // ============================================
+    // FILTERS
+    // ============================================
     function applyFilters() {
         const searchVal = $('#searchInput').val().toLowerCase();
         const selectedService = $('#serviceFilter').val().toLowerCase();

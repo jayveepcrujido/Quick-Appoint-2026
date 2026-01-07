@@ -201,70 +201,6 @@ class NotificationService {
     }
     
     /**
-     * Send Appointment Notification to Personnel (Email + SMS)
-     * 
-     * @param array $data Personnel and appointment data
-     * @return array Results
-     */
-    public function sendPersonnelAppointmentNotification($data) {
-        $results = [
-            'email' => false,
-            'sms' => false,
-            'errors' => []
-        ];
-        
-        $details = [
-            'resident_name' => $data['resident_name'] ?? 'Resident',
-            'service_name' => $data['service_name'] ?? 'Service',
-            'date' => $data['date'] ?? date('M j, Y'),
-            'time' => $data['time'] ?? 'TBD',
-            'transaction_id' => $data['transaction_id'] ?? 'N/A',
-            'department_name' => $data['department_name'] ?? 'LGU Office',
-            'reason' => $data['reason'] ?? 'Not specified',
-            'requirements' => $data['requirements'] ?? ['Valid ID']
-        ];
-
-        if ($this->emailEnabled && !empty($data['personnel_email'])) {
-            try {
-                $results['email'] = sendPersonnelAppointmentNotification(
-                    $data['personnel_email'],
-                    $data['personnel_name'],
-                    $details
-                );
-                
-                if (!$results['email']) {
-                    $results['errors'][] = "Email: Failed to send to personnel";
-                }
-            } catch (Exception $e) {
-                $results['errors'][] = "Email Error: " . $e->getMessage();
-                error_log("Personnel email failed: " . $e->getMessage());
-            }
-        }
-
-        if ($this->smsEnabled && !empty($data['personnel_phone'])) {
-            try {
-                $smsMessage = "New appointment assigned: {$details['resident_name']} - "
-                            . "{$details['service_name']} on {$details['date']} at {$details['time']}. "
-                            . "Ref: {$details['transaction_id']}. Check email for details.";
-                
-                $results['sms'] = $this->sendCustomSMS(
-                    $data['personnel_phone'],
-                    $smsMessage
-                );
-                
-                if (!$results['sms']) {
-                    $results['errors'][] = "SMS: Failed to send to personnel";
-                }
-            } catch (Exception $e) {
-                $results['errors'][] = "SMS Error: " . $e->getMessage();
-                error_log("Personnel SMS failed: " . $e->getMessage());
-            }
-        }
-        
-        return $results;
-    }
-    
-    /**
      * Send Reschedule Notification (Email + SMS) to Resident
      * 
      * @param array $data Reschedule data
@@ -320,46 +256,6 @@ class NotificationService {
     }
     
     /**
-     * Send Reschedule Notification to Personnel (Email)
-     * 
-     * @param array $data Personnel and reschedule data
-     * @return array Results
-     */
-    public function sendPersonnelRescheduleNotification($data) {
-        $results = [
-            'email' => false,
-            'sms' => false,
-            'errors' => []
-        ];
-        
-        $details = [
-            'resident_name' => $data['resident_name'] ?? 'Resident',
-            'service_name' => $data['service_name'] ?? 'Service',
-            'new_date' => $data['new_date'] ?? date('M j, Y'),
-            'new_time' => $data['new_time'] ?? 'TBD',
-            'transaction_id' => $data['transaction_id'] ?? 'N/A'
-        ];
-        
-        if ($this->emailEnabled && !empty($data['personnel_email'])) {
-            try {
-                $results['email'] = sendPersonnelRescheduleNotification(
-                    $data['personnel_email'],
-                    $data['personnel_name'],
-                    $details
-                );
-                
-                if (!$results['email']) {
-                    $results['errors'][] = "Email: Failed to send to personnel";
-                }
-            } catch (Exception $e) {
-                $results['errors'][] = "Email Error: " . $e->getMessage();
-            }
-        }
-        
-        return $results;
-    }
-    
-    /**
      * Send Appointment Reminder (1 day before)
      * 
      * @param array $data Appointment data
@@ -393,6 +289,7 @@ class NotificationService {
                 $results['errors'][] = "SMS Error: " . $e->getMessage();
             }
         }
+        
         return $results;
     }
     
@@ -425,6 +322,7 @@ class NotificationService {
                 $results['errors'][] = "SMS Error: " . $e->getMessage();
             }
         }
+        
         return $results;
     }
     

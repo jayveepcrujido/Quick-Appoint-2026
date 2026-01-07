@@ -7,6 +7,12 @@ header('Content-Type: application/json');
 include '../conn.php';
 require_once '../notification_service.php'; // Go up one directory to root
 
+// CRITICAL: Set JSON header BEFORE any output
+header('Content-Type: application/json');
+
+include '../conn.php';
+require_once '../notification_service.php'; // Go up one directory to root
+
 if (!isset($_SESSION['auth_id']) || $_SESSION['role'] !== 'LGU Personnel') {
     echo json_encode(['success' => false, 'message' => 'Unauthorized access']);
     exit();
@@ -18,7 +24,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['appointment_id'])) {
     try {
         $pdo->beginTransaction();
         
-        $stmtP = $pdo->prepare("SELECT id FROM lgu_personnel WHERE auth_id = ?");
         // 1. GET PERSONNEL ID
         $stmtP = $pdo->prepare("SELECT id, first_name, last_name FROM lgu_personnel WHERE auth_id = ?");
         $stmtP->execute([$_SESSION['auth_id']]);
@@ -111,6 +116,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['appointment_id'])) {
             error_log("Completion SMS Failed for Appointment ID {$id}: " . implode(', ', $notificationResult['errors']));
         }
         
+        // Commit transaction
         $pdo->commit();
         
         // Build success response with notification status

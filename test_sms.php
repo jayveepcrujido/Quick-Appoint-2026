@@ -1,6 +1,12 @@
 <?php
-require 'sms_functions.php'; 
+/**
+ * PhilSMS Test Script - Updated with Appointment Completion Test
+ * Run this file to test your SMS integration
+ */
 
+require 'sms_functions.php'; // Your PhilSMS integration file
+
+// Enable error reporting
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
