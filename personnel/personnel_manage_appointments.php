@@ -21,7 +21,7 @@ $query = "
     SELECT 
         a.id, a.transaction_id, a.status, a.reason, a.scheduled_for, a.requested_at, a.available_date_id,
         r.first_name, r.middle_name, r.last_name, r.address, r.birthday, r.age, r.sex, r.civil_status,
-        r.id_front_image, r.selfie_with_id_image,
+        r.id_front_image, r.selfie_with_id_image, r.phone_number,
         au.email,
         ds.service_name
     FROM appointments a
@@ -70,7 +70,6 @@ $stats = $statsQuery->fetch(PDO::FETCH_ASSOC);
         #appointments-table td { vertical-align: middle; padding: 1rem; color: #4a5568; }
         .table-success { background-color: #d4edda !important; transition: background-color 1s ease; }
         
-        /* === CARD GRID STYLES (New) === */
         .dates-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; max-height: 400px; overflow-y: auto; padding: 0.5rem; }
         .date-card { border: 2px solid #e0e6ed; border-radius: 12px; padding: 1rem; cursor: default; background: white; position: relative; transition: all 0.2s; }
         .date-card.active-date { border-color: #3498db; background: #f0f7ff; box-shadow: 0 0 10px rgba(52, 152, 219, 0.2); }
@@ -282,68 +281,40 @@ $stats = $statsQuery->fetch(PDO::FETCH_ASSOC);
 $(document).ready(function () {
 
     // ============================================
-    // NEW: SCROLL TO HIGHLIGHTED APPOINTMENT
+    // SCROLL TO HIGHLIGHTED APPOINTMENT
     // ============================================
     const highlightTransactionId = sessionStorage.getItem('highlightAppointment');
     
     if (highlightTransactionId) {
         console.log('Looking for transaction:', highlightTransactionId);
         
-        // Small delay to ensure page is fully loaded
         setTimeout(function() {
-            // Find the row containing this transaction ID
             const targetRow = $('#appointments-tbody tr').filter(function() {
                 return $(this).find('.badge-primary').text().trim() === highlightTransactionId;
             });
             
             if (targetRow.length > 0) {
                 console.log('Found appointment row, scrolling...');
-                
-                // Highlight the row with animation
                 targetRow.addClass('table-warning');
                 
-                // Scroll to the row smoothly
                 $('html, body').animate({
-                    scrollTop: targetRow.offset().top - 150 // 150px offset from top
+                    scrollTop: targetRow.offset().top - 150
                 }, 800, function() {
-                    // Flash effect after scrolling
                     targetRow.addClass('table-success');
                     setTimeout(function() {
                         targetRow.removeClass('table-warning table-success');
                     }, 3000);
                 });
-                
             } else {
                 console.log('Appointment not found in current table');
             }
             
-            // Clear the sessionStorage after use
             sessionStorage.removeItem('highlightAppointment');
-            
-        }, 500); // 500ms delay for page render
+        }, 500);
     }
 
     // ============================================
-    // Helper: Update Table & Stats
-    // ============================================
-    function removeRowAndRefresh(id) {
-        const row = $('#row_' + id);
-        // Note: For 'Manage Appointments', if you simply reschedule (not delete/complete),
-        // you might want to UPDATE the row instead of remove it.
-        // But if rescheduling might change sort order, reloading is safer.
-        // For now, we update the text to show the new date:
-        
-        // This is handled inside the AJAX success callback below.
-        
-        const totalEl = $('#statTotal');
-        let currentTotal = parseInt(totalEl.text());
-        if(!isNaN(currentTotal) && currentTotal > 0) {
-            // totalEl.text(currentTotal - 1); // Only decrease if deleting/completing
-        }
-    }
-
-    // ============================================
-    // 1. VIEW DETAILS
+    // VIEW DETAILS
     // ============================================
     $('.btn-view-details').click(function() {
         const data = $(this).data('details');
@@ -379,12 +350,11 @@ $(document).ready(function () {
     });
 
     // ============================================
-    // 2. RESCHEDULE LOGIC (CARD GRID)
+    // RESCHEDULE LOGIC
     // ============================================
     $('.btn-open-reschedule').click(function() {
         const btn = $(this);
         
-        // Reset
         $('#reschApptId').val(btn.data('id'));
         $('#reschOldDateId').val(btn.data('old-date-id'));
         $('#reschOldTime').val(btn.data('old-time'));
@@ -401,7 +371,6 @@ $(document).ready(function () {
         
         $('#sharedRescheduleModal').modal('show');
 
-        // Fetch Dates
         $.ajax({
             url: 'get_available_dates.php',
             type: 'POST',
@@ -446,7 +415,6 @@ $(document).ready(function () {
         return `<div class="time-slot-option clickable-slot" data-time="${timeValue}" data-label="${timeStr}"><span>${timeStr}</span> <span class="badge badge-success">${remaining} left</span></div>`;
     }
 
-    // Handle Selection
     $(document).on('click', '.clickable-slot', function() {
         $('.clickable-slot').removeClass('selected');
         $('.date-card').removeClass('active-date');
@@ -462,7 +430,6 @@ $(document).ready(function () {
         $('#btnConfirmReschedule').prop('disabled', false);
     });
 
-    // Submit
     $('#sharedRescheduleForm').on('submit', function(e) {
         e.preventDefault();
         const btn = $('#btnConfirmReschedule');
@@ -480,12 +447,10 @@ $(document).ready(function () {
                     $('#sharedRescheduleModal').modal('hide');
                     btn.html(originalText);
                     
-                    // Update Row
                     const apptId = $('#reschApptId').val();
                     const row = $('#row_' + apptId);
-                    const newTime = $('#reschSummaryText').text(); // e.g. "Dec 25 at Morning"
+                    const newTime = $('#reschSummaryText').text();
                     
-                    // Format for table display
                     const parts = newTime.split(' at ');
                     const datePart = parts[0];
                     const timePart = parts[1];
@@ -508,29 +473,111 @@ $(document).ready(function () {
     });
 
     // ============================================
-    // 3. ACTIONS (Delete/Complete)
+    // COMPLETE & DELETE ACTIONS (UPDATED!)
     // ============================================
     $(document).on('click', '.btn-complete-action, .btn-delete-action', function() {
         const id = $(this).data('id');
         const isDelete = $(this).hasClass('btn-delete-action');
         const url = isDelete ? 'delete_appointment.php' : 'complete_appointment.php';
-        const msg = isDelete ? 'Delete this appointment?' : 'Mark as completed?';
+        const actionName = isDelete ? 'Delete' : 'Complete';
+        const msg = isDelete ? 'Delete this appointment?' : 'Mark this appointment as completed?';
+        const btn = $(this);
+        const originalHtml = btn.html();
         
         if(confirm(msg)) {
-            $.post(url, { appointment_id: id }, function(res) {
-                $('#row_' + id).fadeOut(400, function() { $(this).remove(); });
-                $('#sharedViewModal').modal('hide');
-                
-                // Update stats
-                const totalEl = $('#statTotal');
-                let currentTotal = parseInt(totalEl.text());
-                if(!isNaN(currentTotal) && currentTotal > 0) totalEl.text(currentTotal - 1);
+            // Disable button and show loading
+            btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Processing...');
+            
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: { appointment_id: id },
+                dataType: 'json', // CRITICAL: Parse JSON response
+                success: function(res) {
+                    console.log('Response:', res);
+                    
+                    if(res.success) {
+                        // Success animation
+                        $('#row_' + id).addClass('table-success');
+                        
+                        setTimeout(function() {
+                            $('#row_' + id).fadeOut(400, function() { 
+                                $(this).remove(); 
+                                
+                                // Check if table is empty
+                                if($('#appointments-tbody tr:visible').length === 0) {
+                                    $('#appointments-tbody').html(
+                                        '<tr id="no-results-row">' +
+                                        '<td colspan="6" class="text-center py-5">' +
+                                        '<div class="empty-state">' +
+                                        '<i class="fas fa-check-circle fa-3x text-success mb-3"></i>' +
+                                        '<p>No pending appointments</p>' +
+                                        '</div></td></tr>'
+                                    );
+                                }
+                            });
+                        }, 500);
+                        
+                        $('#sharedViewModal').modal('hide');
+                        
+                        // Update stats
+                        const totalEl = $('#statTotal');
+                        let currentTotal = parseInt(totalEl.text());
+                        if(!isNaN(currentTotal) && currentTotal > 0) {
+                            totalEl.text(currentTotal - 1);
+                        }
+                        
+                        // Build notification message
+                        let notificationMsg = res.message || (actionName + ' successful!');
+                        let notificationDetails = [];
+                        
+                        if(res.notifications) {
+                            if(res.notifications.email_sent) {
+                                notificationDetails.push('✅ Email sent');
+                            } else {
+                                notificationDetails.push('⚠️ Email failed');
+                            }
+                            
+                            if(res.notifications.sms_sent) {
+                                notificationDetails.push('✅ SMS sent');
+                            } else {
+                                notificationDetails.push('⚠️ SMS failed');
+                            }
+                        }
+                        
+                        if(notificationDetails.length > 0) {
+                            alert(notificationMsg + '\n\n' + notificationDetails.join('\n'));
+                        } else {
+                            alert(notificationMsg);
+                        }
+                        
+                    } else {
+                        alert('Error: ' + (res.message || 'Failed to process request'));
+                        btn.prop('disabled', false).html(originalHtml);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('AJAX Error:', status, error);
+                    console.error('Response Text:', xhr.responseText);
+                    console.error('Status Code:', xhr.status);
+                    
+                    let errorMsg = 'System error occurred.';
+                    try {
+                        const errorData = JSON.parse(xhr.responseText);
+                        errorMsg = errorData.message || errorMsg;
+                    } catch(e) {
+                        errorMsg += ' Check console for details.';
+                    }
+                    
+                    alert(errorMsg);
+                    btn.prop('disabled', false).html(originalHtml);
+                }
             });
         }
     });
 
     // ============================================
-    // 4. FILTERS
+    // FILTERS
     // ============================================
     function applyFilters() {
         const searchVal = $('#searchInput').val().toLowerCase();

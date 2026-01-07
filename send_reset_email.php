@@ -1008,3 +1008,167 @@ function sendRescheduleRejectedEmail($recipientEmail, $recipientName, $details) 
         return false;
     }
 }
+
+/**
+ * Send Appointment COMPLETION Email
+ * Add this function to your send_reset_email.php file
+ */
+
+function sendAppointmentCompletionEmail($recipientEmail, $recipientName, $details) {
+    $mail = new PHPMailer(true);
+    
+    try {
+        // Server settings
+        $mail->isSMTP();
+        $mail->Host       = 'smtp.gmail.com';
+        $mail->SMTPAuth   = true;
+        $mail->Username   = 'jvcrujido@gmail.com';
+        $mail->Password   = 'jqwcysmffzbxoeaj';
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port       = 587;
+
+        $mail->setFrom('jvcrujido@gmail.com', 'LGU Quick Appoint');
+        $mail->addAddress($recipientEmail, $recipientName);
+        $mail->addReplyTo('jvcrujido@gmail.com', 'LGU Support');
+
+        $mail->isHTML(true);
+        $mail->Subject = 'Appointment Completed - ' . $details['service_name'];
+        
+        $mail->Body = "
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset='UTF-8'>
+            <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+        </head>
+        <body style='margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;'>
+            <table width='100%' cellpadding='0' cellspacing='0' style='background-color: #f4f4f4; padding: 20px;'>
+                <tr>
+                    <td align='center'>
+                        <table width='600' cellpadding='0' cellspacing='0' style='background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);'>
+                            <!-- Header -->
+                            <tr>
+                                <td style='background: linear-gradient(135deg, #10b981, #059669); padding: 30px; text-align: center;'>
+                                    <h1 style='color: #ffffff; margin: 0; font-size: 28px;'>✅ Appointment Completed!</h1>
+                                    <p style='color: #ffffff; margin: 10px 0 0 0; font-size: 14px;'>Thank you for visiting us today</p>
+                                </td>
+                            </tr>
+                            
+                            <!-- Body -->
+                            <tr>
+                                <td style='padding: 40px 30px;'>
+                                    <p style='color: #333; font-size: 16px; line-height: 1.6; margin: 0 0 15px 0;'>
+                                        Dear <strong>{$recipientName}</strong>,
+                                    </p>
+                                    <p style='color: #555; font-size: 15px; line-height: 1.6; margin: 0 0 25px 0;'>
+                                        Your appointment has been successfully completed. Thank you for choosing our services!
+                                    </p>
+                                    
+                                    <!-- Success Alert -->
+                                    <div style='background: linear-gradient(135deg, #d1fae5, #a7f3d0); border-left: 4px solid #10b981; padding: 20px; margin: 20px 0; border-radius: 8px; text-align: center;'>
+                                        <p style='color: #065f46; font-size: 18px; font-weight: bold; margin: 0 0 10px 0;'>
+                                            🎉 Service Completed Successfully
+                                        </p>
+                                        <p style='color: #047857; font-size: 14px; margin: 0;'>
+                                            Completed on {$details['completed_date']} at {$details['completed_time']}
+                                        </p>
+                                    </div>
+                                    
+                                    <!-- Appointment Details Box -->
+                                    <table width='100%' cellpadding='0' cellspacing='0' style='background: linear-gradient(135deg, #f8f9fa, #e9ecef); border-radius: 8px; margin: 20px 0; border: 2px solid #10b981;'>
+                                        <tr>
+                                            <td style='padding: 25px;'>
+                                                <h3 style='color: #2c3e50; margin: 0 0 15px 0; font-size: 18px;'>Appointment Summary</h3>
+                                                
+                                                <table width='100%' cellpadding='8' cellspacing='0'>
+                                                    <tr>
+                                                        <td style='color: #6c757d; font-size: 14px; padding: 8px 0; width: 40%;'><strong>Service:</strong></td>
+                                                        <td style='color: #2c3e50; font-size: 14px; padding: 8px 0;'>{$details['service_name']}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style='color: #6c757d; font-size: 14px; padding: 8px 0;'><strong>Department:</strong></td>
+                                                        <td style='color: #2c3e50; font-size: 14px; padding: 8px 0;'>{$details['department_name']}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style='color: #6c757d; font-size: 14px; padding: 8px 0;'><strong>Status:</strong></td>
+                                                        <td style='padding: 8px 0;'>
+                                                            <span style='background: #10b981; color: white; padding: 5px 12px; border-radius: 15px; font-size: 12px; font-weight: bold;'>
+                                                                ✓ Completed
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td colspan='2' style='padding: 15px 0 8px 0;'>
+                                                            <div style='background: white; padding: 15px; border-radius: 6px; text-align: center; border: 2px dashed #10b981;'>
+                                                                <p style='color: #6c757d; font-size: 12px; margin: 0 0 5px 0;'>Reference Number</p>
+                                                                <p style='color: #2c3e50; font-size: 24px; font-weight: bold; margin: 0; letter-spacing: 2px;'>{$details['transaction_id']}</p>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                    
+                                    <!-- What's Next -->
+                                    <div style='background: #f0f9ff; border-left: 4px solid #0ea5e9; padding: 15px; margin: 20px 0; border-radius: 8px;'>
+                                        <p style='color: #0369a1; font-size: 14px; margin: 0 0 10px 0;'><strong>📋 What's Next?</strong></p>
+                                        <ul style='color: #0c4a6e; font-size: 13px; margin: 0; padding-left: 20px;'>
+                                            <li style='margin: 5px 0;'>Keep this confirmation email for your records</li>
+                                            <li style='margin: 5px 0;'>Your reference number: <strong>{$details['transaction_id']}</strong></li>
+                                            <li style='margin: 5px 0;'>You may need to return for document release (if applicable)</li>
+                                            <li style='margin: 5px 0;'>For inquiries, contact the {$details['department_name']}</li>
+                                        </ul>
+                                    </div>
+                                    
+                                    <!-- Feedback Section -->
+                                    <div style='background: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; margin: 20px 0; border-radius: 8px;'>
+                                        <p style='color: #92400e; font-size: 14px; margin: 0 0 10px 0;'><strong>💭 We Value Your Feedback</strong></p>
+                                        <p style='color: #78350f; font-size: 13px; margin: 0;'>
+                                            Your opinion matters! Please help us improve our services by sharing your experience.
+                                        </p>
+                                    </div>
+                                    
+                                    <hr style='border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;'>
+                                    
+                                    <p style='color: #999; font-size: 13px; line-height: 1.6; margin: 0;'>
+                                        Thank you for using LGU Quick Appoint. We're committed to providing you with excellent service.
+                                    </p>
+                                </td>
+                            </tr>
+                            
+                            <!-- Footer -->
+                            <tr>
+                                <td style='background-color: #f8f9fa; padding: 20px 30px; text-align: center; border-top: 1px solid #e0e0e0;'>
+                                    <p style='color: #888; font-size: 12px; margin: 0 0 5px 0;'>
+                                        © 2025 LGU Quick Appoint. All rights reserved.
+                                    </p>
+                                    <p style='color: #999; font-size: 11px; margin: 0;'>
+                                        This is an automated message, please do not reply.
+                                    </p>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </body>
+        </html>
+        ";
+
+        $mail->AltBody = "Dear {$recipientName},\n\n"
+                       . "Your appointment has been successfully completed!\n\n"
+                       . "Service: {$details['service_name']}\n"
+                       . "Department: {$details['department_name']}\n"
+                       . "Completed: {$details['completed_date']} at {$details['completed_time']}\n"
+                       . "Reference: {$details['transaction_id']}\n\n"
+                       . "Thank you for using LGU Quick Appoint!\n\n"
+                       . "LGU Quick Appoint Team";
+
+        $mail->send();
+        return true;
+    } catch (Exception $e) {
+        error_log("Completion Email Error: " . $mail->ErrorInfo);
+        return false;
+    }
+}

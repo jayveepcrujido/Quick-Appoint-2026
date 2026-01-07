@@ -20,6 +20,72 @@ class NotificationService {
     }
     
     /**
+     * Send Appointment COMPLETION Notification (Email + SMS) - NEW METHOD!
+     * 
+     * @param array $data Completion data
+     * @return array Results
+     */
+    public function sendAppointmentCompletion($data) {
+        $results = [
+            'email' => false,
+            'sms' => false,
+            'errors' => []
+        ];
+        
+        // Prepare completion details for email
+        $emailDetails = [
+            'service_name' => $data['service_name'] ?? 'Service',
+            'transaction_id' => $data['transaction_id'] ?? 'N/A',
+            'department_name' => $data['department_name'] ?? 'LGU Office',
+            'completed_date' => $data['completed_date'] ?? date('M j, Y'),
+            'completed_time' => $data['completed_time'] ?? date('h:i A')
+        ];
+        
+        // Send Email (using the new function we'll add below)
+        if ($this->emailEnabled && !empty($data['email'])) {
+            try {
+                $results['email'] = sendAppointmentCompletionEmail(
+                    $data['email'],
+                    $data['name'],
+                    $emailDetails
+                );
+                
+                if (!$results['email']) {
+                    $results['errors'][] = "Email: Failed to send completion notification";
+                }
+            } catch (Exception $e) {
+                $results['errors'][] = "Email Error: " . $e->getMessage();
+                error_log("Completion email failed: " . $e->getMessage());
+            }
+        }
+        
+        // Send SMS
+        if ($this->smsEnabled && !empty($data['phone'])) {
+            try {
+                $smsDetails = [
+                    'service_name' => $emailDetails['service_name'],
+                    'transaction_id' => $emailDetails['transaction_id']
+                ];
+                
+                $results['sms'] = $this->smsService->sendAppointmentCompletion(
+                    $data['phone'],
+                    $data['name'],
+                    $smsDetails
+                );
+                
+                if (!$results['sms']) {
+                    $results['errors'][] = "SMS: Failed to send completion notification";
+                }
+            } catch (Exception $e) {
+                $results['errors'][] = "SMS Error: " . $e->getMessage();
+                error_log("Completion SMS failed: " . $e->getMessage());
+            }
+        }
+        
+        return $results;
+    }
+    
+    /**
      * Send Password Reset (Email + SMS with OTP)
      * 
      * @param string $email Recipient email
@@ -145,74 +211,6 @@ class NotificationService {
     }
     
     /**
-     * Send Appointment Notification to Personnel (Email + SMS)
-     * 
-     * @param array $data Personnel and appointment data
-     * @return array Results
-     */
-    public function sendPersonnelAppointmentNotification($data) {
-        $results = [
-            'email' => false,
-            'sms' => false,
-            'errors' => []
-        ];
-        
-        // Prepare appointment details
-        $details = [
-            'resident_name' => $data['resident_name'] ?? 'Resident',
-            'service_name' => $data['service_name'] ?? 'Service',
-            'date' => $data['date'] ?? date('M j, Y'),
-            'time' => $data['time'] ?? 'TBD',
-            'transaction_id' => $data['transaction_id'] ?? 'N/A',
-            'department_name' => $data['department_name'] ?? 'LGU Office',
-            'reason' => $data['reason'] ?? 'Not specified',
-            'requirements' => $data['requirements'] ?? ['Valid ID']
-        ];
-        
-        // Send Email to Personnel
-        if ($this->emailEnabled && !empty($data['personnel_email'])) {
-            try {
-                $results['email'] = sendPersonnelAppointmentNotification(
-                    $data['personnel_email'],
-                    $data['personnel_name'],
-                    $details
-                );
-                
-                if (!$results['email']) {
-                    $results['errors'][] = "Email: Failed to send to personnel";
-                }
-            } catch (Exception $e) {
-                $results['errors'][] = "Email Error: " . $e->getMessage();
-                error_log("Personnel email failed: " . $e->getMessage());
-            }
-        }
-        
-        // Send SMS to Personnel (Optional - brief notification)
-        if ($this->smsEnabled && !empty($data['personnel_phone'])) {
-            try {
-                $smsMessage = "New appointment assigned: {$details['resident_name']} - "
-                            . "{$details['service_name']} on {$details['date']} at {$details['time']}. "
-                            . "Ref: {$details['transaction_id']}. Check email for details.";
-                
-                // Use generic sendSMS method (we'll add this below)
-                $results['sms'] = $this->sendCustomSMS(
-                    $data['personnel_phone'],
-                    $smsMessage
-                );
-                
-                if (!$results['sms']) {
-                    $results['errors'][] = "SMS: Failed to send to personnel";
-                }
-            } catch (Exception $e) {
-                $results['errors'][] = "SMS Error: " . $e->getMessage();
-                error_log("Personnel SMS failed: " . $e->getMessage());
-            }
-        }
-        
-        return $results;
-    }
-    
-    /**
      * Send Reschedule Notification (Email + SMS) to Resident
      * 
      * @param array $data Reschedule data
@@ -270,47 +268,6 @@ class NotificationService {
     }
     
     /**
-     * Send Reschedule Notification to Personnel (Email)
-     * 
-     * @param array $data Personnel and reschedule data
-     * @return array Results
-     */
-    public function sendPersonnelRescheduleNotification($data) {
-        $results = [
-            'email' => false,
-            'sms' => false,
-            'errors' => []
-        ];
-        
-        $details = [
-            'resident_name' => $data['resident_name'] ?? 'Resident',
-            'service_name' => $data['service_name'] ?? 'Service',
-            'new_date' => $data['new_date'] ?? date('M j, Y'),
-            'new_time' => $data['new_time'] ?? 'TBD',
-            'transaction_id' => $data['transaction_id'] ?? 'N/A'
-        ];
-        
-        // Send Email to Personnel
-        if ($this->emailEnabled && !empty($data['personnel_email'])) {
-            try {
-                $results['email'] = sendPersonnelRescheduleNotification(
-                    $data['personnel_email'],
-                    $data['personnel_name'],
-                    $details
-                );
-                
-                if (!$results['email']) {
-                    $results['errors'][] = "Email: Failed to send to personnel";
-                }
-            } catch (Exception $e) {
-                $results['errors'][] = "Email Error: " . $e->getMessage();
-            }
-        }
-        
-        return $results;
-    }
-    
-    /**
      * Send Appointment Reminder (1 day before)
      * 
      * @param array $data Appointment data
@@ -346,8 +303,6 @@ class NotificationService {
             }
         }
         
-        // Optional: Add email reminder function if needed
-        
         return $results;
     }
     
@@ -381,8 +336,6 @@ class NotificationService {
                 $results['errors'][] = "SMS Error: " . $e->getMessage();
             }
         }
-        
-        // TODO: Add email cancellation function if needed
         
         return $results;
     }
@@ -451,27 +404,6 @@ class NotificationService {
         }
         
         return $results;
-    }
-    
-    /**
-     * Send custom SMS message
-     * 
-     * @param string $phone Phone number
-     * @param string $message Message content
-     * @return bool Success status
-     */
-    private function sendCustomSMS($phone, $message) {
-        // Access the private sendSMS method through reflection
-        // Or use testConnection as a workaround
-        try {
-            $reflection = new ReflectionClass($this->smsService);
-            $method = $reflection->getMethod('sendSMS');
-            $method->setAccessible(true);
-            return $method->invoke($this->smsService, $phone, $message);
-        } catch (Exception $e) {
-            error_log("Custom SMS Error: " . $e->getMessage());
-            return false;
-        }
     }
     
     /**

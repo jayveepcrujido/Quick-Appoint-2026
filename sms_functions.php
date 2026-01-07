@@ -1,6 +1,6 @@
 <?php
 /**
- * PhilSMS Integration for LGU Quick Appoint - FIXED VERSION
+ * PhilSMS Integration for LGU Quick Appoint
  * File: sms_functions.php
  * The API requires JSON format, not form-encoded
  */
@@ -118,20 +118,36 @@ class SMSService {
     }
     
     /**
+     * Send appointment completion SMS
+     * NEW METHOD
+     */
+    public function sendAppointmentCompletion($phoneNumber, $recipientName, $completionDetails) {
+        $message = "LGU QuickAppoint - Hi {$recipientName}! Your appointment for {$completionDetails['service_name']} "
+                 . "has been COMPLETED. Thank you for your visit! "
+                 . "Ref: {$completionDetails['transaction_id']}.";
+        
+        if (strlen($message) > 160) {
+            $message = $this->truncateMessage($message, 160);
+        }
+        
+        return $this->sendSMS($phoneNumber, $message);
+    }
+    
+    /**
      * Send appointment confirmation SMS
      */
     public function sendAppointmentConfirmation($phoneNumber, $recipientName, $appointmentDetails) {
-    $message = "LGU QuickAppoint - Hi {$recipientName}! Your appointment for {$appointmentDetails['service_name']} "
-             . "is CONFIRMED on {$appointmentDetails['date']} at {$appointmentDetails['time']}. "
-             . "Ref: {$appointmentDetails['transaction_id']}.";
-    
-    // Check message length (160 chars for single SMS)
-    if (strlen($message) > 160) {
-        $message = $this->truncateMessage($message, 160);
+        $message = "LGU QuickAppoint - Hi {$recipientName}! Your appointment for {$appointmentDetails['service_name']} "
+                 . "is CONFIRMED on {$appointmentDetails['date']} at {$appointmentDetails['time']}. "
+                 . "Ref: {$appointmentDetails['transaction_id']}.";
+        
+        // Check message length (160 chars for single SMS)
+        if (strlen($message) > 160) {
+            $message = $this->truncateMessage($message, 160);
+        }
+        
+        return $this->sendSMS($phoneNumber, $message);
     }
-    
-    return $this->sendSMS($phoneNumber, $message);
-}
     
     /**
      * Send password reset OTP via SMS

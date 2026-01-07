@@ -1,6 +1,6 @@
 <?php
 /**
- * PhilSMS Test Script
+ * PhilSMS Test Script - Updated with Appointment Completion Test
  * Run this file to test your SMS integration
  */
 
@@ -119,9 +119,65 @@ if (isset($_POST['send_appointment'])) {
 echo "<hr>";
 
 // ============================================
-// TEST 4: Test OTP SMS
+// TEST 4: Test Appointment COMPLETION SMS (NEW!)
 // ============================================
-echo "<h2>Test 4: OTP Verification SMS</h2>";
+echo "<h2>Test 4: Appointment COMPLETION SMS ⭐ NEW</h2>";
+
+echo "<form method='POST' action=''>";
+echo "<label>Phone Number:</label><br>";
+echo "<input type='text' name='complete_phone' placeholder='09171234567' required style='padding:8px; width:200px;'><br><br>";
+
+echo "<label>Recipient Name:</label><br>";
+echo "<input type='text' name='complete_name' placeholder='Juan Dela Cruz' required style='padding:8px; width:200px;'><br><br>";
+
+echo "<button type='submit' name='send_completion' style='padding:10px 20px; background:#4CAF50; color:white; border:none; cursor:pointer;'>Send Completion SMS</button>";
+echo "</form>";
+
+if (isset($_POST['send_completion'])) {
+    $phoneNumber = $_POST['complete_phone'];
+    $name = $_POST['complete_name'];
+    
+    // Sample completion details
+    $completionDetails = [
+        'service_name' => 'Birth Certificate Request',
+        'transaction_id' => 'TXN-' . date('Ymd') . '-' . rand(1000, 9999),
+        'completed_date' => date('M j, Y'),
+        'completed_time' => date('h:i A')
+    ];
+    
+    echo "<div style='margin-top:20px; padding:15px; background:#e8f5e9; border-left:4px solid #4CAF50;'>";
+    echo "<strong>Sending appointment COMPLETION SMS to: {$phoneNumber}</strong><br>";
+    echo "<strong>Transaction ID: {$completionDetails['transaction_id']}</strong><br><br>";
+    
+    // Show the message that will be sent
+    $previewMessage = "LGU QuickAppoint - Hi {$name}! Your appointment for {$completionDetails['service_name']} "
+                    . "has been COMPLETED. Thank you for your visit! "
+                    . "Ref: {$completionDetails['transaction_id']}.";
+    
+    echo "<strong>Message Preview:</strong><br>";
+    echo "<div style='background:white; padding:10px; margin:10px 0; border:1px solid #ddd; font-size:14px;'>";
+    echo htmlspecialchars($previewMessage);
+    echo "</div>";
+    echo "<small>Character count: " . strlen($previewMessage) . " / 160</small><br><br>";
+    
+    $result = $smsService->sendAppointmentCompletion($phoneNumber, $name, $completionDetails);
+    
+    if ($result) {
+        echo "<span style='color:green; font-size:18px;'>✓ SUCCESS! Appointment completion SMS sent!</span><br>";
+        echo "<small>Check your phone ({$phoneNumber}) for the message.</small>";
+    } else {
+        echo "<span style='color:red; font-size:18px;'>✗ FAILED! Could not send completion SMS.</span><br>";
+        echo "<small>Check the error logs below for details.</small>";
+    }
+    echo "</div>";
+}
+
+echo "<hr>";
+
+// ============================================
+// TEST 5: Test OTP SMS
+// ============================================
+echo "<h2>Test 5: OTP Verification SMS</h2>";
 
 echo "<form method='POST' action=''>";
 echo "<label>Phone Number:</label><br>";
@@ -196,19 +252,42 @@ echo "<tr><td><strong>Character Limit:</strong></td><td>160 characters (single S
 echo "</table>";
 
 echo "<hr>";
+
+// ============================================
+// Quick Test Summary
+// ============================================
+echo "<h2>Available SMS Functions</h2>";
+echo "<ul>";
+echo "<li>✓ testConnection() - Basic test message</li>";
+echo "<li>✓ sendAppointmentConfirmation() - Appointment confirmed</li>";
+echo "<li>✓ sendAppointmentCompletion() - <strong>Appointment completed ⭐</strong></li>";
+echo "<li>✓ sendVerificationOTP() - OTP codes</li>";
+echo "<li>✓ sendPasswordResetOTP() - Password reset</li>";
+echo "<li>✓ sendRescheduleNotification() - Rescheduled appointments</li>";
+echo "<li>✓ sendCancellationNotification() - Cancelled appointments</li>";
+echo "<li>✓ sendStatusUpdate() - General status updates</li>";
+echo "<li>✓ sendAppointmentReminder() - Day-before reminders</li>";
+echo "</ul>";
+
+echo "<hr>";
 echo "<p><small>Last tested: " . date('Y-m-d H:i:s') . "</small></p>";
 ?>
 
 <style>
     body {
         font-family: Arial, sans-serif;
-        max-width: 800px;
+        max-width: 900px;
         margin: 20px auto;
         padding: 20px;
         background: #f5f5f5;
     }
     h1, h2 {
         color: #333;
+    }
+    h2 {
+        background: #e3f2fd;
+        padding: 10px;
+        border-radius: 5px;
     }
     hr {
         margin: 30px 0;
@@ -220,5 +299,13 @@ echo "<p><small>Last tested: " . date('Y-m-d H:i:s') . "</small></p>";
     }
     button:hover {
         opacity: 0.9;
+        transform: scale(1.02);
+        transition: all 0.2s;
+    }
+    form {
+        background: white;
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
 </style>
