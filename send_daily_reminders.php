@@ -2,17 +2,13 @@
 /**
  * Automated Daily Appointment Reminders
  * File: send_daily_reminders.php
- * 
- * Run this script daily via CRON job to send reminders
- * Cron setup: 0 8 * * * /usr/bin/php /path/to/send_daily_reminders.php
- * (Runs daily at 8:00 AM)
  */
 
-require_once 'notification_service.php';
-require_once 'db_connection.php'; // Your database connection
+require_once __DIR__ . '/notification_service.php';
+require_once __DIR__ . '/db_connection.php'; // Adjust path if needed
 
-// Initialize notification service
-$notifier = new NotificationService(true, true);
+// Initialize notification service (SMS only for speed)
+$notifier = new NotificationService(false, true); // Email OFF, SMS ON
 
 echo "=== Daily Appointment Reminder System ===\n";
 echo "Started at: " . date('Y-m-d H:i:s') . "\n\n";
@@ -25,22 +21,23 @@ try {
         SELECT 
             a.id,
             a.transaction_id,
-            a.appointment_date,
-            a.appointment_time,
+            a.scheduled_for,
             a.status,
-            u.name as resident_name,
-            u.email,
-            u.phone,
-            s.service_name,
-            d.department_name
+            r.first_name,
+            r.middle_name,
+            r.last_name,
+            r.phone_number,
+            auth.email,
+            ds.service_name,
+            d.name as department_name
         FROM appointments a
-        INNER JOIN users u ON a.user_id = u.id
-        INNER JOIN services s ON a.service_id = s.id
-        INNER JOIN departments d ON s.department_id = d.id
-        WHERE DATE(a.appointment_date) = ?
-        AND a.status = 'confirmed'
-        AND a.reminder_sent = 0
-        ORDER BY a.appointment_time ASC
+        INNER JOIN residents r ON a.resident_id = r.id
+        INNER JOIN auth ON r.auth_id = auth.id
+        INNER JOIN department_services ds ON a.service_id = ds.id
+        INNER JOIN departments d ON a.department_id = d.id
+        WHERE DATE(a.scheduled_for) = ?
+        AND a.status = 'Pending'
+        ORDER BY a.scheduled_for ASC
     ";
     
     $stmt = $conn->prepare($query);
@@ -51,40 +48,41 @@ try {
     $totalAppointments = $result->num_rows;
     $successCount = 0;
     $failCount = 0;
+    $sentAppointments = [];
     
     echo "Found {$totalAppointments} appointments for tomorrow ({$tomorrow})\n";
     echo str_repeat('-', 50) . "\n\n";
     
     if ($totalAppointments > 0) {
         while ($row = $result->fetch_assoc()) {
-            echo "Processing: {$row['resident_name']} - {$row['transaction_id']}\n";
+            // Build full name
+            $fullName = trim($row['first_name'] . ' ' . 
+                ($row['middle_name'] ? $row['middle_name'] . ' ' : '') . 
+                $row['last_name']);
             
-            // Format date for SMS
-            $appointmentDate = date('M j, Y', strtotime($row['appointment_date']));
+            echo "Processing: {$fullName} - {$row['transaction_id']}\n";
+            
+            // Format date and time
+            $appointmentDate = date('M j, Y', strtotime($row['scheduled_for']));
+            $appointmentTime = date('g:i A', strtotime($row['scheduled_for']));
             
             // Prepare reminder data
             $reminderData = [
-                'phone' => $row['phone'],
+                'phone' => $row['phone_number'],
                 'email' => $row['email'],
-                'name' => $row['resident_name'],
+                'name' => $fullName,
                 'service_name' => $row['service_name'],
                 'date' => $appointmentDate,
-                'time' => date('g:i A', strtotime($row['appointment_time']))
+                'time' => $appointmentTime
             ];
             
-            // Send reminder
+            // Send reminder (SMS only)
             $reminderResult = $notifier->sendAppointmentReminder($reminderData);
             
             if ($reminderResult['sms']) {
-                echo "  ✓ SMS reminder sent to {$row['phone']}\n";
-                
-                // Mark as sent in database
-                $updateQuery = "UPDATE appointments SET reminder_sent = 1, reminder_sent_at = NOW() WHERE id = ?";
-                $updateStmt = $conn->prepare($updateQuery);
-                $updateStmt->bind_param("i", $row['id']);
-                $updateStmt->execute();
-                
+                echo "  ✓ SMS reminder sent to {$row['phone_number']}\n";
                 $successCount++;
+                $sentAppointments[] = $row['id'];
             } else {
                 echo "  ✗ Failed to send reminder\n";
                 if (!empty($reminderResult['errors'])) {
@@ -92,9 +90,8 @@ try {
                 }
                 
                 $failCount++;
-                
-                // Log failure
-                error_log("Reminder failed for appointment ID {$row['id']}: " . implode(', ', $reminderResult['errors']));
+                error_log("Reminder failed for appointment ID {$row['id']}: " . 
+                    implode(', ', $reminderResult['errors']));
             }
             
             echo "\n";
@@ -109,10 +106,18 @@ try {
         echo "Total appointments: {$totalAppointments}\n";
         echo "Successfully sent: {$successCount}\n";
         echo "Failed: {$failCount}\n";
-        echo "Success rate: " . round(($successCount / $totalAppointments) * 100, 2) . "%\n";
+        
+        if ($totalAppointments > 0) {
+            echo "Success rate: " . round(($successCount / $totalAppointments) * 100, 2) . "%\n";
+        }
+        
+        if (!empty($sentAppointments)) {
+            echo "\nSuccessfully sent reminders for appointment IDs: " . 
+                implode(', ', $sentAppointments) . "\n";
+        }
         
     } else {
-        echo "No appointments found for tomorrow. Nothing to send.\n";
+        echo "No pending appointments found for tomorrow. Nothing to send.\n";
     }
     
     echo "\nCompleted at: " . date('Y-m-d H:i:s') . "\n";
