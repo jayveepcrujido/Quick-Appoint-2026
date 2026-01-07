@@ -5,7 +5,6 @@ include '../../conn.php';
 header('Content-Type: application/json');
 
 try {
-    // Security check - only admins can delete personnel
     if (!isset($_SESSION['auth_id']) || $_SESSION['role'] !== 'Admin') {
         http_response_code(403);
         echo json_encode(['success' => false, 'message' => 'Unauthorized access. Only admins can delete personnel.']);
@@ -26,7 +25,6 @@ try {
         exit;
     }
 
-    // Get personnel info before deletion
     $stmt = $pdo->prepare("
         SELECT auth_id, is_department_head, 
                CONCAT(first_name, ' ', last_name) as name,
@@ -43,7 +41,6 @@ try {
         exit;
     }
 
-    // Check if this personnel has created co-personnel
     if ($personnel['co_personnel_count'] > 0) {
         http_response_code(400);
         echo json_encode([
@@ -55,7 +52,6 @@ try {
 
     $pdo->beginTransaction();
 
-    // Delete from auth table (cascade will handle lgu_personnel)
     $stmt = $pdo->prepare("DELETE FROM auth WHERE id = ?");
     $stmt->execute([$personnel['auth_id']]);
 

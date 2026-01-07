@@ -17,14 +17,12 @@ $auth_id = (int)$_SESSION['auth_id'];
 $role    = $_SESSION['role'];
 
 try {
-    // Update email in auth if provided
     if (!empty($_POST['email'])) {
         $stmt = $pdo->prepare("UPDATE auth SET email=? WHERE id=?");
         $stmt->execute([$_POST['email'], $auth_id]);
     }
 
     if ($role === 'Resident') {
-        // Construct full address from parts
         $house_number = trim($_POST['house_number'] ?? '');
         $street = trim($_POST['street'] ?? '');
         $barangay = trim($_POST['barangay'] ?? '');
@@ -34,7 +32,6 @@ try {
         $address_parts = array_filter([$house_number, $street, $barangay, $municipality, $province]);
         $address = implode(', ', $address_parts);
         
-        // Auto-calculate age from birthday
         $age = null;
         if (!empty($_POST['birthday'])) {
             $birthDate = new DateTime($_POST['birthday']);

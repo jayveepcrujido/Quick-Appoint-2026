@@ -7,10 +7,8 @@ if (!isset($_SESSION['auth_id']) || $_SESSION['role'] !== 'Admin') {
 
 include '../conn.php';
 
-// Fetch all departments for the dropdown
 $departments = $pdo->query("SELECT id, name FROM departments")->fetchAll(PDO::FETCH_ASSOC);
 
-// Fetch 10 most recent appointments initially
 $query = "
     SELECT a.id, a.status, a.scheduled_for, a.reason, a.requested_at,
            r.first_name, r.last_name,

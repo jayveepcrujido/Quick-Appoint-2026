@@ -1,5 +1,4 @@
 <?php
-// File: get_available_dates.php
 include '../conn.php';
 
 if (!isset($_GET['department_id']) || !isset($_GET['month']) || !isset($_GET['year'])) {

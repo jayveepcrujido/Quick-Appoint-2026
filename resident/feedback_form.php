@@ -7,11 +7,8 @@ if (!isset($_SESSION['auth_id']) || $_SESSION['role'] !== 'Resident') {
 
 include '../conn.php';
 $authId = $_SESSION['auth_id'];
-
-// Get appointment ID from URL
 $appointmentId = isset($_GET['appointment_id']) ? intval($_GET['appointment_id']) : 0;
 
-// Fetch appointment details
 $stmt = $pdo->prepare("
     SELECT a.id, a.transaction_id, a.scheduled_for, d.name AS department_name, s.service_name
     FROM appointments a
@@ -27,7 +24,6 @@ if (!$appointment) {
     die("Appointment not found or not completed.");
 }
 
-// Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $cc1 = $_POST['cc1'] ?? '';
     $cc2 = $_POST['cc2'] ?? '';
@@ -43,7 +39,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $sqd8 = $_POST['sqd8'] ?? '';
     $suggestions = $_POST['suggestions'] ?? '';
     
-    // Insert feedback into database
     $insertStmt = $pdo->prepare("
         INSERT INTO appointment_feedback 
         (appointment_id, sqd0_answer, sqd1_answer, sqd2_answer, sqd3_answer, sqd4_answer, sqd5_answer, sqd6_answer, sqd7_answer, sqd8_answer, cc1_answer, cc2_answer, cc3_answer, suggestions, submitted_at) 
@@ -51,11 +46,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ");
     
     if ($insertStmt->execute([$appointmentId, $sqd0, $sqd1, $sqd2, $sqd3, $sqd4, $sqd5, $sqd6, $sqd7, $sqd8, $cc1, $cc2, $cc3, $suggestions])) {
-        // Update the appointment to mark feedback as sent
         $updateStmt = $pdo->prepare("UPDATE appointments SET has_sent_feedback = 1 WHERE id = ?");
         $updateStmt->execute([$appointmentId]);
-        
-        // Set success flag for JavaScript alert
         $feedbackSuccess = true;
     } else {
         $error = "Failed to submit feedback. Please try again.";
@@ -703,7 +695,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
             <?php endif; ?>
             <form method="POST" id="feedbackForm">
-            <!-- Citizen's Charter Section -->
             <div class="cc-section">
                 <div class="cc-header">
                     <i class="fas fa-file-alt" style="font-siz  e: 1.5rem; color: #667eea;"></i>
@@ -714,7 +705,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <strong>INSTRUCTIONS:</strong> Please place a <strong>Check mark (✓)</strong> in the designated box that corresponds to your answer on the Citizen's Charter (CC) questions. The Citizen's Charter is an official document that reflects the services of a government agency/office including its requirements, fees, and processing times among others.
                 </div>
 
-                <!-- CC1 -->
                 <div class="cc-question">
                     <div class="cc-question-label" data-translate="cc1Question">
                         <strong>CC1.</strong> Which of the following best describes your awareness of a CC?
@@ -739,7 +729,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 </div>
 
-                <!-- CC2 -->
                 <div class="cc-question">
                     <div class="cc-question-label" data-translate="cc2Question">
                         <strong>CC2.</strong> If aware of CC (answered 1-3 in CC1), would you say that the CC of this office was ...?
@@ -769,7 +758,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 </div>
 
-                <!-- CC3 -->
                 <div class="cc-question">
                     <div class="cc-question-label" data-translate="cc3Question">
                         <strong>CC3.</strong> If aware of CC (answered codes 1-3 in CC1), how much did the CC help you in your transaction?
@@ -799,7 +787,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <strong>INSTRUCTIONS:</strong> For SQD 0-8, please <strong>Click </strong>an option that best corresponds to your answer.
             </div>
 
-                <!-- Question 1 (SQD0) -->
                 <div class="question-section">
                     <div class="question-label" data-translate="sqd0">
                         <strong>SQD0.</strong> I am satisfied with the service that I availed.
@@ -843,7 +830,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 </div>
 
-                <!-- Question 2 (SQD1) -->
                 <div class="question-section">
                     <div class="question-label" data-translate="sqd1">
                         <strong>SQD1.</strong> I spent a reasonable amount of time for my transaction.
@@ -887,7 +873,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 </div>
 
-                <!-- Question 3 (SQD2) -->
                 <div class="question-section">
                     <div class="question-label" data-translate="sqd2">
                         <strong>SQD2.</strong> The office followed the transaction's requirements and steps based on the information provided.
@@ -931,7 +916,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 </div>
 
-                <!-- Question 4 (SQD3) -->
                 <div class="question-section">
                     <div class="question-label" data-translate="sqd3">
                         <strong>SQD3.</strong> The steps (including payment) I needed to do for my transaction were easy and simple.
@@ -975,7 +959,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 </div>
 
-                <!-- Question 5 (SQD4) -->
                 <div class="question-section">
                     <div class="question-label" data-translate="sqd4">
                         <strong>SQD4.</strong> I easily found information about my transaction from the office's website.
@@ -1019,7 +1002,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 </div>
 
-                <!-- Question 6 (SQD5) -->
                 <div class="question-section">
                     <div class="question-label" data-translate="sqd5">
                         <strong>SQD5.</strong> I paid a reasonable amount of fees for my transaction. (If service was free, mark the 'N/A' column)
@@ -1070,7 +1052,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 </div>
 
-                <!-- Question 7 (SQD6) -->
                 <div class="question-section">
                     <div class="question-label" data-translate="sqd6">
                         <strong>SQD6.</strong> I am confident my online transaction was secure.
@@ -1114,7 +1095,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 </div>
 
-                <!-- Question 8 (SQD7) -->
                 <div class="question-section">
                     <div class="question-label" data-translate="sqd7">
                         <strong>SQD7.</strong> The office's online support was available, and (if asked questions) online support's response was quick.
@@ -1158,7 +1138,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 </div>
 
-                <!-- Question 9 (SQD8) -->
                 <div class="question-section">
                     <div class="question-label" data-translate="sqd8">
                         <strong>SQD8.</strong> I got what I needed from the government office, or (if denied) denial of request was sufficiently explained to me.
@@ -1202,7 +1181,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 </div>
 
-                <!-- Suggestions Section -->
                 <div class="suggestions-section">
                     <div class="suggestions-header" data-translate="suggestionsHeader">
                         Suggestions on how we can further improve our services (optional):
@@ -1233,11 +1211,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             confirmButtonColor: '#1e40af'
         }).then((result) => {
             if (result.isConfirmed) {
-                // Check if loadContent function exists (for dynamic loading)
                 if (typeof loadContent === 'function') {
                     loadContent('residents_completed_appointments.php');
                 } else {
-                    // Fallback to regular redirect if loadContent doesn't exist
                     window.location.href = 'residents_dashboard.php';
                 }
             }
@@ -1247,7 +1223,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Form validation
         document.getElementById('feedbackForm').addEventListener('submit', function(e) {
             const questions = ['sqd0', 'sqd1', 'sqd2', 'sqd3', 'sqd4', 'sqd5', 'sqd6', 'sqd7', 'sqd8', 'cc1'];
             let allAnswered = true;
@@ -1259,7 +1234,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             });
             
-            // Check CC2 and CC3 based on CC1 answer
             const cc1Answer = document.querySelector('input[name="cc1"]:checked');
             if (cc1Answer && cc1Answer.value !== "I do not know what a CC is and I did not see one in this office") {
                 const cc2Answered = document.querySelector('input[name="cc2"]:checked');
@@ -1276,20 +1250,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         });
 
-        // Add visual feedback for selected CC options
         document.querySelectorAll('.cc-option input[type="radio"]').forEach(radio => {
             radio.addEventListener('change', function() {
-                // Remove selected class from all options in this question
                 const questionDiv = this.closest('.cc-question');
                 questionDiv.querySelectorAll('.cc-option').forEach(opt => {
                     opt.classList.remove('selected');
                 });
-                // Add selected class to chosen option
                 this.closest('.cc-option').classList.add('selected');
             });
         });
 
-        //Alternative: Use browser's back button
         document.querySelector('.back-btn').addEventListener('click', function(e) {
             e.preventDefault();
             window.history.back();
@@ -1305,7 +1275,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             feedbackSubtitle: 'Please share your experience with this appointment',
             backBtn: 'Back',
             
-            // CC Section
             ccTitle: "Citizen's Charter (CC) Questions",
             ccInstructions: "INSTRUCTIONS: Please place a <strong>Check mark (✓)</strong> in the designated box that corresponds to your answer on the Citizen's Charter (CC) questions. The Citizen's Charter is an official document that reflects the services of a government agency/office including its requirements, fees, and processing times among others.",
             
@@ -1330,7 +1299,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             sqdInstructions: "INSTRUCTIONS: For SQD 0-8, please <strong>Click </strong>an option that best corresponds to your answer.",
             
-            // SQD Questions
             sqd0: "SQD0. I am satisfied with the service that I availed.",
             sqd1: "SQD1. I spent a reasonable amount of time for my transaction.",
             sqd2: "SQD2. The office followed the transaction's requirements and steps based on the information provided.",
@@ -1341,14 +1309,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             sqd7: "SQD7. The office's online support was available, and (if asked questions) online support's response was quick.",
             sqd8: "SQD8. I got what I needed from the government office, or (if denied) denial of request was sufficiently explained to me.",
             
-            // Rating options
             stronglyDisagree: "Strongly\nDisagree",
             disagree: "Disagree",
             neither: "Neither",
             agree: "Agree",
             stronglyAgree: "Strongly\nAgree",
             
-            // Suggestions
             suggestionsHeader: "Suggestions on how we can further improve our services (optional):",
             suggestionsPlaceholder: "Please share your suggestions here...",
             submitBtn: "Submit Feedback"
@@ -1360,7 +1326,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             feedbackSubtitle: 'Pakibahagi ang inyong karanasan sa appointment na ito',
             backBtn: 'Bumalik',
             
-            // CC Section
             ccTitle: "Mga Tanong sa Citizen's Charter (CC)",
             ccInstructions: "PANUTO: Mangyaring maglagay ng <strong>Tsek (✓)</strong> sa kahon na tumutugma sa inyong sagot sa mga tanong tungkol sa Citizen's Charter (CC). Ang Citizen's Charter ay opisyal na dokumento na naglalarawan ng mga serbisyo ng isang ahensya/tanggapan ng gobyerno kasama ang mga kinakailangan, bayad, at oras ng pagproseso.",
             
@@ -1385,25 +1350,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             sqdInstructions: "PANUTO: Para sa SQD 0-8, mangyaring <strong>I-Click </strong>ang opsyon na pinakaangkop sa inyong sagot.",
             
-            // SQD Questions
             sqd0: "SQD0. Nasiyahan ako sa serbisyong aking kinuha.",
             sqd1: "SQD1. Gumugol ako ng katamtamang oras para sa aking transaksyon.",
             sqd2: "SQD2. Sinunod ng tanggapan ang mga kinakailangan at hakbang ng transaksyon batay sa ibinigay na impormasyon.",
             sqd3: "SQD3. Ang mga hakbang (kasama ang pagbabayad) na kailangan kong gawin para sa aking transaksyon ay madali at simple.",
-            sqd4: "SQD4. Madali kong nahanap ang impormasyon tungkol sa aking transaksyon mula sa website ng tanggapan.",
+            sqd4: "SQD4. Madali kong nahanap ang impormasyon tungkol sa aking transaksyon mula sa website ng tanggapaan.",
             sqd5: "SQD5. Nagbayad ako ng katamtamang halaga ng bayad para sa aking transaksyon. (Kung libre ang serbisyo, markahan ang 'N/A')",
             sqd6: "SQD6. Nagtitiwala ako na ligtas ang aking online na transaksyon.",
             sqd7: "SQD7. Available ang online support ng tanggapan, at (kung nagtanong) mabilis ang tugon ng online support.",
             sqd8: "SQD8. Nakuha ko ang kailangan ko mula sa tanggapan ng gobyerno, o (kung tinanggihan) sapat na ipinaliwanag sa akin ang dahilan ng pagtanggi.",
             
-            // Rating options
             stronglyDisagree: "Lubhang\nHindi Sumasang-ayon",
             disagree: "Hindi\nSumasang-ayon",
             neither: "Hindi\nTiyak",
             agree: "Sumasang-ayon",
             stronglyAgree: "Lubhang\nSumasang-ayon",
             
-            // Suggestions
             suggestionsHeader: "Mga mungkahi kung paano pa namin mapapabuti ang aming mga serbisyo (opsyonal):",
             suggestionsPlaceholder: "Pakibahagi ang inyong mga mungkahi dito...",
             submitBtn: "Isumite ang Feedback"
@@ -1418,10 +1380,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     function updateContent() {
         const t = translations[currentLang];
         
-        // Update toggle button
         document.getElementById('langToggleText').textContent = t.langToggleText;
         
-        // Update main content with safe checking
         const helpTextEl = document.querySelector('[data-translate="helpText"]');
         if (helpTextEl) helpTextEl.innerHTML = `<strong>${t.helpText}</strong>`;
         
@@ -1434,7 +1394,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         const backBtnEl = document.querySelector('[data-translate="backBtn"]');
         if (backBtnEl) backBtnEl.innerHTML = `<i class="fas fa-arrow-left"></i> ${t.backBtn}`;
         
-        // Update CC Section
         const ccTitleEl = document.querySelector('[data-translate="ccTitle"]');
         if (ccTitleEl) ccTitleEl.textContent = t.ccTitle;
         
@@ -1454,7 +1413,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             sqdInstructionsEl.innerHTML = `<strong>${currentLang === 'en' ? 'INSTRUCTIONS' : 'PANUTO'}:</strong> ${instructionText.replace('INSTRUCTIONS: ', '').replace('PANUTO: ', '')}`;
         }
         
-        // Update CC Questions
         const cc1QuestionEl = document.querySelector('[data-translate="cc1Question"]');
         if (cc1QuestionEl) cc1QuestionEl.textContent = t.cc1Question;
         
@@ -1464,7 +1422,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         const cc3QuestionEl = document.querySelector('[data-translate="cc3Question"]');
         if (cc3QuestionEl) cc3QuestionEl.textContent = t.cc3Question;
         
-        // Update CC Options
         for (let i = 1; i <= 4; i++) {
             const cc1OptEl = document.querySelector(`[data-translate="cc1Opt${i}"]`);
             if (cc1OptEl) cc1OptEl.textContent = t[`cc1Opt${i}`];
@@ -1480,13 +1437,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (cc3OptEl) cc3OptEl.textContent = t[`cc3Opt${i}`];
         }
         
-        // Update SQD Questions
         for (let i = 0; i <= 8; i++) {
             const sqdQuestionEl = document.querySelector(`[data-translate="sqd${i}"]`);
             if (sqdQuestionEl) sqdQuestionEl.textContent = t[`sqd${i}`];
         }
         
-        // Update emoji labels for all questions
         const emojiLabels = {
             'strongly_disagree': 'stronglyDisagree',
             'disagree': 'disagree',
@@ -1502,14 +1457,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             });
         });
         
-        // Update suggestions section
         const suggestionsHeaderEl = document.querySelector('[data-translate="suggestionsHeader"]');
         if (suggestionsHeaderEl) suggestionsHeaderEl.textContent = t.suggestionsHeader;
         
         const suggestionsTextareaEl = document.querySelector('[data-translate="suggestionsPlaceholder"]');
         if (suggestionsTextareaEl) suggestionsTextareaEl.placeholder = t.suggestionsPlaceholder;
         
-        // Update submit button
         const submitBtnEl = document.querySelector('[data-translate="submitBtn"]');
         if (submitBtnEl) submitBtnEl.innerHTML = `<i class="fas fa-paper-plane"></i> ${t.submitBtn}`;
     }

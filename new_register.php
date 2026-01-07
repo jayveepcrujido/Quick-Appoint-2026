@@ -3,8 +3,6 @@ session_start();
 include 'conn.php';
 
 function compareFaces($image1Path, $image2Path) {
-    // Simulated face match logic (replace with actual API later)
-    // For now, return true to simulate match
     return true;
 }
 
@@ -34,17 +32,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         move_uploaded_file($id_image['tmp_name'], $id_filename);
         move_uploaded_file($selfie_image['tmp_name'], $selfie_filename);
 
-        // Step: Run Tesseract OCR on valid ID image
         $ocr_output = shell_exec("tesseract " . escapeshellarg($id_filename) . " stdout");
         $ocr_output_clean = trim(preg_replace('/\s+/', ' ', $ocr_output));
 
-        // Step: Face match simulation
         $face_match = compareFaces($id_filename, $selfie_filename);
         if (!$face_match) {
             throw new Exception("Face in selfie does not match the ID photo.");
         }
 
-        // Try to extract full name from OCR result (basic attempt)
         if (preg_match('/([A-Z]{2,}\s+[A-Z]{2,}\s+[A-Z]{2,})/', $ocr_output_clean, $matches)) {
             $ocr_full_name = $matches[1];
         } else {
@@ -53,20 +48,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $pdo->beginTransaction();
 
-        // Insert into users
         $userStmt = $pdo->prepare("INSERT INTO users (first_name, middle_name, last_name) VALUES (?, ?, ?)");
         $userStmt->execute([$first_name, $middle_name, $last_name]);
         $user_id = $pdo->lastInsertId();
 
-        // Insert into auth
         $authStmt = $pdo->prepare("INSERT INTO auth (user_id, email, password, role) VALUES (?, ?, ?, ?)");
         $authStmt->execute([$user_id, $email, $password, $role]);
 
-        // Insert into resident_documents
         $docStmt = $pdo->prepare("INSERT INTO resident_documents (user_id, id_type, id_image_path, selfie_image_path, is_validated) VALUES (?, ?, ?, ?, 1)");
         $docStmt->execute([$user_id, $id_type, $id_filename, $selfie_filename]);
 
-        // Insert OCR result into ID-specific table
         switch ($id_type) {
             case 'philsys':
                 $stmt = $pdo->prepare("INSERT INTO philsys_ids (user_id, full_name, address) VALUES (?, ?, ?)");

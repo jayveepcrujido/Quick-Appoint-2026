@@ -22,7 +22,6 @@ include_once '../includes/auto_mark_noshow.php';
     <link rel="stylesheet" href="../assets/css/admin.css">
     
     <style>
-        /* Enhanced Dashboard Styles */
 body {
     background: #f8f9fa;
 }
@@ -133,7 +132,6 @@ body {
     font-size: 0.875rem;
 }
 
-/* Color themes for cards */
 .card-primary { color: #667eea; }
 .card-primary .card-icon-wrapper { background: rgba(102, 126, 234, 0.1); }
 
@@ -155,7 +153,6 @@ body {
 .card-dark { color: #2d3748; }
 .card-dark .card-icon-wrapper { background: rgba(45, 55, 72, 0.1); }
 
-/* Stats overview */
 .stats-card {
     background: white;
     border-radius: 12px;
@@ -190,19 +187,16 @@ body {
     border-radius: 2px;
 }
 
-/* Dropdown improvements */
 .dropdown-menu {
     border: none;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
     border-radius: 8px;
 }
 
-/* Loading state */
 .spinner-border {
     border-width: 3px;
 }
 
-/* Responsive adjustments */
 @media (max-width: 768px) {
     .welcome-banner {
         padding: 1.5rem;
@@ -253,7 +247,6 @@ body {
     }
 }
 
-/* Loading animation */
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -265,7 +258,6 @@ body {
     }
 }
 
-/* Prevent Flatpickr calendars from lingering */
 .flatpickr-calendar {
     z-index: 9999 !important;
 }
@@ -281,7 +273,6 @@ body > .flatpickr-calendar:not(.open) {
     </style>
 
 <script>
-    // Global cleanup registry
     window.pageCleanupRegistry = {
         intervals: [],
         timeouts: [],
@@ -289,7 +280,6 @@ body > .flatpickr-calendar:not(.open) {
         ajaxRequests: []
     };
 
-    // Override setInterval to track all intervals
     const originalSetInterval = window.setInterval;
     window.setInterval = function(fn, delay) {
         const id = originalSetInterval(fn, delay);
@@ -297,7 +287,6 @@ body > .flatpickr-calendar:not(.open) {
         return id;
     };
 
-    // Override setTimeout to track all timeouts
     const originalSetTimeout = window.setTimeout;
     window.setTimeout = function(fn, delay) {
         const id = originalSetTimeout(fn, delay);
@@ -305,32 +294,27 @@ body > .flatpickr-calendar:not(.open) {
         return id;
     };
 
-    // Track jQuery AJAX requests
     if (typeof jQuery !== 'undefined') {
         $(document).ajaxSend(function(event, jqXHR, settings) {
             window.pageCleanupRegistry.ajaxRequests.push(jqXHR);
         });
     }
 
-    // Universal cleanup function
     window.cleanupAllPages = function() {
         console.log('=== STARTING UNIVERSAL CLEANUP ===');
         
-        // Clear all intervals
         console.log('Clearing', window.pageCleanupRegistry.intervals.length, 'intervals');
         window.pageCleanupRegistry.intervals.forEach(function(id) {
             clearInterval(id);
         });
         window.pageCleanupRegistry.intervals = [];
         
-        // Clear all timeouts
         console.log('Clearing', window.pageCleanupRegistry.timeouts.length, 'timeouts');
         window.pageCleanupRegistry.timeouts.forEach(function(id) {
             clearTimeout(id);
         });
         window.pageCleanupRegistry.timeouts = [];
         
-        // Abort all pending AJAX requests
         console.log('Aborting', window.pageCleanupRegistry.ajaxRequests.length, 'AJAX requests');
         window.pageCleanupRegistry.ajaxRequests.forEach(function(jqXHR) {
             if (jqXHR && jqXHR.abort) {
@@ -343,7 +327,6 @@ body > .flatpickr-calendar:not(.open) {
         });
         window.pageCleanupRegistry.ajaxRequests = [];
         
-        // Clean up specific page cleanup functions
         if (window.availableDatesCleanup && typeof window.availableDatesCleanup === 'function') {
             console.log('Running availableDatesCleanup...');
             try {
@@ -389,7 +372,6 @@ body > .flatpickr-calendar:not(.open) {
             }
         }
         
-        // Clean up all document event handlers with namespaces
         if (typeof jQuery !== 'undefined' && jQuery) {
             const namespaces = ['availDates', 'appointmentStatus', 'manageAppt', 'analytics', 'feedback'];
             namespaces.forEach(function(ns) {
@@ -397,7 +379,6 @@ body > .flatpickr-calendar:not(.open) {
                 $(document).off('.' + ns);
             });
             
-            // Clean up any lingering modals
             try {
                 $('.modal-backdrop').remove();
                 $('body').removeClass('modal-open');
@@ -412,12 +393,10 @@ body > .flatpickr-calendar:not(.open) {
                 console.warn('Error cleaning up modals:', e);
             }
             
-            // Remove inline styles
             $('body').css('overflow', '');
             $('body').css('padding-right', '');
         }
         
-        // CRITICAL: Force remove ALL Flatpickr calendars from DOM
         console.log('Force removing all Flatpickr calendars...');
         document.querySelectorAll('.flatpickr-calendar').forEach(function(calendar) {
             console.log('Removing Flatpickr calendar:', calendar);
@@ -427,7 +406,6 @@ body > .flatpickr-calendar:not(.open) {
         console.log('=== CLEANUP COMPLETE ===');
     };
 
-    // Store the currently loaded page
     let currentPage = null;
     let isLoading = false;
 
@@ -436,7 +414,6 @@ body > .flatpickr-calendar:not(.open) {
         const nav = document.getElementById('nav-bar');
         const overlay = document.getElementById('overlay');
 
-        // Toggle sidebar
         if (toggle) {
             toggle.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -445,7 +422,6 @@ body > .flatpickr-calendar:not(.open) {
             });
         }
 
-        // Close sidebar if clicking outside or on overlay
         if (overlay) {
             overlay.addEventListener('click', () => {
                 nav.classList.remove('show');
@@ -453,7 +429,6 @@ body > .flatpickr-calendar:not(.open) {
             });
         }
 
-        // Extra safety: clicking anywhere outside
         document.addEventListener('click', (e) => {
             if (nav && nav.classList.contains('show') && !nav.contains(e.target) && !toggle.contains(e.target)) {
                 nav.classList.remove('show');
@@ -465,13 +440,11 @@ body > .flatpickr-calendar:not(.open) {
     function loadContent(page) {
         console.log('\n>>> NAVIGATION REQUEST: ' + page + ' <<<');
         
-        // Prevent loading if already loading
         if (isLoading) {
             console.warn('⚠️ Already loading content, please wait...');
             return false;
         }
 
-        // Prevent reloading the same page
         if (currentPage === page) {
             console.log('ℹ️ Already on page:', page);
             return false;
@@ -480,7 +453,6 @@ body > .flatpickr-calendar:not(.open) {
         console.log('✓ Navigation approved from', currentPage || 'homepage', 'to', page);
         isLoading = true;
         
-        // Close sidebar on mobile after clicking
         const nav = document.getElementById('nav-bar');
         const overlay = document.getElementById('overlay');
         if (nav && nav.classList.contains('show')) {
@@ -488,14 +460,11 @@ body > .flatpickr-calendar:not(.open) {
             if (overlay) overlay.classList.remove('show');
         }
         
-        // *** CRITICAL: CLEANUP EVERYTHING ***
         console.log('🧹 Initiating comprehensive cleanup...');
         window.cleanupAllPages();
         
-        // Add cache buster to prevent cached content
         const cacheBuster = '?_=' + new Date().getTime();
         
-        // Clear content area immediately
         const contentArea = $("#content-area");
         contentArea.html(
             '<div class="text-center p-5">' +
@@ -506,7 +475,6 @@ body > .flatpickr-calendar:not(.open) {
             '</div>'
         );
         
-        // Force a small delay to ensure cleanup is complete
         setTimeout(function() {
             console.log('📥 Loading content from:', page + cacheBuster);
             
@@ -520,16 +488,11 @@ body > .flatpickr-calendar:not(.open) {
                     console.log('✅ Content loaded successfully:', page);
                     currentPage = page;
                     
-                    // Scroll to top of content area smoothly
                     $('html, body').animate({ scrollTop: 0 }, 300);
                     
-                    // Give scripts time to initialize
                     setTimeout(function() {
                         console.log('⚙️ Content initialization phase complete for:', page);
                         
-                        // Initialize page-specific functions
-                        
-                        // Personnel feedback page
                         if (page.includes('personnel_view_feedbacks.php')) {
                             console.log('📋 Initializing personnel feedback page...');
                             if (typeof window.initFeedbackPage === 'function') {
@@ -537,7 +500,6 @@ body > .flatpickr-calendar:not(.open) {
                             }
                         }
                         
-                        // Admin feedback page
                         if (page.includes('admin_view_feedback.php')) {
                             console.log('📋 Initializing admin feedback page...');
                             if (typeof window.initAdminFeedbackPage === 'function') {
@@ -545,7 +507,6 @@ body > .flatpickr-calendar:not(.open) {
                             }
                         }
                         
-                        // Appointment status page
                         if (page.includes('personnel_view_appointments_status.php')) {
                             console.log('📅 Initializing appointment status page...');
                             if (typeof window.initAppointmentStatusPage === 'function') {
@@ -553,7 +514,6 @@ body > .flatpickr-calendar:not(.open) {
                             }
                         }
                         
-                        // Analytics page
                         if (page.includes('analytics')) {
                             console.log('📊 Initializing analytics page...');
                             if (typeof initializeCharts === 'function') {
@@ -561,7 +521,6 @@ body > .flatpickr-calendar:not(.open) {
                             }
                         }
                         
-                        // Available dates page
                         if (page.includes('create_available_dates.php')) {
                             console.log('📅 Verifying calendar initialization...');
                             
@@ -585,9 +544,9 @@ body > .flatpickr-calendar:not(.open) {
                     }, 200);
                 }
             });
-        }, 150); // 150ms delay to ensure cleanup completes
+        }, 150);
         
-        return false; // Prevent default link behavior
+        return false;
     }
 
     function toggleDropdown(id) {
@@ -601,7 +560,6 @@ body > .flatpickr-calendar:not(.open) {
         }
     }
 
-    // Close profile menu when clicking outside
     window.addEventListener('click', function(e) {
         const trigger = document.querySelector('.profile-trigger');
         const menu = document.getElementById("profileMenu");
@@ -610,28 +568,24 @@ body > .flatpickr-calendar:not(.open) {
         }
     });
 
-    // Handle browser back/forward buttons
     window.addEventListener('popstate', function(event) {
         if (currentPage) {
             console.log('⏮️ Browser navigation detected');
             const pageToLoad = currentPage;
-            currentPage = null; // Reset to allow reload
+            currentPage = null;
             loadContent(pageToLoad);
         }
     });
 
-    // Cleanup on page unload
     window.addEventListener('beforeunload', function() {
         console.log('🚪 Page unloading, running final cleanup...');
         window.cleanupAllPages();
     });
 
-    // Global error handler for debugging
     window.addEventListener('error', function(e) {
         console.error('💥 Global error:', e.message, 'at', e.filename + ':' + e.lineno);
     });
 
-    // Expose debug function
     window.debugLoadContent = function() {
         console.log('=== DEBUG INFO ===');
         console.log('Current page:', currentPage);
@@ -644,13 +598,11 @@ body > .flatpickr-calendar:not(.open) {
 </script>
 </head>
 <body id="body-pd">
-<!-- Header -->
 <header class="header" id="header">
     <div class="header_toggle"> 
         <i class='bx bx-menu' id="header-toggle"></i> 
     </div>
 
-    <!-- Profile Dropdown (Bootstrap-native) -->
     <div class="dropdown">
         <a href="#" class="d-flex align-items-center text-decoration-none" id="profileDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             <i class='bx bx-user-circle text-light' style="font-size: 40px; cursor:pointer;"></i>
@@ -670,7 +622,6 @@ body > .flatpickr-calendar:not(.open) {
     </div>
 </header>
 
-    <!-- Sidebar -->
     <div class="l-navbar" id="nav-bar">
         <a href="admin_dashboard.php" style="display: block; cursor: pointer;">
             <img src="../assets/images/Unisan_logo.png" id="sidebar-logo" alt="Sidebar Logo" class="header_img" style="cursor: pointer;">
@@ -709,10 +660,8 @@ body > .flatpickr-calendar:not(.open) {
 
     <div id="overlay" class="overlay"></div>
 
-    <!-- Content Area -->
     <div class="content-area" id="content-area">
         <div class="container-fluid px-3 px-md-4 py-4">
-            <!-- Welcome Banner -->
             <div class="welcome-banner">
                 <h2><i class='bx bx-grid-alt mr-2'></i>Welcome Back, 
                     <?php 
@@ -726,7 +675,6 @@ body > .flatpickr-calendar:not(.open) {
                 <p>Manage your municipality's operations efficiently from your dashboard</p>
             </div>
 
-            <!-- Quick Actions Section -->
             <h3 class="section-title">Quick Actions</h3>
             <div class="row">
                 <div class="col-12 col-md-6 mb-3">
@@ -762,7 +710,6 @@ body > .flatpickr-calendar:not(.open) {
                 </div>
             </div>
 
-            <!-- Management Section -->
             <h3 class="section-title mt-4">Management</h3>
             <div class="row">
                 <div class="col-12 col-md-6 col-lg-4 mb-3">
@@ -814,7 +761,6 @@ body > .flatpickr-calendar:not(.open) {
                 </div>
             </div>
 
-            <!-- Services & Feedback Section -->
             <h3 class="section-title mt-4">Services & Feedback</h3>
             <div class="row">
                 <div class="col-12 col-md-6 col-lg-6 mb-3">
@@ -850,7 +796,6 @@ body > .flatpickr-calendar:not(.open) {
                 </div>
             </div>
 
-            <!-- System Section -->
             <h3 class="section-title mt-4">System</h3>
             <div class="row">
                 <div class="col-12 col-md-6 col-lg-4 mb-3">
@@ -870,7 +815,6 @@ body > .flatpickr-calendar:not(.open) {
         </div>
     </div>
 
-    <!-- Logout Confirmation Modal -->
     <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="logoutModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">

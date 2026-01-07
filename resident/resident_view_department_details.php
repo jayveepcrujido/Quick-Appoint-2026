@@ -7,7 +7,6 @@
 
     $id = intval($_GET['id']);
 
-    // Fetch department
     $stmt = $pdo->prepare("SELECT * FROM departments WHERE id = ?");
     $stmt->execute([$id]);
     $department = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -16,12 +15,10 @@
         die("Department not found.");
     }
 
-    // Fetch services
     $serviceStmt = $pdo->prepare("SELECT * FROM department_services WHERE department_id = ?");
     $serviceStmt->execute([$id]);
     $services = $serviceStmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Fetch requirements
     $requirementsByService = [];
     if ($services) {
         $serviceIds = array_column($services, 'id');
@@ -51,7 +48,6 @@
                 font-family: "Segoe UI", Tahoma, sans-serif;
             }
 
-            /* Page Header - Responsive */
             .page-header {
                 background: linear-gradient(135deg, #2c3e50, #3498db);
                 color: white;
@@ -116,7 +112,6 @@
                 }
             }
 
-            /* Service Cards - Responsive */
             .service-card {
                 border: none;
                 border-radius: 1rem;
@@ -157,7 +152,6 @@
                 }
             }
 
-            /* Enhanced Modal Styling */
             .modal-content {
                 border: none;
                 border-radius: 1rem;
@@ -190,7 +184,6 @@
                 background-color: #f8f9fa;
             }
 
-            /* Service Details Modal */
             #serviceModal .modal-header {
                 background: linear-gradient(135deg, #2c3e50, #3498db);
             }
@@ -214,7 +207,6 @@
                 border-bottom: none;
             }
 
-            /* Appointment Modal */
             #appointmentModal .modal-dialog {
                 max-width: 800px;
             }
@@ -266,7 +258,6 @@
                 margin-bottom: 0.5rem;
             }
 
-            /* Submit Button Styling */
             .btn-submit-appointment {
                 background: linear-gradient(135deg, #2c3e50, #3498db);
                 border: none;
@@ -289,7 +280,6 @@
                 vertical-align: middle;
             }
 
-            /* Calendar Styling - Mobile First & Compact */
             .calendar-container {
                 background: #ffffff;
                 border-radius: 0.75rem;
@@ -438,7 +428,6 @@
                 white-space: nowrap;
             }
 
-            /* Slot Selector - Mobile Optimized */
             #slotSelector {
                 margin-top: 0.8rem;
             }
@@ -530,7 +519,6 @@
                 font-size: 0.7rem;
             }
 
-            /* Small phones (320px - 479px) */
             @media (max-width: 479px) {
                 .calendar-container {
                     padding: 0.4rem;
@@ -589,7 +577,6 @@
                 }
             }
 
-            /* Phones (480px - 575px) */
             @media (min-width: 480px) {
                 .calendar-nav button span {
                     display: inline;
@@ -608,7 +595,6 @@
                 }
             }
 
-            /* Tablets and up (576px+) */
             @media (min-width: 576px) {
                 .calendar-container {
                     padding: 0.7rem;
@@ -680,7 +666,6 @@
                 }
             }
 
-            /* Medium tablets (768px+) */
             @media (min-width: 768px) {
                 .calendar-container {
                     padding: 0.8rem;
@@ -713,6 +698,10 @@
                     font-size: 0.52rem;
                 }
 
+                .calendar-day .badge {
+                    font-size: 0.52rem;
+                }
+
                 .calendar-day-header {
                     font-size: 0.68rem;
                 }
@@ -726,7 +715,6 @@
                 }
             }
 
-            /* Large tablets and small desktops (992px+) */
             @media (min-width: 992px) {
                 .calendar-container {
                     padding: 0.9rem;
@@ -801,7 +789,6 @@
                 }
             }
 
-            /* Desktop (1200px+) */
             @media (min-width: 1200px) {
                 .calendar-container {
                     padding: 1rem;
@@ -850,7 +837,6 @@
                 }
             }
 
-            /* Extra large devices */
             @media (min-width: 1200px) {
                 .calendar-day {
                     min-height: 58px;
@@ -868,7 +854,6 @@
                 appearance: none;
             }
 
-            /* --- Responsive modal layout fix --- */
             @media (max-width: 768px) {
                 .modal-dialog {
                     margin: 1rem auto;
@@ -907,7 +892,6 @@
                 }
             }
 
-            /* For ultra-small screens */
             @media (max-width: 480px) {
                 .modal-dialog {
                     margin: 0.5rem;
@@ -924,7 +908,6 @@
                 }
             }
 
-            /* --- Taller modals --- */
             #appointmentModal .modal-dialog {
                 max-width: 600px;
                 height: 90vh;
@@ -946,7 +929,6 @@
                 padding: 1rem 1.5rem;
             }
 
-            /* Modal Responsiveness - Enhanced */
             @media (max-width: 768px) {
                 #appointmentModal .modal-dialog {
                     margin: 0.5rem;
@@ -1002,7 +984,6 @@
                 }
             }
 
-            /* Transaction Modal Styling */
             #transactionModal .modal-header {
                 background: linear-gradient(135deg, #2c3e50, #3498db);
                 border-bottom: none;
@@ -1057,7 +1038,6 @@
     </head>
     <body>
         <div id="content-area">
-            <!-- Header -->
             <div class="page-header d-flex justify-content-between align-items-center mb-4">
                 <div>
                     <h2 class="mb-1">
@@ -1075,7 +1055,6 @@
             </div>
             
             <div class="container">
-                <!-- Services Section -->
                 <h5 class="mb-3 text-secondary">
                     <i class="bx bx-cog"></i> Services & Requirements
                 </h5>
@@ -1114,7 +1093,6 @@
                 <?php endif; ?>
             </div>
 
-            <!-- Service Details Modal -->
             <div class="modal fade" id="serviceModal" tabindex="-1">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content shadow-lg">
@@ -1143,7 +1121,6 @@
                 </div>
             </div>
 
-            <!-- Book Appointment Modal -->
             <div class="modal fade" id="appointmentModal" tabindex="-1">
                 <div class="modal-dialog modal-lg">
                     <form id="appointment-form" class="modal-content shadow-lg" enctype="multipart/form-data">
@@ -1157,7 +1134,6 @@
                             <input type="hidden" name="department_id" id="department_id" value="<?= $department['id'] ?>">
                             <input type="hidden" name="available_date_id" id="available_date_id">
 
-                            <!-- Service Selection Section -->
                             <div class="form-section">
                                 <div class="section-title">
                                     <i class="bx bx-briefcase"></i>
@@ -1169,7 +1145,6 @@
                                 </div>
                             </div>
 
-                            <!-- Calendar Section -->
                             <div class="form-section">
                                 <div class="section-title">
                                     <i class="bx bx-calendar"></i>
@@ -1192,7 +1167,6 @@
                                 <div id="slotSelector"></div>
                             </div>
 
-                            <!-- Reason Section -->
                             <div class="form-section">
                                 <div class="section-title">
                                     <i class="bx bx-message-square-detail"></i>
@@ -1211,7 +1185,6 @@
                 </div>
             </div>
 
-            <!-- Transaction Success Modal -->
             <div class="modal fade" id="transactionModal" tabindex="-1" aria-hidden="true" data-backdrop="static">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content border-0 shadow-lg" id="transactionModalContent">
@@ -1267,333 +1240,294 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js"></script>
 
     <script>
-// Define variables using var or window to avoid "Identifier already declared" errors 
-// when reloading scripts via AJAX
-var currentMonth = new Date().getMonth() + 1;
-var currentYear = new Date().getFullYear();
-var currentDepartmentId = null;
-var isSubmitting = false; // Prevent multiple submissions
+    var currentMonth = new Date().getMonth() + 1;
+    var currentYear = new Date().getFullYear();
+    var currentDepartmentId = null;
+    var isSubmitting = false;
 
-// --- 1. Open Booking Function ---
-function openBooking(departmentId) {
-    console.log('Opening booking for department:', departmentId);
-    
-    // Reset to current date
-    currentMonth = new Date().getMonth() + 1;
-    currentYear = new Date().getFullYear();
-    currentDepartmentId = departmentId;
-    
-    $('#appointmentModal').modal('show');
-    // Ensure the hidden input is set correctly
-    $('#department_id').val(departmentId);
-    $('#available_date_id').val('');
-    $('#calendar').empty();
-    $('#slotSelector').empty();
-
-    // Load services
-    $.get('get_services_by_department.php', { department_id: departmentId }, function(data) {
-        $('#service').html(data);
-    });
-
-    loadCalendar(departmentId);
-}
-
-// --- 2. Load Calendar Function ---
-function loadCalendar(departmentId) {
-    console.log('Loading calendar for:', departmentId, currentMonth, currentYear);
-    
-    $.ajax({
-        url: 'get_available_dates.php',
-        type: 'GET',
-        data: { 
-            department_id: departmentId, 
-            month: currentMonth, 
-            year: currentYear
-        },
-        cache: false,
-        success: function(data) {
-            try {
-                const availableDates = JSON.parse(data);
-                generateCalendar(availableDates);
-            } catch(e) {
-                console.error('Error parsing dates:', e);
-            }
-        },
-        error: function(xhr, status, error) {
-            console.error('AJAX error:', status, error);
-        }
-    });
-}
-
-// --- 3. Generate Calendar (Unchanged Logic) ---
-function generateCalendar(availableDates) {
-    const calendar = $('#calendar');
-    calendar.empty();
-
-    const firstDay = new Date(currentYear, currentMonth - 1, 1);
-    const lastDate = new Date(currentYear, currentMonth, 0).getDate();
-    const startDay = firstDay.getDay();
-    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    $('#calendar-header').text(firstDay.toLocaleString('default', { month: 'long' }) + ' ' + currentYear);
-
-    days.forEach(day => calendar.append(`<div class='calendar-day-header'>${day}</div>`));
-
-    for (let i = 0; i < startDay; i++) {
-        calendar.append('<div class="calendar-day"></div>');
-    }
-
-    for (let day = 1; day <= lastDate; day++) {
-        const dateStr = `${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        const currentDate = new Date(currentYear, currentMonth - 1, day);
-        currentDate.setHours(0, 0, 0, 0);
-        
-        const isPastDate = currentDate < today;
-        const data = availableDates[dateStr] || null;
-        
-        const amSlots = data ? (data.am_slots - data.am_booked) : 0;
-        const pmSlots = data ? (data.pm_slots - data.pm_booked) : 0;
-        const hasAvailableSlots = amSlots > 0 || pmSlots > 0;
-        
-        let dayClass = 'calendar-day';
-        if (isPastDate || (data && !hasAvailableSlots)) {
-            dayClass += ' unavailable';
-        } else if (data && hasAvailableSlots) {
-            dayClass += ' available';
-        }
-        
-        const div = $(`<div class='${dayClass}' data-date='${dateStr}'></div>`);
-        div.append(`<div class='day-number'>${day}</div>`);
-
-        if (data) {
-            div.append(`<div class='badge ${amSlots > 0 && !isPastDate ? 'badge-success' : 'badge-secondary'}'>AM: ${isPastDate ? 0 : amSlots}</div>`);
-            div.append(`<div class='badge ${pmSlots > 0 && !isPastDate ? 'badge-info' : 'badge-secondary'}'>PM: ${isPastDate ? 0 : pmSlots}</div>`);
-
-            if (!isPastDate && hasAvailableSlots) {
-                div.click(function() {
-                    $('.calendar-day').removeClass('selected');
-                    $(this).addClass('selected');
-                    renderSlots(data, amSlots, pmSlots); // Extracted slot rendering for cleanliness
-                });
-            } else if (isPastDate) {
-                div.attr('title', 'This date has passed').css('cursor', 'not-allowed');
-            }
-        }
-        calendar.append(div);
-    }
-}
-
-// Helper to render slots HTML (Cleaned up from original)
-function renderSlots(data, amSlots, pmSlots) {
-    let slotsHtml = '';
-    
-    // AM Logic
-    let amDisabled = amSlots <= 0 ? 'disabled' : '';
-    let amSubtext = amSlots > 0 ? `${amSlots} slots available` : 'No slots available';
-    slotsHtml += `
-        <div class="form-check ${amDisabled}">
-            <input class="form-check-input" type="radio" name="slot_period" id="slot_am_${data.id}" value="am" data-id="${data.id}" ${amDisabled ? 'disabled' : 'required'}>
-            <label class="form-check-label" for="slot_am_${data.id}">
-                <strong><i class="bx bx-sun"></i>Morning Slot (AM)</strong>
-                <small class="d-block mt-1">${amSubtext}</small>
-            </label>
-        </div>`;
-
-    // PM Logic
-    let pmDisabled = pmSlots <= 0 ? 'disabled' : '';
-    let pmSubtext = pmSlots > 0 ? `${pmSlots} slots available` : 'No slots available';
-    slotsHtml += `
-        <div class="form-check ${pmDisabled}">
-            <input class="form-check-input" type="radio" name="slot_period" id="slot_pm_${data.id}" value="pm" data-id="${data.id}" ${pmDisabled ? 'disabled' : ''}>
-            <label class="form-check-label" for="slot_pm_${data.id}">
-                <strong><i class="bx bx-moon"></i>Afternoon Slot (PM)</strong>
-                <small class="d-block mt-1">${pmSubtext}</small>
-            </label>
-        </div>`;
-
-    $('#slotSelector').html(slotsHtml);
-    
-    $('input[name="slot_period"]:not(:disabled)').on('change', function() {
-        $('#available_date_id').val($(this).data('id'));
-    });
-}
-
-// --- EVENT LISTENERS ---
-// IMPORTANT: Use .off() before .on() to prevent duplicate listeners when reloading content via AJAX
-
-// Calendar Navigation (Prev)
-$(document).off('click', '#prevMonth').on('click', '#prevMonth', function(e) {
-    e.preventDefault();
-    if ($(this).prop('disabled')) return;
-    $(this).prop('disabled', true);
-    currentMonth--; 
-    if (currentMonth < 1) { currentMonth = 12; currentYear--; }
-    
-    // Always get ID from the form input to ensure accuracy
-    const deptId = $('#department_id').val(); 
-    loadCalendar(deptId);
-    setTimeout(() => $(this).prop('disabled', false), 500);
-});
-
-// Calendar Navigation (Next)
-$(document).off('click', '#nextMonth').on('click', '#nextMonth', function(e) {
-    e.preventDefault();
-    if ($(this).prop('disabled')) return;
-    $(this).prop('disabled', true);
-    currentMonth++; 
-    if (currentMonth > 12) { currentMonth = 1; currentYear++; }
-    
-    const deptId = $('#department_id').val();
-    loadCalendar(deptId);
-    setTimeout(() => $(this).prop('disabled', false), 500);
-});
-
-// Back Button
-$(document).off('click', '#backButton').on('click', '#backButton', function(e) {
-    e.preventDefault();
-    $.ajax({
-        url: "residents_view_departments.php",
-        type: "GET",
-        success: function(response) {
-            $("#content-area").html(response);
-            // Clean up modal backdrop if it got stuck
-            $('.modal-backdrop').remove();
-            $('body').removeClass('modal-open');
-        },
-        error: function() {
-            alert("Failed to load departments list.");
-        }
-    });
-});
-
-// Service Card Click
-$(document).off("click", ".service-card").on("click", ".service-card", function() {
-    const serviceId = $(this).data("id");
-    const serviceName = $(this).data("name");
-    const requirements = $(this).data("req");
-
-    $("#serviceName").text(serviceName);
-    $("#serviceRequirements").empty();
-
-    if (requirements && requirements.length > 0) {
-        requirements.forEach(r => {
-            $("#serviceRequirements").append(
-                `<li class="mb-2 d-flex align-items-start"><i class="bx bx-check-circle text-success mr-2" style="margin-top: 2px;"></i><span>${r}</span></li>`
-            );
+    function openBooking(departmentId) {
+        console.log('Opening booking for department:', departmentId);
+        currentMonth = new Date().getMonth() + 1;
+        currentYear = new Date().getFullYear();
+        currentDepartmentId = departmentId;
+        $('#appointmentModal').modal('show');
+        $('#department_id').val(departmentId);
+        $('#available_date_id').val('');
+        $('#calendar').empty();
+        $('#slotSelector').empty();
+        $.get('get_services_by_department.php', { department_id: departmentId }, function(data) {
+            $('#service').html(data);
         });
-    } else {
-        $("#serviceRequirements").html('<p class="text-muted">No specific requirements listed.</p>');
+        loadCalendar(departmentId);
     }
 
-    $("#bookNowBtn").data("service-id", serviceId);
-    $("#serviceModal").modal("show");
-});
-
-// Book Now Button - FIXED
-$(document).off('click', '#bookNowBtn').on('click', '#bookNowBtn', function(e) {
-    const serviceId = $(this).data("service-id");
-    $("#serviceModal").modal("hide");
-
-    // FIX: Get the ID from the Hidden Input Field in the DOM.
-    const deptId = $('#department_id').val(); 
-    
-    console.log('Book now clicked - DOM Department ID:', deptId);
-    openBooking(deptId);
-
-    setTimeout(() => {
-        $("#service").val(serviceId);
-    }, 500);
-});
-
-// Form Submission - FIXED WITH LOCK
-$(document).off('submit', '#appointment-form').on('submit', '#appointment-form', function(e) {
-    e.preventDefault();
-    e.stopImmediatePropagation(); // Prevent event bubbling
-    
-    // Prevent multiple submissions
-    if (isSubmitting) {
-        console.log('Already submitting, ignoring duplicate submission');
-        return false;
-    }
-    
-    const selectedSlot = $('input[name="slot_period"]:checked');
-    if (!selectedSlot.length) {
-        alert('⚠️ Please select a date and time slot.');
-        return false;
-    }
-
-    // Set submission lock
-    isSubmitting = true;
-    
-    const formData = new FormData(this);
-    formData.append('slot_period', selectedSlot.val());
-
-    const submitBtn = $(this).find('button[type="submit"]');
-    const originalText = submitBtn.html();
-    submitBtn.prop('disabled', true).html('<i class="bx bx-loader-circle bx-spin mr-2"></i> Processing...');
-
-    $.ajax({
-        url: 'residents_submit_appointment.php',
-        type: 'POST',
-        data: formData,
-        processData: false,
-        contentType: false,
-        dataType: 'json',
-        success: function(res) {
-            isSubmitting = false; // Release lock
-            submitBtn.prop('disabled', false).html(originalText);
-            
-            if (res.status === 'success') {
-                $('#appointmentModal').modal('hide');
-                $('#appointment-form')[0].reset();
-                $('#slotSelector').empty();
-                $('#calendar').empty();
-                
-                const transactionNum = res.transaction_id || res.transaction_number || 'N/A';
-                $('#transactionNumber').text(transactionNum);
-                
-                setTimeout(function() { $('#transactionModal').modal('show'); }, 500);
-                
-                if (currentDepartmentId) loadCalendar(currentDepartmentId);
-            } else {
-                alert('❌ ' + (res.message || 'Booking failed.'));
+    function loadCalendar(departmentId) {
+        console.log('Loading calendar for:', departmentId, currentMonth, currentYear);
+        $.ajax({
+            url: 'get_available_dates.php',
+            type: 'GET',
+            data: { 
+                department_id: departmentId, 
+                month: currentMonth, 
+                year: currentYear
+            },
+            cache: false,
+            success: function(data) {
+                try {
+                    const availableDates = JSON.parse(data);
+                    generateCalendar(availableDates);
+                } catch(e) {
+                    console.error('Error parsing dates:', e);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('AJAX error:', status, error);
             }
-        },
-        error: function(xhr, status, error) {
-            isSubmitting = false; // Release lock on error
-            submitBtn.prop('disabled', false).html(originalText);
-            alert('❌ Failed to book appointment. Check connection.');
-            console.error('Submission error:', xhr.responseText);
+        });
+    }
+
+    function generateCalendar(availableDates) {
+        const calendar = $('#calendar');
+        calendar.empty();
+
+        const firstDay = new Date(currentYear, currentMonth - 1, 1);
+        const lastDate = new Date(currentYear, currentMonth, 0).getDate();
+        const startDay = firstDay.getDay();
+        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        $('#calendar-header').text(firstDay.toLocaleString('default', { month: 'long' }) + ' ' + currentYear);
+
+        days.forEach(day => calendar.append(`<div class='calendar-day-header'>${day}</div>`));
+
+        for (let i = 0; i < startDay; i++) {
+            calendar.append('<div class="calendar-day"></div>');
         }
+
+        for (let day = 1; day <= lastDate; day++) {
+            const dateStr = `${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            const currentDate = new Date(currentYear, currentMonth - 1, day);
+            currentDate.setHours(0, 0, 0, 0);
+            
+            const isPastDate = currentDate < today;
+            const data = availableDates[dateStr] || null;
+            
+            const amSlots = data ? (data.am_slots - data.am_booked) : 0;
+            const pmSlots = data ? (data.pm_slots - data.pm_booked) : 0;
+            const hasAvailableSlots = amSlots > 0 || pmSlots > 0;
+            
+            let dayClass = 'calendar-day';
+            if (isPastDate || (data && !hasAvailableSlots)) {
+                dayClass += ' unavailable';
+            } else if (data && hasAvailableSlots) {
+                dayClass += ' available';
+            }
+            
+            const div = $(`<div class='${dayClass}' data-date='${dateStr}'></div>`);
+            div.append(`<div class='day-number'>${day}</div>`);
+
+            if (data) {
+                div.append(`<div class='badge ${amSlots > 0 && !isPastDate ? 'badge-success' : 'badge-secondary'}'>AM: ${isPastDate ? 0 : amSlots}</div>`);
+                div.append(`<div class='badge ${pmSlots > 0 && !isPastDate ? 'badge-info' : 'badge-secondary'}'>PM: ${isPastDate ? 0 : pmSlots}</div>`);
+
+                if (!isPastDate && hasAvailableSlots) {
+                    div.click(function() {
+                        $('.calendar-day').removeClass('selected');
+                        $(this).addClass('selected');
+                        renderSlots(data, amSlots, pmSlots);
+                    });
+                } else if (isPastDate) {
+                    div.attr('title', 'This date has passed').css('cursor', 'not-allowed');
+                }
+            }
+            calendar.append(div);
+        }
+    }
+
+    function renderSlots(data, amSlots, pmSlots) {
+        let slotsHtml = '';
+        let amDisabled = amSlots <= 0 ? 'disabled' : '';
+        let amSubtext = amSlots > 0 ? `${amSlots} slots available` : 'No slots available';
+        slotsHtml += `
+            <div class="form-check ${amDisabled}">
+                <input class="form-check-input" type="radio" name="slot_period" id="slot_am_${data.id}" value="am" data-id="${data.id}" ${amDisabled ? 'disabled' : 'required'}>
+                <label class="form-check-label" for="slot_am_${data.id}">
+                    <strong><i class="bx bx-sun"></i>Morning Slot (AM)</strong>
+                    <small class="d-block mt-1">${amSubtext}</small>
+                </label>
+            </div>`;
+
+        let pmDisabled = pmSlots <= 0 ? 'disabled' : '';
+        let pmSubtext = pmSlots > 0 ? `${pmSlots} slots available` : 'No slots available';
+        slotsHtml += `
+            <div class="form-check ${pmDisabled}">
+                <input class="form-check-input" type="radio" name="slot_period" id="slot_pm_${data.id}" value="pm" data-id="${data.id}" ${pmDisabled ? 'disabled' : ''}>
+                <label class="form-check-label" for="slot_pm_${data.id}">
+                    <strong><i class="bx bx-moon"></i>Afternoon Slot (PM)</strong>
+                    <small class="d-block mt-1">${pmSubtext}</small>
+                </label>
+            </div>`;
+
+        $('#slotSelector').html(slotsHtml);
+        
+        $('input[name="slot_period"]:not(:disabled)').on('change', function() {
+            $('#available_date_id').val($(this).data('id'));
+        });
+    }
+
+    $(document).off('click', '#prevMonth').on('click', '#prevMonth', function(e) {
+        e.preventDefault();
+        if ($(this).prop('disabled')) return;
+        $(this).prop('disabled', true);
+        currentMonth--; 
+        if (currentMonth < 1) { currentMonth = 12; currentYear--; }
+        const deptId = $('#department_id').val(); 
+        loadCalendar(deptId);
+        setTimeout(() => $(this).prop('disabled', false), 500);
     });
-    
-    return false; // Prevent default form submission
-});
 
-// Download Button
-$(document).off('click', '#downloadTransactionBtn').on('click', '#downloadTransactionBtn', function(e) {
-    const modalContent = document.getElementById("transactionModalContent");
-    const footer = modalContent.querySelector(".no-capture");
-    footer.classList.add("no-capture-capturing");
-
-    html2canvas(modalContent, { scale: 2 }).then((canvas) => {
-        footer.classList.remove("no-capture-capturing");
-        const link = document.createElement("a");
-        link.download = "appointment_slip_" + $('#transactionNumber').text() + ".png";
-        link.href = canvas.toDataURL("image/png");
-        link.click();
+    $(document).off('click', '#nextMonth').on('click', '#nextMonth', function(e) {
+        e.preventDefault();
+        if ($(this).prop('disabled')) return;
+        $(this).prop('disabled', true);
+        currentMonth++; 
+        if (currentMonth > 12) { currentMonth = 1; currentYear++; }
+        const deptId = $('#department_id').val();
+        loadCalendar(deptId);
+        setTimeout(() => $(this).prop('disabled', false), 500);
     });
-});
 
-// Reset submission lock when modal is closed
-$('#appointmentModal').on('hidden.bs.modal', function() {
-    isSubmitting = false;
-    $('#appointment-form')[0].reset();
-    $('#slotSelector').empty();
-    $('.calendar-day').removeClass('selected');
-});
+    $(document).off('click', '#backButton').on('click', '#backButton', function(e) {
+        e.preventDefault();
+        $.ajax({
+            url: "residents_view_departments.php",
+            type: "GET",
+            success: function(response) {
+                $("#content-area").html(response);
+                $('.modal-backdrop').remove();
+                $('body').removeClass('modal-open');
+            },
+            error: function() {
+                alert("Failed to load departments list.");
+            }
+        });
+    });
+
+    $(document).off("click", ".service-card").on("click", ".service-card", function() {
+        const serviceId = $(this).data("id");
+        const serviceName = $(this).data("name");
+        const requirements = $(this).data("req");
+
+        $("#serviceName").text(serviceName);
+        $("#serviceRequirements").empty();
+
+        if (requirements && requirements.length > 0) {
+            requirements.forEach(r => {
+                $("#serviceRequirements").append(
+                    `<li class="mb-2 d-flex align-items-start"><i class="bx bx-check-circle text-success mr-2" style="margin-top: 2px;"></i><span>${r}</span></li>`
+                );
+            });
+        } else {
+            $("#serviceRequirements").html('<p class="text-muted">No specific requirements listed.</p>');
+        }
+
+        $("#bookNowBtn").data("service-id", serviceId);
+        $("#serviceModal").modal("show");
+    });
+
+    $(document).off('click', '#bookNowBtn').on('click', '#bookNowBtn', function(e) {
+        const serviceId = $(this).data("service-id");
+        $("#serviceModal").modal("hide");
+        const deptId = $('#department_id').val(); 
+        console.log('Book now clicked - DOM Department ID:', deptId);
+        openBooking(deptId);
+        setTimeout(() => {
+            $("#service").val(serviceId);
+        }, 500);
+    });
+
+    $(document).off('submit', '#appointment-form').on('submit', '#appointment-form', function(e) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        if (isSubmitting) {
+            console.log('Already submitting, ignoring duplicate submission');
+            return false;
+        }
+        
+        const selectedSlot = $('input[name="slot_period"]:checked');
+        if (!selectedSlot.length) {
+            alert('⚠️ Please select a date and time slot.');
+            return false;
+        }
+
+        isSubmitting = true;
+        
+        const formData = new FormData(this);
+        formData.append('slot_period', selectedSlot.val());
+
+        const submitBtn = $(this).find('button[type="submit"]');
+        const originalText = submitBtn.html();
+        submitBtn.prop('disabled', true).html('<i class="bx bx-loader-circle bx-spin mr-2"></i> Processing...');
+
+        $.ajax({
+            url: 'residents_submit_appointment.php',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            dataType: 'json',
+            success: function(res) {
+                isSubmitting = false;
+                submitBtn.prop('disabled', false).html(originalText);
+                
+                if (res.status === 'success') {
+                    $('#appointmentModal').modal('hide');
+                    $('#appointment-form')[0].reset();
+                    $('#slotSelector').empty();
+                    $('#calendar').empty();
+                    
+                    const transactionNum = res.transaction_id || res.transaction_number || 'N/A';
+                    $('#transactionNumber').text(transactionNum);
+                    
+                    setTimeout(function() { $('#transactionModal').modal('show'); }, 500);
+                    
+                    if (currentDepartmentId) loadCalendar(currentDepartmentId);
+                } else {
+                    alert('❌ ' + (res.message || 'Booking failed.'));
+                }
+            },
+            error: function(xhr, status, error) {
+                isSubmitting = false;
+                submitBtn.prop('disabled', false).html(originalText);
+                alert('❌ Failed to book appointment. Check connection.');
+                console.error('Submission error:', xhr.responseText);
+            }
+        });
+        
+        return false;
+    });
+
+    $(document).off('click', '#downloadTransactionBtn').on('click', '#downloadTransactionBtn', function(e) {
+        const modalContent = document.getElementById("transactionModalContent");
+        const footer = modalContent.querySelector(".no-capture");
+        footer.classList.add("no-capture-capturing");
+
+        html2canvas(modalContent, { scale: 2 }).then((canvas) => {
+            footer.classList.remove("no-capture-capturing");
+            const link = document.createElement("a");
+            link.download = "appointment_slip_" + $('#transactionNumber').text() + ".png";
+            link.href = canvas.toDataURL("image/png");
+            link.click();
+        });
+    });
+
+    $('#appointmentModal').on('hidden.bs.modal', function() {
+        isSubmitting = false;
+        $('#appointment-form')[0].reset();
+        $('#slotSelector').empty();
+        $('.calendar-day').removeClass('selected');
+    });
     </script>
     </body>
     </html>

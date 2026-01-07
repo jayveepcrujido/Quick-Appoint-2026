@@ -5,13 +5,11 @@ include '../send_reset_email.php';
 
 header('Content-Type: application/json');
 
-// 1. Check Authentication
 if (!isset($_SESSION['auth_id']) || $_SESSION['role'] !== 'LGU Personnel') {
     echo json_encode(['success' => false, 'message' => 'Unauthorized access']);
     exit();
 }
 
-// 2. Get Logged-in Personnel Info
 $stmt = $pdo->prepare("
     SELECT p.id as personnel_id, p.department_id, p.first_name, p.last_name, a.email 
     FROM lgu_personnel p 
@@ -29,7 +27,6 @@ if (!$personnel || !$personnel['department_id']) {
 $department_id = $personnel['department_id'];
 $personnel_id = $personnel['personnel_id'];
 
-// 3. Validate Inputs
 $appointment_id = $_POST['appointment_id'] ?? null;
 $new_date_id = $_POST['new_date_id'] ?? null;
 $new_time_slot = $_POST['new_time_slot'] ?? null;
@@ -44,7 +41,6 @@ if (!$appointment_id || !$new_date_id || !$new_time_slot) {
 try {
     $pdo->beginTransaction();
 
-    // 4. Verify Appointment
     $checkStmt = $pdo->prepare("
         SELECT id, available_date_id, scheduled_for, status
         FROM appointments 
@@ -56,20 +52,17 @@ try {
 
     if (!$appointment) throw new Exception('Appointment not found or not editable.');
 
-    // 5. Get New Date Details
     $dateStmt = $pdo->prepare("SELECT id, DATE(date_time) as date, am_slots, pm_slots, am_booked, pm_booked FROM available_dates WHERE id = ?");
     $dateStmt->execute([$new_date_id]);
     $newDate = $dateStmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$newDate) throw new Exception('Selected date not found.');
 
-    // 6. Check Availability
     $isAM = ($new_time_slot === '09:00:00');
     $available = $isAM ? ($newDate['am_slots'] - $newDate['am_booked']) > 0 : ($newDate['pm_slots'] - $newDate['pm_booked']) > 0;
     
     if (!$available) throw new Exception('Selected time slot is fully booked.');
 
-    // 7. Update Slot Counts
     if ($old_date_id && $old_time_slot) {
         $oldIsAM = ($old_time_slot === '09:00:00');
         $oldColumn = $oldIsAM ? 'am_booked' : 'pm_booked';
@@ -79,7 +72,6 @@ try {
     $newColumn = $isAM ? 'am_booked' : 'pm_booked';
     $pdo->prepare("UPDATE available_dates SET $newColumn = $newColumn + 1 WHERE id = ?")->execute([$new_date_id]);
 
-    // 8. Update Appointment Record
     $newScheduledFor = $newDate['date'] . ' ' . $new_time_slot;
     $updateStmt = $pdo->prepare("
         UPDATE appointments 
@@ -92,7 +84,6 @@ try {
     ");
     $updateStmt->execute([$new_date_id, $newScheduledFor, $personnel_id, $appointment_id]);
 
-    // 9. Fetch Resident Info
     $resStmt = $pdo->prepare("
         SELECT r.id as resident_id, r.first_name, r.last_name, au.email, ds.service_name, a.transaction_id
         FROM appointments a
@@ -104,14 +95,9 @@ try {
     $resStmt->execute([$appointment_id]);
     $resInfo = $resStmt->fetch(PDO::FETCH_ASSOC);
 
-    // ==========================================
-    // 10. INSERT WEB NOTIFICATIONS
-    // ==========================================
     if ($resInfo) {
         $formattedDate = date('F j, Y', strtotime($newDate['date']));
         $formattedTime = date('g:i A', strtotime($new_time_slot));
-        
-        // 10.A Notification for RESIDENT
         $residentMsg = "Your appointment for {$resInfo['service_name']} has been rescheduled to {$formattedDate} at {$formattedTime}.";
         
         $notifStmt = $pdo->prepare("
@@ -120,7 +106,6 @@ try {
         ");
         $notifStmt->execute([$appointment_id, $resInfo['resident_id'], $residentMsg]);
 
-        // 10.B Notification for PERSONNEL (NEW BLOCK)
         $personnelMsg = "You rescheduled the appointment for {$resInfo['first_name']} {$resInfo['last_name']} to {$formattedDate} at {$formattedTime}.";
         
         $auditStmt = $pdo->prepare("
@@ -132,12 +117,10 @@ try {
 
     $pdo->commit();
 
-    // 11. Send Emails
     $formattedDate = date('F j, Y', strtotime($newDate['date']));
     $formattedTime = date('g:i A', strtotime($new_time_slot));
 
     if ($resInfo) {
-        // Email to Resident
         if (function_exists('sendRescheduleNotification')) {
             $resDetails = [
                 'service_name' => $resInfo['service_name'],
@@ -148,7 +131,6 @@ try {
             sendRescheduleNotification($resInfo['email'], $resInfo['first_name'], $resDetails);
         }
 
-        // Email to Personnel
         if (function_exists('sendPersonnelRescheduleNotification')) {
             $staffDetails = [
                 'resident_name' => $resInfo['first_name'] . ' ' . $resInfo['last_name'],

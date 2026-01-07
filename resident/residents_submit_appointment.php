@@ -137,7 +137,7 @@ try {
 
     $slot_text = strtoupper($slot_period);
     $formatted_date = date('F d, Y', strtotime($base_date));
-    $notification_message = "New appointment booked by {$resident_name} for {$formatted_date} ({$slot_text} slot)";
+    $notification_message = "{$resident_name}, you have successfully booked an appointment for {$formatted_date} ({$slot_text} slot)";
 
     $notificationStmt = $pdo->prepare("
         INSERT INTO notifications 
@@ -150,6 +150,49 @@ try {
         $resident_id,
         $notification_message
     ]);
+
+    // ==================== GET ALL PERSONNEL IN THE DEPARTMENT ====================
+    $allPersonnelStmt = $pdo->prepare("
+        SELECT lp.id, lp.auth_id, lp.first_name, lp.last_name
+        FROM lgu_personnel lp
+        JOIN auth a ON lp.auth_id = a.id
+        WHERE lp.department_id = ? AND a.role = 'LGU Personnel'
+    ");
+    $allPersonnelStmt->execute([$department_id]);
+    $allPersonnel = $allPersonnelStmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // ==================== CREATE NOTIFICATIONS FOR ALL PERSONNEL ====================
+    $slot_text = strtoupper($slot_period);
+    $formatted_date = date('F d, Y', strtotime($base_date));
+    $notification_message = "New appointment booked by {$resident_name} for {$formatted_date} ({$slot_text} slot)";
+
+    // Insert notification for resident first
+    $notificationStmt = $pdo->prepare("
+        INSERT INTO notifications 
+        (appointment_id, resident_id, message, recipient_type, created_at, is_read) 
+        VALUES (?, ?, ?, 'Resident', NOW(), 0)
+    ");
+
+    $notificationStmt->execute([
+        $appointmentId,
+        $resident_id,
+        $notification_message
+    ]);
+
+    // Insert notification for EACH personnel in the department
+    foreach ($allPersonnel as $personnel_member) {
+        $personnelNotificationStmt = $pdo->prepare("
+            INSERT INTO notifications 
+            (appointment_id, personnel_id, message, recipient_type, created_at, is_read) 
+            VALUES (?, ?, ?, 'Personnel', NOW(), 0)
+        ");
+        
+        $personnelNotificationStmt->execute([
+            $appointmentId,
+            $personnel_member['id'],
+            $notification_message
+        ]);
+    }
 
     $pdo->commit();
 

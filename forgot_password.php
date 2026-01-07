@@ -1,32 +1,27 @@
 <?php
 session_start();
 include 'conn.php';
-require 'send_reset_email.php'; // PHPMailer function
+require 'send_reset_email.php';
 
 $message = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = $_POST['email'];
 
-    // Find user in auth table
     $query = "SELECT id, email, role FROM auth WHERE email = :email";
     $stmt = $pdo->prepare($query);
     $stmt->execute(['email' => $email]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($user) {
-        // Generate secure token
         $token = bin2hex(random_bytes(50));
 
-        // Save token
         $update = $pdo->prepare("UPDATE auth SET reset_token = :token WHERE email = :email");
         $update->execute(['token' => $token, 'email' => $email]);
 
-        // Create reset link
         $resetLink = "http://localhost/capstone-2/capstone/reset_password.php?token=$token";
 
-        // Send email using PHPMailer
-        $result = sendResetEmail($email, $email, $resetLink); // Using email as name since we don't have first_name
+        $result = sendResetEmail($email, $email, $resetLink); 
 
         if ($result === true) {
             $message = "<div class='alert success'>A reset link has been sent to <strong>$email</strong>. Please check your inbox.</div>";

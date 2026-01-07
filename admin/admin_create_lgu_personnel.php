@@ -6,10 +6,8 @@ if (!isset($_SESSION['auth_id']) || $_SESSION['role'] !== 'Admin') {
 }
 include '../conn.php';
 
-// Fetch departments
 $departments = $pdo->query("SELECT id, name FROM departments ORDER BY name ASC")->fetchAll();
 
-// Fetch LGU Personnel (joined with auth to get email) - UPDATED QUERY
 $stmt = $pdo->prepare("
     SELECT lp.id, lp.first_name, lp.middle_name, lp.last_name, lp.department_id, 
            lp.is_department_head, lp.created_by_personnel_id,
@@ -23,7 +21,6 @@ $stmt = $pdo->prepare("
 $stmt->execute();
 $personnel = $stmt->fetchAll();
 
-// Count department heads
 $dept_heads_count = count(array_filter($personnel, fn($p) => $p['is_department_head'] == 1));
 ?>
 
@@ -422,11 +419,6 @@ body {
     margin-top: 0.125rem;
 }
 
-/* ========================================
-   RESPONSIVE DESIGN - MOBILE & TABLET
-   ======================================== */
-
-/* Large Tablets and Small Desktops (1024px and below) */
 @media (max-width: 1024px) {
     .page-header {
         padding: 1.75rem;
@@ -460,7 +452,6 @@ body {
     }
 }
 
-/* Tablets (768px and below) */
 @media (max-width: 768px) {
     body {
         padding: 0;
@@ -485,7 +476,6 @@ body {
         font-size: 1.5rem;
     }
 
-    /* Stats Cards - Stack on mobile */
     .stats-card {
         margin-bottom: 1rem;
         padding: 1rem;
@@ -510,7 +500,6 @@ body {
         font-size: 0.85rem;
     }
 
-    /* Card Header */
     .card-header-custom {
         padding: 1rem 1.5rem;
         flex-direction: column;
@@ -528,7 +517,6 @@ body {
         padding: 0.75rem 1.5rem;
     }
 
-    /* Search Bar */
     .search-filter-bar {
         padding: 1rem 1.5rem;
     }
@@ -543,7 +531,6 @@ body {
         font-size: 1.1rem;
     }
 
-    /* Table Container */
     .table-container {
         padding: 0;
     }
@@ -552,7 +539,6 @@ body {
         border-radius: 0;
     }
 
-    /* Mobile Card-Style Table */
     .custom-table {
         font-size: 0.875rem;
     }
@@ -618,7 +604,6 @@ body {
         text-align: center;
     }
 
-    /* Badges mobile optimization */
     .badge-dept,
     .badge-head,
     .badge-created-by {
@@ -634,7 +619,6 @@ body {
         display: inline-flex;
     }
 
-    /* Action buttons on mobile */
     .btn-action {
         width: 42px;
         height: 42px;
@@ -645,7 +629,6 @@ body {
         font-size: 1.1rem;
     }
 
-    /* Modal adjustments */
     .modal-dialog {
         margin: 0.5rem;
     }
@@ -693,7 +676,6 @@ body {
         font-size: 0.85rem;
     }
 
-    /* Empty state */
     .empty-state {
         padding: 2rem 1rem;
     }
@@ -707,7 +689,6 @@ body {
     }
 }
 
-/* Mobile Landscape (667px and below, landscape) */
 @media (max-width: 667px) and (orientation: landscape) {
     .page-header {
         padding: 1rem 1.5rem;
@@ -739,7 +720,6 @@ body {
     }
 }
 
-/* Small Mobile Devices (480px and below) */
 @media (max-width: 480px) {
     .page-header {
         padding: 1.25rem;
@@ -755,7 +735,6 @@ body {
         font-size: 1.35rem;
     }
 
-    /* Stats cards - single column */
     .row {
         margin-left: 0;
         margin-right: 0;
@@ -785,7 +764,6 @@ body {
         font-size: 0.8rem;
     }
 
-    /* Main card */
     .main-card {
         border-radius: 15px;
         margin-bottom: 1.5rem;
@@ -812,7 +790,6 @@ body {
         font-size: 1.1rem;
     }
 
-    /* Search */
     .search-filter-bar {
         padding: 1rem;
     }
@@ -827,7 +804,6 @@ body {
         font-size: 1rem;
     }
 
-    /* Table cards */
     .custom-table tbody tr {
         padding: 0.875rem;
         margin-bottom: 0.875rem;
@@ -843,7 +819,6 @@ body {
         font-size: 0.75rem;
     }
 
-    /* Badges */
     .badge-dept {
         font-size: 0.7rem;
         padding: 0.3rem 0.65rem;
@@ -861,14 +836,12 @@ body {
         margin-top: 0.4rem;
     }
 
-    /* Action buttons */
     .btn-action {
         width: 40px;
         height: 40px;
         margin: 0 0.3rem;
     }
 
-    /* Modal */
     .modal-dialog {
         margin: 0.25rem;
     }
@@ -941,7 +914,6 @@ body {
         font-size: 1.1rem;
     }
 
-    /* Empty state */
     .empty-state {
         padding: 1.75rem 0.875rem;
     }
@@ -959,7 +931,6 @@ body {
     }
 }
 
-/* Extra Small Mobile (375px and below) */
 @media (max-width: 375px) {
     .page-header h4 {
         font-size: 1rem;
@@ -992,9 +963,7 @@ body {
     }
 }
 
-/* Touch device improvements */
 @media (hover: none) and (pointer: coarse) {
-    /* Better touch targets */
     .btn-action {
         min-width: 44px;
         min-height: 44px;
@@ -1004,7 +973,6 @@ body {
         padding-left: 0.5rem;
     }
 
-    /* Prevent touch callout */
     .btn-action,
     .btn-add,
     .btn-submit {
@@ -1012,7 +980,6 @@ body {
         -webkit-touch-callout: none;
     }
 
-    /* Remove hover effects on touch */
     .stats-card:hover {
         transform: none;
     }
@@ -1030,7 +997,6 @@ body {
     }
 }
 
-/* Landscape orientation for phones */
 @media (max-height: 600px) and (orientation: landscape) {
     .modal-body {
         max-height: 60vh;
@@ -1047,7 +1013,6 @@ body {
         margin-bottom: 0.75rem;
     }
 }
-/* Custom Alert Styles */
 .custom-alert {
     position: fixed;
     top: 20px;
@@ -1144,7 +1109,6 @@ body {
     color: #1f2937;
 }
 
-/* Mobile responsiveness for alerts */
 @media (max-width: 480px) {
     .custom-alert {
         top: 10px;
@@ -1171,14 +1135,12 @@ body {
 </head>
 <body>
     <div class="container">
-        <!-- Page Header -->
         <div class="page-header">
             <h4><i class='bx bx-user-circle'></i> Manage LGU Personnel</h4>
         </div>
     </div>
 
     <div class="container">
-        <!-- Stats Card - UPDATED -->
         <div class="row">
             <div class="col-md-3">
                 <div class="stats-card">
@@ -1234,7 +1196,6 @@ body {
             </div>
         </div>
 
-        <!-- Main Table Card -->
         <div class="main-card">
             <div class="card-header-custom">
                 <h5><i class='bx bx-list-ul'></i> Personnel Directory</h5>
@@ -1329,7 +1290,6 @@ body {
         </div>
     </div>
 
-    <!-- Add Modal - UPDATED -->
     <div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <form id="addForm" class="modal-content">
@@ -1392,7 +1352,6 @@ body {
         </div>
     </div>
 
-    <!-- Edit Modal - UPDATED -->
     <div class="modal fade" id="editModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <form id="editForm" class="modal-content">
@@ -1460,7 +1419,6 @@ body {
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-// Search functionality
 $("#searchInput").on("keyup", function() {
     const value = $(this).val().toLowerCase();
     $("#personnelTable tbody tr").filter(function() {
@@ -1468,17 +1426,14 @@ $("#searchInput").on("keyup", function() {
     });
 });
 
-// Function to reload just the personnel table
 function loadPersonnelTable() {
     $.ajax({
         url: 'admin_create_lgu_personnel.php',
         method: 'GET',
         success: function(html) {
-            // Extract and update the table
             const newTable = $(html).find('#personnelTable tbody').html();
             $('#personnelTable tbody').html(newTable);
             
-            // Update stats cards
             const newStats = $(html).find('.stats-card h3');
             $('.stats-card h3').each(function(index) {
                 $(this).text($(newStats[index]).text());
@@ -1486,19 +1441,16 @@ function loadPersonnelTable() {
         },
         error: function() {
             console.error('Failed to reload table');
-            // Fallback to full page reload if dynamic load fails
             location.reload();
         }
     });
 }
 
-// ADD with validation and dynamic update
 $("#addForm").submit(function(e) {
     e.preventDefault();
     
     const isDeptHead = $('#is_department_head').is(':checked');
     
-    // GET THE DEPARTMENT NAME
     const deptSelect = $(this).find('[name="department_id"]');
     const deptName = deptSelect.find('option:selected').text();
     
@@ -1509,12 +1461,10 @@ $("#addForm").submit(function(e) {
     confirmMsg += "?";
     
     if (confirm(confirmMsg)) {
-        // Show loading state
         const submitBtn = $(this).find('button[type="submit"]');
         const originalBtnText = submitBtn.html();
         submitBtn.html('<i class="bx bx-loader-alt bx-spin"></i> Creating...').prop('disabled', true);
         
-        // ADD DEPARTMENT NAME TO FORM DATA
         let formData = $(this).serialize();
         formData += '&department_name=' + encodeURIComponent(deptName);
         
@@ -1524,40 +1474,30 @@ $("#addForm").submit(function(e) {
             data: formData,
             dataType: 'json',
             success: function(response) {
-                // Reset button state
                 submitBtn.html(originalBtnText).prop('disabled', false);
                 
                 if (response.success) {
-                    // Close modal FIRST - completely and cleanly
                     $('#addModal').modal('hide');
                     
-                    // Wait a moment for modal to close
                     setTimeout(function() {
-                        // Remove ALL modal backdrops (in case multiple exist)
                         $('.modal-backdrop').remove();
                         
-                        // Reset body
                         $('body').removeClass('modal-open');
                         $('body').css('padding-right', '');
                         $('body').css('overflow', '');
                         
-                        // Reset form
                         $('#addForm')[0].reset();
                         
-                        // Show success alert with custom styling
                         showSuccessAlert(response.message);
                         
-                        // Reload table
                         loadPersonnelTable();
-                    }, 300); // Wait 300ms for smooth modal close
+                    }, 300);
                     
                 } else {
-                    // Show error without closing modal
                     showErrorAlert(response.message);
                 }
             },
             error: function(xhr) {
-                // Reset button state
                 submitBtn.html(originalBtnText).prop('disabled', false);
                 
                 try {
@@ -1572,9 +1512,7 @@ $("#addForm").submit(function(e) {
     }
 });
 
-// Custom Success Alert Function
 function showSuccessAlert(message) {
-    // Remove any existing alerts
     $('.custom-alert').remove();
     
     const alertHtml = `
@@ -1594,10 +1532,8 @@ function showSuccessAlert(message) {
     
     $('body').append(alertHtml);
     
-    // Animate in
     $('.custom-alert').hide().fadeIn(300);
     
-    // Auto close after 5 seconds
     setTimeout(function() {
         $('.custom-alert').fadeOut(300, function() {
             $(this).remove();
@@ -1605,9 +1541,7 @@ function showSuccessAlert(message) {
     }, 5000);
 }
 
-// Custom Error Alert Function
 function showErrorAlert(message) {
-    // Remove any existing alerts
     $('.custom-alert').remove();
     
     const alertHtml = `
@@ -1627,10 +1561,8 @@ function showErrorAlert(message) {
     
     $('body').append(alertHtml);
     
-    // Animate in
     $('.custom-alert').hide().fadeIn(300);
     
-    // Auto close after 5 seconds
     setTimeout(function() {
         $('.custom-alert').fadeOut(300, function() {
             $(this).remove();
@@ -1638,19 +1570,15 @@ function showErrorAlert(message) {
     }, 5000);
 }
 
-// Clean up modal when it's hidden (extra safety measure)
 $('#addModal').on('hidden.bs.modal', function () {
-    // Reset form
     $('#addForm')[0].reset();
     
-    // Clean up any lingering backdrops
     $('.modal-backdrop').remove();
     $('body').removeClass('modal-open');
     $('body').css('padding-right', '');
     $('body').css('overflow', '');
 });
 
-// FILL EDIT MODAL
 $(document).on("click", ".editBtn", function() {
     const btn = $(this);
     const isDeptHead = btn.data("is-head") == 1;
@@ -1662,10 +1590,8 @@ $(document).on("click", ".editBtn", function() {
     $("#editForm [name=email]").val(btn.data("email"));
     $("#editForm [name=department_id]").val(btn.data("dept"));
     
-    // Set department head checkbox
     $("#edit_is_department_head").prop('checked', isDeptHead);
     
-    // Show info if department head
     if (isDeptHead) {
         $("#edit-info-box").show();
         $("#edit-info-text").html("This personnel is currently a <strong>Department Head</strong>. Unchecking will remove their ability to manage co-personnel.");
@@ -1676,7 +1602,6 @@ $(document).on("click", ".editBtn", function() {
     $("#editModal").modal("show");
 });
 
-// EDIT with validation and dynamic update
 $("#editForm").submit(function(e) {
     e.preventDefault();
     
@@ -1695,17 +1620,14 @@ $("#editForm").submit(function(e) {
             dataType: 'json',
             success: function(response) {
                 if (response.success) {
-                    // Close modal properly and remove backdrop
                     $('#editModal').modal('hide');
                     
-                    // Remove modal backdrop and reset body
                     $('.modal-backdrop').remove();
                     $('body').removeClass('modal-open');
                     $('body').css('padding-right', '');
                     
                     alert(response.message);
                     
-                    // Reload the table dynamically
                     loadPersonnelTable();
                 } else {
                     alert('Error: ' + response.message);
@@ -1723,7 +1645,6 @@ $("#editForm").submit(function(e) {
     }
 });
 
-// DELETE with dynamic update
 $(document).on("click", ".deleteBtn", function() {
     const id = $(this).data("id");
     const name = $(this).data("name");
@@ -1738,7 +1659,6 @@ $(document).on("click", ".deleteBtn", function() {
                 if (response.success) {
                     alert(response.message);
                     
-                    // Reload the table dynamically (no modal to close for delete)
                     loadPersonnelTable();
                 } else {
                     alert('Error: ' + response.message);

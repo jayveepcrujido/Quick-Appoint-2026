@@ -1,7 +1,4 @@
 <?php
-// No session check needed since it's already in dashboard.php
-
-// DB Connection
 $host = "localhost";
 $username = "root";
 $password = "";
@@ -11,7 +8,6 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// ====== GET APPOINTMENT LOCATIONS ======
 $appointmentLocations = [];
 $sql = "SELECT r.address, 
         a.id,
@@ -32,7 +28,6 @@ while ($row = $result->fetch_assoc()) {
     $allAppointmentsData[] = $row;
 }
 
-// Get individual appointments for filtering
 $sql_individual = "SELECT r.address, a.requested_at, a.resident_id
                    FROM appointments a
                    JOIN residents r ON a.resident_id = r.id
@@ -43,7 +38,6 @@ while ($row = $result_individual->fetch_assoc()) {
     $individualAppointments[] = $row;
 }
 
-// Get total stats
 $totalResidents = count($appointmentLocations);
 $totalAppointments = array_sum(array_column($appointmentLocations, 'count'));
 ?>
@@ -52,7 +46,6 @@ $totalAppointments = array_sum(array_column($appointmentLocations, 'count'));
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
 
 <style>
-/* Stats Cards */
 .geomap-stats-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -105,7 +98,6 @@ $totalAppointments = array_sum(array_column($appointmentLocations, 'count'));
     font-weight: 600;
 }
 
-/* Map Container */
 .geomap-card {
     background: white;
     border-radius: 15px;
@@ -212,7 +204,6 @@ $totalAppointments = array_sum(array_column($appointmentLocations, 'count'));
     touch-action: pan-x pan-y;
 }
 
-/* Legend */
 .geomap-legend {
     background: white;
     padding: 15px;
@@ -243,7 +234,6 @@ $totalAppointments = array_sum(array_column($appointmentLocations, 'count'));
     border: 2px solid rgba(0,0,0,0.2);
 }
 
-/* Popup */
 .geomap-popup-content {
     font-family: "Segoe UI", sans-serif;
 }
@@ -273,7 +263,6 @@ $totalAppointments = array_sum(array_column($appointmentLocations, 'count'));
     50% { opacity: 1; }
 }
 
-/* Layer Control Styles */
 .leaflet-control-layers {
     border-radius: 8px !important;
     box-shadow: 0 2px 10px rgba(0,0,0,0.15) !important;
@@ -300,7 +289,6 @@ $totalAppointments = array_sum(array_column($appointmentLocations, 'count'));
     padding: 5px 0 !important;
 }
 
-/* Header Gradient Card Style */
 .header-option-1 {
     background: linear-gradient(135deg, #0D92F4, #27548A);
     border-radius: 20px;
@@ -390,11 +378,6 @@ $totalAppointments = array_sum(array_column($appointmentLocations, 'count'));
     display: inline-block;
 }
 
-/* ========================================
-   RESPONSIVE STYLES - MOBILE & TABLET
-   ======================================== */
-
-/* Tablet Landscape (1024px and below) */
 @media (max-width: 1024px) {
     #geomap-map {
         height: 500px;
@@ -437,7 +420,6 @@ $totalAppointments = array_sum(array_column($appointmentLocations, 'count'));
     }
 }
 
-/* Tablet Portrait (768px and below) */
 @media (max-width: 768px) {
     #geomap-map {
         height: 450px;
@@ -497,7 +479,6 @@ $totalAppointments = array_sum(array_column($appointmentLocations, 'count'));
         font-size: 14px;
     }
 
-    /* Header responsive */
     .header-option-1 {
         padding: 20px;
         border-radius: 15px;
@@ -529,7 +510,6 @@ $totalAppointments = array_sum(array_column($appointmentLocations, 'count'));
         font-size: 13px;
     }
 
-    /* Improve popup sizing on tablets */
     .leaflet-popup-content-wrapper {
         max-width: 280px;
     }
@@ -542,7 +522,6 @@ $totalAppointments = array_sum(array_column($appointmentLocations, 'count'));
         font-size: 12px;
     }
 
-    /* Legend adjustments */
     .geomap-legend {
         padding: 12px;
         max-width: 200px;
@@ -561,12 +540,10 @@ $totalAppointments = array_sum(array_column($appointmentLocations, 'count'));
         height: 18px;
     }
 
-    /* Improve marker visibility on mobile */
     .leaflet-marker-icon {
         cursor: pointer;
     }
 
-    /* Improve popup close button touch target */
     .leaflet-popup-close-button {
         width: 30px !important;
         height: 30px !important;
@@ -574,7 +551,6 @@ $totalAppointments = array_sum(array_column($appointmentLocations, 'count'));
         line-height: 30px !important;
     }
 
-    /* Better touch handling for map */
     .leaflet-container {
         -webkit-tap-highlight-color: transparent;
         -webkit-user-select: none;
@@ -583,13 +559,11 @@ $totalAppointments = array_sum(array_column($appointmentLocations, 'count'));
         user-select: none;
     }
 
-    /* Better popup animation on mobile */
     .leaflet-popup {
         margin-bottom: 30px;
     }
 }
 
-/* Mobile Landscape (667px and below) */
 @media (max-width: 667px) and (orientation: landscape) {
     #geomap-map {
         height: 350px;
@@ -635,7 +609,6 @@ $totalAppointments = array_sum(array_column($appointmentLocations, 'count'));
     }
 }
 
-/* Mobile Portrait (480px and below) */
 @media (max-width: 480px) {
     #geomap-map {
         height: 400px;
@@ -704,10 +677,9 @@ $totalAppointments = array_sum(array_column($appointmentLocations, 'count'));
         font-size: 16px;
     }
 
-    /* Header mobile optimization */
     .header-option-1 {
         padding: 15px;
-        border-radius: 12px;
+        border-radius: 15px;
     }
 
     .header-option-1::before {
@@ -745,7 +717,6 @@ $totalAppointments = array_sum(array_column($appointmentLocations, 'count'));
         margin-top: 8px;
     }
 
-    /* Popup mobile optimization */
     .leaflet-popup-content-wrapper {
         max-width: 240px;
         border-radius: 8px;
@@ -765,7 +736,6 @@ $totalAppointments = array_sum(array_column($appointmentLocations, 'count'));
         margin: 3px 0;
     }
 
-    /* Legend mobile optimization */
     .geomap-legend {
         padding: 10px;
         max-width: 180px;
@@ -788,7 +758,6 @@ $totalAppointments = array_sum(array_column($appointmentLocations, 'count'));
         margin-right: 6px;
     }
 
-    /* Leaflet controls mobile optimization */
     .leaflet-control-layers-toggle {
         width: 38px !important;
         height: 38px !important;
@@ -802,7 +771,6 @@ $totalAppointments = array_sum(array_column($appointmentLocations, 'count'));
         font-size: 20px;
     }
 
-    /* Improve touch targets */
     .leaflet-touch .leaflet-control-layers-toggle {
         width: 44px !important;
         height: 44px !important;
@@ -814,7 +782,6 @@ $totalAppointments = array_sum(array_column($appointmentLocations, 'count'));
         line-height: 44px;
     }
 
-    /* Better touch feedback */
     .leaflet-marker-icon {
         transition: transform 0.1s ease;
     }
@@ -822,8 +789,7 @@ $totalAppointments = array_sum(array_column($appointmentLocations, 'count'));
     .leaflet-marker-icon:active {
         transform: scale(1.1);
     }
-
-    /* Improve legend positioning on mobile */
+    
     .leaflet-bottom.leaflet-right {
         bottom: 10px;
         right: 10px;
@@ -835,7 +801,6 @@ $totalAppointments = array_sum(array_column($appointmentLocations, 'count'));
     }
 }
 
-/* Extra Small Mobile (375px and below) */
 @media (max-width: 375px) {
     #geomap-map {
         height: 350px;
@@ -888,13 +853,11 @@ $totalAppointments = array_sum(array_column($appointmentLocations, 'count'));
     }
 }
 
-/* iOS Safari specific fixes */
 @supports (-webkit-touch-callout: none) {
     #geomap-map {
         -webkit-overflow-scrolling: touch;
     }
 
-    /* Fix for iOS Safari viewport height */
     @media (max-width: 768px) {
         #geomap-map {
             height: 50vh;
@@ -903,7 +866,6 @@ $totalAppointments = array_sum(array_column($appointmentLocations, 'count'));
     }
 }
 
-/* High DPI screens (Retina displays) */
 @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
     .leaflet-marker-icon {
         image-rendering: -webkit-optimize-contrast;
@@ -925,7 +887,6 @@ $totalAppointments = array_sum(array_column($appointmentLocations, 'count'));
         </div>
     </div>
 
-    <!-- Stats Cards -->
     <div class="geomap-stats-container">
         <div class="geomap-stat-card">
             <div class="geomap-stat-icon blue">
@@ -956,7 +917,6 @@ $totalAppointments = array_sum(array_column($appointmentLocations, 'count'));
         </div>
     </div>
 
-    <!-- Map -->
     <div class="geomap-card">
         <div class="geomap-header">
             <div class="geomap-header-left">
@@ -983,9 +943,7 @@ $totalAppointments = array_sum(array_column($appointmentLocations, 'count'));
     </div>
 </div>
 
-<!-- Leaflet JS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
-<!-- SheetJS for Excel export -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <script>
@@ -996,7 +954,6 @@ $totalAppointments = array_sum(array_column($appointmentLocations, 'count'));
     let allMarkers = [];
     let legendControl = null;
     
-    // All appointment data from PHP
     const allIndividualAppointments = <?= json_encode($individualAppointments) ?>;
     
     window.geomapCleanup = function() {
@@ -1156,7 +1113,6 @@ $totalAppointments = array_sum(array_column($appointmentLocations, 'count'));
         geomapInstance.setMaxZoom(18);
         geomapInstance.fitBounds(unisanBounds);
         
-        // Add municipal hall marker
         L.marker([13.8383, 121.9782], {
             icon: L.icon({
                 iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
@@ -1188,20 +1144,16 @@ $totalAppointments = array_sum(array_column($appointmentLocations, 'count'));
     function updateMapData(timeFilter) {
         console.log('GeoMap: Updating data for filter:', timeFilter);
         
-        // Clear existing markers
         allMarkers.forEach(marker => geomapInstance.removeLayer(marker));
         allMarkers = [];
         
-        // Remove existing legend
         if (legendControl) {
             geomapInstance.removeControl(legendControl);
         }
         
-        // Filter and aggregate data
         const filteredAppointments = filterAppointmentsByTime(timeFilter);
         const appointments = aggregateAppointments(filteredAppointments);
         
-        // Update stats
         updateStats(appointments);
         
         if (appointments.length === 0) {
@@ -1210,25 +1162,43 @@ $totalAppointments = array_sum(array_column($appointmentLocations, 'count'));
         }
         
         const barangayCoords = {
-            'Bulo': [13.8650, 121.9650],
-            'Punta': [13.8700, 121.9800],
-            'San Roque': [13.8600, 121.9900],
-            'Poblacion': [13.8383, 121.9782],
-            'Cabulihan': [13.8450, 121.9850],
-            'Mairok': [13.8320, 121.9850],
-            'Tubigan': [13.8500, 121.9700],
+            'Almacen': [13.8666, 121.9958],
             'Balagbag': [13.8250, 122.0100],
-            'Balanacan': [13.8350, 122.0050],
-            'Plaridel': [13.8200, 122.0000],
-            'Pagaguasan': [13.8150, 121.9950],
+            'Balagtas': [13.8404, 122.0389],
+            'Balanacan': [13.8510, 121.9895],
+            'Bonifacio': [13.8770, 122.0320],
+            'Bulo Ibaba': [13.8657, 121.9738],
+            'Bulo Ilaya': [13.8754, 121.9559],
+            'Burgos': [13.8909, 121.9589,],
+            'Cabulihan Ibaba': [13.8153, 122.0243],
+            'Cabulihan Ilaya': [13.8322, 122.0190],
+            'Caigdal': [13.8332, 122.0286 ],
+            'F. de Jesus': [13.8373, 121.9776],
+            'General Luna': [13.8459, 122.0170],
+            'Kalilayan Ibaba': [13.8550, 121.9636],
+            'Kalilayan Ilaya': [13.8563, 121.9554],
+            'Mabini': [13.8548, 122.0334],
+            'Mairok Ibaba': [13.8948, 121.9810],
+            'Mairok Ilaya': [13.9046, 121.9609],
+            'Malvar': [13.8209, 121.9840],
+            'Maputat': [13.8209, 121.9840],
+            'Maliguin': [13.8316, 122.0016], 
+            'Pagaguasan': [13.8590, 121.9681],
+            'Panaon Ibaba': [13.8783, 121.9819],
+            'Panaon Ilaya': [13.8865, 121.9788],
+            'Plaridel': [13.8634, 122.0159],
             'Poctol': [13.8777, 122.0082],
-            'Bonifacio': [13.8100, 121.9800],
-            'Caigdal': [13.8050, 121.9900],
-            'Pulo': [13.8000, 121.9850],
-            'Kalilayan Ilaya': [13.8635, 121.9544],
-            'Kalilayan': [13.8527, 121.9551],
-            'Maligaya': [13.8400, 121.9550],
-            'Tagumpay': [13.8150, 121.9700],
+            'Punta': [13.8056, 121.9890],
+            'R. Lapu-Lapu': [13.8392, 121.9754],
+            'R. Magsaysay': [13.8407, 121.9781],
+            'Raja Soliman': [13.8418, 121.9766],
+            'Rizal Ibaba': [13.9015, 122.0091],
+            'Rizal Ilaya': [13.8927, 122.0209],
+            'San Roque': [13.8293, 122.0543],
+            'Socorro': [13.9078, 121.9906],
+            'Tagumpay': [13.8337, 122.0462],
+            'Tubas': [13.8424, 122.0526],
+            'Tubigan': [13.8842, 121.9883],
             'Sildora': [13.8665, 121.9243],
             'Unisan': [13.8383, 121.9782],
             'Unisan, Quezon': [13.8383, 121.9782]
@@ -1250,7 +1220,6 @@ $totalAppointments = array_sum(array_column($appointmentLocations, 'count'));
         function getMarkerSize(count) {
             const range = maxCount - minCount;
             const normalized = range > 0 ? (count - minCount) / range : 0.5;
-            // Increased size range: 24px to 56px (was implicitly smaller before)
             const baseSize = 24 + (normalized * 32);
             return {
                 iconSize: [baseSize, baseSize * 1.4],
@@ -1346,7 +1315,6 @@ $totalAppointments = array_sum(array_column($appointmentLocations, 'count'));
             }
         });
         
-        // Add legend
         legendControl = L.control({ position: 'bottomright' });
         legendControl.onAdd = function(map) {
             const div = L.DomUtil.create('div', 'geomap-legend');
@@ -1372,10 +1340,8 @@ $totalAppointments = array_sum(array_column($appointmentLocations, 'count'));
         console.log('GeoMap:', markersAdded, 'markers added');
     }
     
-    // Initialize map
     setTimeout(initGeoMap, 200);
     
-    // Add filter change listener
     setTimeout(function() {
         const filterSelect = document.getElementById('geomap-time-filter');
         if (filterSelect) {
@@ -1409,7 +1375,7 @@ function getResponsiveMarkerSize(count, maxCount, minCount) {
             baseSize = 22;
             maxSize = 42;
             break;
-        default: // desktop
+        default:
             baseSize = 24;
             maxSize = 56;
     }
@@ -1423,20 +1389,18 @@ function getResponsiveMarkerSize(count, maxCount, minCount) {
     };
 }
 
-// Update the getMarkerSize function in your existing code to use this:
 function getMarkerSize(count) {
     return getResponsiveMarkerSize(count, maxCount, minCount);
 }
 
-// Add mobile-specific map options
 function getMobileMapOptions() {
     const isMobile = window.innerWidth <= 768;
     
     return {
-        zoomControl: !isMobile, // Hide zoom controls on mobile initially
+        zoomControl: !isMobile,
         dragging: true,
         touchZoom: true,
-        scrollWheelZoom: isMobile ? false : true, // Disable scroll zoom on mobile
+        scrollWheelZoom: isMobile ? false : true,
         doubleClickZoom: true,
         boxZoom: !isMobile,
         tap: isMobile,
@@ -1445,7 +1409,6 @@ function getMobileMapOptions() {
     };
 }
 
-// Enhanced map initialization with mobile support
 function initGeoMap() {
     console.log('GeoMap: Starting initialization...');
     
@@ -1463,24 +1426,20 @@ function initGeoMap() {
     
     mapContainer.innerHTML = '';
     
-    // Apply mobile-specific options
     const mapOptions = getMobileMapOptions();
     geomapInstance = L.map('geomap-map', mapOptions).setView([13.8383, 121.9782], 13);
     
-    // Re-add zoom control for mobile in better position
     if (window.innerWidth <= 768) {
         L.control.zoom({
             position: 'bottomleft'
         }).addTo(geomapInstance);
         
-        // Add scroll zoom notice for mobile
         geomapInstance.on('click', function() {
             if (!geomapInstance.scrollWheelZoom.enabled()) {
                 geomapInstance.scrollWheelZoom.enable();
             }
         });
         
-        // Disable scroll zoom when clicking outside
         geomapInstance.on('mouseout', function() {
             if (window.innerWidth <= 768) {
                 geomapInstance.scrollWheelZoom.disable();
@@ -1488,23 +1447,18 @@ function initGeoMap() {
         });
     }
     
-    // ... rest of your initialization code ...
-    
-    // Add resize handler to update marker sizes
     let resizeTimeout;
     window.addEventListener('resize', function() {
         clearTimeout(resizeTimeout);
         resizeTimeout = setTimeout(function() {
             if (geomapInstance) {
                 geomapInstance.invalidateSize();
-                // Optionally re-render markers with new sizes
                 const currentFilter = document.getElementById('geomap-time-filter')?.value || 'all';
                 updateMapData(currentFilter);
             }
         }, 250);
     });
     
-    // Improve touch handling for markers
     geomapInstance.on('popupopen', function(e) {
         const px = geomapInstance.project(e.popup._latlng);
         px.y -= e.popup._container.clientHeight / 2;
@@ -1512,11 +1466,9 @@ function initGeoMap() {
     });
 }
 
-// Add this CSS dynamically for better mobile interaction
 function addMobileStyles() {
     const style = document.createElement('style');
     style.textContent = `
-        /* Prevent text selection on double-tap */
         .leaflet-container {
             -webkit-user-select: none;
             -moz-user-select: none;
@@ -1524,7 +1476,6 @@ function addMobileStyles() {
             user-select: none;
         }
         
-        /* Better touch feedback */
         .leaflet-marker-icon {
             transition: transform 0.1s ease;
         }
@@ -1533,7 +1484,6 @@ function addMobileStyles() {
             transform: scale(1.1);
         }
         
-        /* Improve legend positioning on mobile */
         @media (max-width: 480px) {
             .leaflet-bottom.leaflet-right {
                 bottom: 10px;
@@ -1546,7 +1496,6 @@ function addMobileStyles() {
             }
         }
         
-        /* Better popup animation on mobile */
         @media (max-width: 768px) {
             .leaflet-popup {
                 margin-bottom: 30px;
@@ -1556,7 +1505,6 @@ function addMobileStyles() {
     document.head.appendChild(style);
 }
 
-// Call this when the page loads
 document.addEventListener('DOMContentLoaded', function() {
     addMobileStyles();
 });

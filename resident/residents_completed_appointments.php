@@ -8,7 +8,6 @@ if (!isset($_SESSION['auth_id']) || $_SESSION['role'] !== 'Resident') {
 include '../conn.php';
 $authId = $_SESSION['auth_id'];
 
-// Resolve resident_id from auth_id
 $stmt = $pdo->prepare("SELECT id FROM residents WHERE auth_id = ? LIMIT 1");
 $stmt->execute([$authId]);
 $resident = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -20,7 +19,6 @@ $residentId = $resident['id'];
 
 $highlightAppointmentId = isset($_GET['highlight']) ? (int)$_GET['highlight'] : null;
 
-// Fetch completed appointments
 $queryCompleted = "
     SELECT a.id, a.transaction_id, a.scheduled_for, a.has_sent_feedback, 
            d.name AS department_name, s.service_name
@@ -43,7 +41,6 @@ $completedAppointments = $stmtCompleted->fetchAll(PDO::FETCH_ASSOC);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
     <style>
-        /* Modern Card Styles */
         .appointments-container {
             max-width: 1200px;
             margin: 0 auto;
@@ -108,7 +105,6 @@ $completedAppointments = $stmtCompleted->fetchAll(PDO::FETCH_ASSOC);
             font-size: 1.5rem;
         }
 
-        /* Empty State */
         .empty-state {
             background: white;
             border-radius: 16px;
@@ -141,7 +137,6 @@ $completedAppointments = $stmtCompleted->fetchAll(PDO::FETCH_ASSOC);
             margin: 0;
         }
 
-        /* Appointment Cards */
         .appointment-card {
             background: white;
             border-radius: 16px;
@@ -287,7 +282,6 @@ $completedAppointments = $stmtCompleted->fetchAll(PDO::FETCH_ASSOC);
             opacity: 0.8;
         }
 
-        /* Feedback Buttons */
         .button-group {
             display: flex;
             gap: 0.75rem;
@@ -345,7 +339,6 @@ $completedAppointments = $stmtCompleted->fetchAll(PDO::FETCH_ASSOC);
             text-decoration: none;
         }
 
-        /* Modal Styles */
         .modal-content {
             border-radius: 16px;
             border: none;
@@ -391,7 +384,6 @@ $completedAppointments = $stmtCompleted->fetchAll(PDO::FETCH_ASSOC);
             font-size: 1.5rem;
         }
 
-        /* Responsive Design */
         @media (min-width: 769px) {
             .info-grid {
                 grid-template-columns: repeat(2, 1fr);
@@ -575,10 +567,8 @@ $completedAppointments = $stmtCompleted->fetchAll(PDO::FETCH_ASSOC);
         function viewFeedbackResponse(appointmentId) {
             console.log('Opening feedback for appointment ID:', appointmentId);
             
-            // Show modal
             $('#feedbackResponseModal').modal('show');
             
-            // Reset content to loading state
             $('#feedbackResponseContent').html(`
                 <div class="text-center py-5">
                     <div class="spinner-border text-primary" role="status">
@@ -588,7 +578,6 @@ $completedAppointments = $stmtCompleted->fetchAll(PDO::FETCH_ASSOC);
                 </div>
             `);
             
-            // Make AJAX call
             $.ajax({
                 url: 'view_feedback_response.php',
                 method: 'GET',
@@ -619,14 +608,12 @@ $completedAppointments = $stmtCompleted->fetchAll(PDO::FETCH_ASSOC);
                     
                     let errorMessage = 'Error loading feedback. ';
                     
-                    // Try to parse error response
                     try {
                         const errorData = JSON.parse(xhr.responseText);
                         if (errorData.error) {
                             errorMessage = errorData.error;
                         }
                     } catch (e) {
-                        // If not JSON, check for common errors
                         if (xhr.status === 404) {
                             errorMessage = 'The feedback file was not found. Please check the file path.';
                         } else if (xhr.status === 500) {
@@ -653,7 +640,6 @@ $completedAppointments = $stmtCompleted->fetchAll(PDO::FETCH_ASSOC);
             const appt = data.appointment;
             const total = data.totalResponses;
             
-            // Calculate percentages
             const percentages = {};
             Object.keys(data.ratingCounts).forEach(key => {
                 percentages[key] = total > 0 ? (data.ratingCounts[key] / total * 100).toFixed(0) : 0;
@@ -821,17 +807,14 @@ $completedAppointments = $stmtCompleted->fetchAll(PDO::FETCH_ASSOC);
         }
 
         $(document).ready(function() {
-            // Find the appointment to highlight
             var $highlightedAppointment = $('.to-highlight');
             
             if ($highlightedAppointment.length) {
-                // Scroll to the appointment
                 setTimeout(function() {
                     $('html, body').animate({
                         scrollTop: $highlightedAppointment.offset().top - 100
                     }, 500);
                     
-                    // Add temporary highlight effect
                     $highlightedAppointment.addClass('highlight-appointment');
                     setTimeout(function() {
                         $highlightedAppointment.removeClass('highlight-appointment');

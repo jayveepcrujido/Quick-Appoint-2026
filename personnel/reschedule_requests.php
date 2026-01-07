@@ -7,13 +7,11 @@ if (!isset($_SESSION['auth_id']) || $_SESSION['role'] !== 'LGU Personnel') {
 
 include '../conn.php';
 
-// Get personnel's department
 $stmt = $pdo->prepare("SELECT department_id FROM lgu_personnel WHERE auth_id = ?");
 $stmt->execute([$_SESSION['auth_id']]);
 $personnel = $stmt->fetch(PDO::FETCH_ASSOC);
 $department_id = $personnel['department_id'];
 
-// Fetch pending reschedule requests for this department
 $stmt = $pdo->prepare("
     SELECT 
         rr.id, rr.appointment_id, rr.old_scheduled_for, rr.requested_schedule, 
@@ -482,7 +480,6 @@ $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
 $(document).ready(function() {
     updateStats();
 
-    // Filtering Logic
     $('.filter-group .btn').click(function() {
         $('.filter-group .btn').removeClass('active');
         $(this).addClass('active');
@@ -507,7 +504,6 @@ $(document).ready(function() {
 function updateStats() {
     let pending = 0, approved = 0, rejected = 0;
     
-    // Count based on current DOM elements
     $('.request-row').each(function() {
         const status = $(this).attr('data-status');
         if(status === 'Pending') pending++;
@@ -515,7 +511,6 @@ function updateStats() {
         else if(status === 'Rejected') rejected++;
     });
 
-    // Animate numbers
     animateValue("statPending", parseInt($('#statPending').text()), pending, 500);
     animateValue("statApproved", parseInt($('#statApproved').text()), approved, 500);
     animateValue("statRejected", parseInt($('#statRejected').text()), rejected, 500);
@@ -543,7 +538,7 @@ function handleRequest(requestId, action, btnElement) {
     
     if (phpAction === 'reject') {
         rejectionReason = prompt('Please provide a reason for rejection:');
-        if (rejectionReason === null) return; // User cancelled
+        if (rejectionReason === null) return;
         if (rejectionReason.trim() === '') {
             showAlert('Rejection reason is required', 'warning');
             return;
@@ -552,7 +547,6 @@ function handleRequest(requestId, action, btnElement) {
         if (!confirm(`Are you sure you want to approve this request?`)) return;
     }
 
-    // Visual feedback on button
     const $btn = $(btnElement);
     const $row = $btn.closest('tr');
     const originalContent = $btn.html();
@@ -571,9 +565,6 @@ function handleRequest(requestId, action, btnElement) {
             if (response.success) {
                 showAlert(response.message, 'success');
                 
-                // --- UPDATE UI WITHOUT RELOAD ---
-                
-                // 1. Update Badge
                 const badgeClass = (action === 'Approved') ? 'approved' : 'rejected';
                 const icon = (action === 'Approved') ? 'check' : 'times';
                 const badgeHtml = `<i class="fas fa-${icon}"></i> ${action}`;
@@ -583,14 +574,11 @@ function handleRequest(requestId, action, btnElement) {
                       .addClass(badgeClass)
                       .html(badgeHtml);
 
-                // 2. Update Row Data Attribute
                 $row.attr('data-status', action);
-                $row.data('status', action); // Update internal jQuery data
+                $row.data('status', action); 
 
-                // 3. Remove Action Buttons and show "Processed"
                 $row.find('.action-cell').html('<span class="text-muted small">Processed</span>');
 
-                // 4. Update Stats Logic
                 updateStats();
                 
             } else {
@@ -606,7 +594,6 @@ function handleRequest(requestId, action, btnElement) {
 }
 
 function showAlert(message, type) {
-    // Remove existing alerts
     $('.floating-alert').remove();
 
     const icon = type === 'success' ? 'check-circle' : (type === 'warning' ? 'exclamation-triangle' : 'exclamation-circle');

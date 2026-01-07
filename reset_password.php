@@ -7,7 +7,6 @@ $message = '';
 if (isset($_GET['token'])) {
     $token = $_GET['token'];
 
-    // Validate token
     $stmt = $pdo->prepare("SELECT * FROM auth WHERE reset_token = ?");
     $stmt->execute([$token]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -420,23 +419,18 @@ if (passwordInput) {
     passwordInput.addEventListener('input', function() {
         const password = this.value;
         
-        // Check length
         const lengthMet = password.length >= 8;
         document.getElementById('req-length').classList.toggle('met', lengthMet);
         
-        // Check uppercase
         const uppercaseMet = /[A-Z]/.test(password);
         document.getElementById('req-uppercase').classList.toggle('met', uppercaseMet);
         
-        // Check lowercase
         const lowercaseMet = /[a-z]/.test(password);
         document.getElementById('req-lowercase').classList.toggle('met', lowercaseMet);
         
-        // Check number
         const numberMet = /[0-9]/.test(password);
         document.getElementById('req-number').classList.toggle('met', numberMet);
         
-        // Enable/disable submit button
         const allMet = lengthMet && uppercaseMet && lowercaseMet && numberMet;
         document.getElementById('submitBtn').disabled = !allMet;
     });

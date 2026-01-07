@@ -1,12 +1,11 @@
 <?php
 session_start();
 include '../../conn.php';
-include '../../send_reset_email.php'; // ADD THIS LINE
+include '../../send_reset_email.php'; 
 
 header('Content-Type: application/json');
 
 try {
-    // Security check - only admins can create personnel
     if (!isset($_SESSION['auth_id']) || $_SESSION['role'] !== 'Admin') {
         http_response_code(403);
         echo json_encode(['success' => false, 'message' => 'Unauthorized access. Only admins can create personnel.']);
@@ -19,17 +18,15 @@ try {
         exit;
     }
 
-    // Get inputs
     $first_name = trim($_POST['first_name'] ?? '');
     $middle_name = trim($_POST['middle_name'] ?? '');
     $last_name = trim($_POST['last_name'] ?? '');
     $department_id = intval($_POST['department_id'] ?? 0);
-    $department_name = trim($_POST['department_name'] ?? ''); // ADD THIS LINE
+    $department_name = trim($_POST['department_name'] ?? '');
     $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
     $is_department_head = isset($_POST['is_department_head']) ? 1 : 0;
 
-    // Validation
     if (empty($first_name) || empty($last_name) || empty($email) || empty($password)) {
         http_response_code(400);
         echo json_encode(['success' => false, 'message' => 'All required fields must be filled.']);
@@ -54,13 +51,11 @@ try {
         exit;
     }
 
-    // Sanitize inputs
     $first_name = htmlspecialchars($first_name, ENT_QUOTES, 'UTF-8');
     $middle_name = htmlspecialchars($middle_name, ENT_QUOTES, 'UTF-8');
     $last_name = htmlspecialchars($last_name, ENT_QUOTES, 'UTF-8');
     $email = filter_var($email, FILTER_SANITIZE_EMAIL);
 
-    // Check duplicate email
     $check = $pdo->prepare("SELECT id FROM auth WHERE email = ?");
     $check->execute([$email]);
     if ($check->fetch()) {
@@ -84,13 +79,11 @@ try {
 
     $pdo->beginTransaction();
 
-    // Insert into auth first
     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
     $stmt = $pdo->prepare("INSERT INTO auth (email, password, role) VALUES (?, ?, 'LGU Personnel')");
     $stmt->execute([$email, $hashedPassword]);
     $authId = $pdo->lastInsertId();
 
-    // Insert into lgu_personnel
     $stmt = $pdo->prepare("
         INSERT INTO lgu_personnel 
         (auth_id, first_name, middle_name, last_name, department_id, is_department_head, created_by_personnel_id)
@@ -107,28 +100,22 @@ try {
 
     $pdo->commit();
     
-    // ============================================
-    // SEND WELCOME EMAIL - ADD THIS SECTION
-    // ============================================
+
     $fullName = trim("$first_name " . ($middle_name ? "$middle_name " : "") . "$last_name");
     
-    // Get the actual domain (change this to your actual domain)
     $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
     $domain = $_SERVER['HTTP_HOST'];
-    $loginLink = $protocol . "://" . $domain . "/login.php"; // Adjust path if needed
+    $loginLink = $protocol . "://" . $domain . "/login.php";
     
-    // Or use a fixed link:
-    // $loginLink = "https://yourdomain.com/login.php";
-    
+
     $emailSent = sendPersonnelWelcomeEmail($email, $fullName, [
         'email' => $email,
-        'password' => $password, // Plain password (only sent once)
+        'password' => $password,
         'department_name' => $department_name ?: 'Not Assigned',
         'is_department_head' => $is_department_head,
         'login_link' => $loginLink
     ]);
     
-    // Prepare success message
     $role_text = $is_department_head ? 'Department Head' : 'LGU Personnel';
     $message = $role_text . ' created successfully!';
     
@@ -137,7 +124,6 @@ try {
     } else {
         $message .= ' A welcome email with login credentials has been sent to ' . $email;
     }
-    // ============================================
     
     echo json_encode([
         'success' => true, 

@@ -21,7 +21,7 @@ $query = "SELECT a.id, u.first_name, u.last_name, a.status
           JOIN users u ON a.user_id = u.id
           WHERE a.scheduled_for = :scheduled_for 
             AND a.user_id != :user_id
-            AND a.status = 'Pending'"; // Only pending
+            AND a.status = 'Pending'";
 $stmt = $pdo->prepare($query);
 $stmt->execute([
     'scheduled_for' => $scheduledFor,

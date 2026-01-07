@@ -4,7 +4,6 @@ include '../conn.php';
 
 header('Content-Type: application/json');
 
-// Check authentication
 if (!isset($_SESSION['auth_id']) || $_SESSION['role'] !== 'LGU Personnel') {
     echo json_encode([
         'status' => 'error',
@@ -13,7 +12,6 @@ if (!isset($_SESSION['auth_id']) || $_SESSION['role'] !== 'LGU Personnel') {
     exit();
 }
 
-// Get personnel's department
 $stmt = $pdo->prepare("SELECT department_id FROM lgu_personnel WHERE auth_id = ?");
 $stmt->execute([$_SESSION['auth_id']]);
 $personnel = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -28,7 +26,6 @@ if (!$personnel || !$personnel['department_id']) {
 
 $departmentId = $personnel['department_id'];
 
-// Validate date input
 if (!isset($_POST['date']) || empty($_POST['date'])) {
     echo json_encode([
         'status' => 'error',
@@ -39,7 +36,6 @@ if (!isset($_POST['date']) || empty($_POST['date'])) {
 
 $selectedDate = $_POST['date'];
 
-// Validate date format
 if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $selectedDate)) {
     echo json_encode([
         'status' => 'error',
@@ -48,7 +44,6 @@ if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $selectedDate)) {
     exit();
 }
 
-// Check if date is in the past
 $today = date('Y-m-d');
 if ($selectedDate < $today) {
     echo json_encode([
@@ -58,9 +53,8 @@ if ($selectedDate < $today) {
     exit();
 }
 
-// Check if date is a weekend
 $dayOfWeek = date('N', strtotime($selectedDate));
-if ($dayOfWeek >= 6) { // 6 = Saturday, 7 = Sunday
+if ($dayOfWeek >= 6) {
     echo json_encode([
         'status' => 'unavailable',
         'message' => 'Weekends are not available for appointments'
@@ -69,7 +63,6 @@ if ($dayOfWeek >= 6) { // 6 = Saturday, 7 = Sunday
 }
 
 try {
-    // Check if date exists in available_dates
     $stmt = $pdo->prepare("
         SELECT 
             id,
@@ -94,7 +87,6 @@ try {
         exit();
     }
 
-    // Check if at least one slot is available
     $amAvailable = $dateInfo['am_remaining'] > 0;
     $pmAvailable = $dateInfo['pm_remaining'] > 0;
 
@@ -106,7 +98,6 @@ try {
         exit();
     }
 
-    // Return availability details
     echo json_encode([
         'status' => 'available',
         'date_id' => $dateInfo['id'],

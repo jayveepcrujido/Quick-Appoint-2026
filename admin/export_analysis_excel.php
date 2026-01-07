@@ -15,12 +15,10 @@ use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Font;
 
-// Get filters from GET parameters
 $departmentId = isset($_GET['department_id']) && !empty($_GET['department_id']) ? intval($_GET['department_id']) : null;
 $startDate = isset($_GET['start_date']) && !empty($_GET['start_date']) ? $_GET['start_date'] : null;
 $endDate = isset($_GET['end_date']) && !empty($_GET['end_date']) ? $_GET['end_date'] : null;
 
-// Build the WHERE clause with filters
 $whereClause = "WHERE 1=1";
 $params = [];
 
@@ -41,7 +39,6 @@ if ($startDate && $endDate) {
     $params[] = $endDate;
 }
 
-// Fetch all feedbacks based on filters
 $feedbackStmt = $pdo->prepare("
     SELECT 
         af.sqd0_answer,
@@ -63,7 +60,6 @@ $feedbackStmt = $pdo->prepare("
 $feedbackStmt->execute($params);
 $feedbacks = $feedbackStmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Question definitions
 $sqdQuestions = [
     'sqd0' => 'I am satisfied with the service that I availed.',
     'sqd1' => 'I spent a reasonable amount of time for my transaction.',
@@ -84,7 +80,6 @@ $scoreMapping = [
     'Strongly Disagree' => 1
 ];
 
-// Initialize statistics
 $questionStats = [];
 foreach ($sqdQuestions as $key => $question) {
     $questionStats[$key] = [
@@ -102,7 +97,6 @@ foreach ($sqdQuestions as $key => $question) {
     ];
 }
 
-// Calculate statistics
 foreach ($feedbacks as $feedback) {
     foreach ($sqdQuestions as $key => $question) {
         $answer = $feedback[$key . '_answer'];
@@ -122,7 +116,6 @@ foreach ($feedbacks as $feedback) {
     }
 }
 
-// Calculate overall statistics
 $totalScores = 0;
 $totalCount = 0;
 foreach ($questionStats as $stats) {
@@ -132,18 +125,15 @@ foreach ($questionStats as $stats) {
 $overallAverage = $totalCount > 0 ? round($totalScores / $totalCount, 2) : 0;
 $overallSatisfaction = $totalCount > 0 ? round(($overallAverage / 5) * 100, 1) : 0;
 
-// Create new Spreadsheet
 $spreadsheet = new Spreadsheet();
 $sheet = $spreadsheet->getActiveSheet();
 
-// Set document properties
 $spreadsheet->getProperties()
     ->setCreator("Appointment System")
     ->setTitle("Feedback Analysis Report")
     ->setSubject("Question-by-Question Analysis")
     ->setDescription("Detailed feedback analysis with response distribution");
 
-// Define styles
 $headerStyle = [
     'font' => [
         'bold' => true,
@@ -225,7 +215,6 @@ $percentStyle = [
     ]
 ];
 
-// Set column widths
 $sheet->getColumnDimension('A')->setWidth(50);
 $sheet->getColumnDimension('B')->setWidth(20);
 $sheet->getColumnDimension('C')->setWidth(15);
@@ -233,14 +222,12 @@ $sheet->getColumnDimension('D')->setWidth(15);
 
 $row = 1;
 
-// Title
 $sheet->mergeCells("A{$row}:D{$row}");
 $sheet->setCellValue("A{$row}", "FEEDBACK ANALYSIS REPORT");
 $sheet->getStyle("A{$row}")->applyFromArray($headerStyle);
 $sheet->getRowDimension($row)->setRowHeight(30);
 $row++;
 
-// Filter information
 if ($departmentId || $startDate || $endDate) {
     $filterInfo = "Filters Applied: ";
     $filters = [];
@@ -261,15 +248,13 @@ if ($departmentId || $startDate || $endDate) {
     $row++;
 }
 
-// Generated date
 $sheet->mergeCells("A{$row}:D{$row}");
 $sheet->setCellValue("A{$row}", "Generated on: " . date('F d, Y g:i A'));
 $sheet->getStyle("A{$row}")->getFont()->setItalic(true)->setSize(9);
 $sheet->getStyle("A{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 $row++;
-$row++; // Empty row
+$row++;
 
-// Overall Summary Section
 $sheet->mergeCells("A{$row}:D{$row}");
 $sheet->setCellValue("A{$row}", "OVERALL SUMMARY");
 $sheet->getStyle("A{$row}")->applyFromArray($subHeaderStyle);
@@ -290,22 +275,20 @@ foreach ($summaryData as $data) {
     $sheet->getStyle("A{$row}:B{$row}")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
     $row++;
 }
-$row++; // Empty row
+$row++;
 
-// Question-by-Question Analysis
 $sheet->mergeCells("A{$row}:D{$row}");
 $sheet->setCellValue("A{$row}", "QUESTION-BY-QUESTION ANALYSIS");
 $sheet->getStyle("A{$row}")->applyFromArray($subHeaderStyle);
 $sheet->getRowDimension($row)->setRowHeight(25);
 $row++;
-$row++; // Empty row
+$row++;
 
 foreach ($sqdQuestions as $key => $question) {
     $stats = $questionStats[$key];
     $avgScore = $stats['scoreCount'] > 0 ? round($stats['scoreTotal'] / $stats['scoreCount'], 2) : 0;
     $satisfaction = $stats['scoreCount'] > 0 ? round(($avgScore / 5) * 100, 1) : 0;
     
-    // Question header with statistics
     $sheet->mergeCells("A{$row}:D{$row}");
     $questionText = strtoupper($key) . ": " . $question;
     $sheet->setCellValue("A{$row}", $questionText);
@@ -313,7 +296,6 @@ foreach ($sqdQuestions as $key => $question) {
     $sheet->getRowDimension($row)->setRowHeight(35);
     $row++;
     
-    // Statistics row
     $sheet->setCellValue("A{$row}", "Total Responses: " . $stats['total']);
     $sheet->setCellValue("B{$row}", "Avg Score: " . $avgScore . " / 5.0");
     $sheet->setCellValue("C{$row}", "Satisfaction: " . $satisfaction . "%");
@@ -321,7 +303,6 @@ foreach ($sqdQuestions as $key => $question) {
     $sheet->getStyle("A{$row}:D{$row}")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
     $row++;
     
-    // Response distribution header
     $sheet->setCellValue("A{$row}", "Response");
     $sheet->setCellValue("B{$row}", "Count");
     $sheet->setCellValue("C{$row}", "Percentage");
@@ -338,7 +319,6 @@ foreach ($sqdQuestions as $key => $question) {
     ]);
     $row++;
     
-    // Response rows
     $responseOrder = [
         'Strongly Agree',
         'Agree',
@@ -355,12 +335,10 @@ foreach ($sqdQuestions as $key => $question) {
         $sheet->setCellValue("B{$row}", $count);
         $sheet->setCellValue("C{$row}", $percentage . "%");
         
-        // Visual representation
         $barLength = (int)($percentage / 5);
         $visualBar = str_repeat('█', $barLength);
         $sheet->setCellValue("D{$row}", $visualBar);
         
-        // Color code based on response
         $fillColor = 'FFFFFF';
         switch ($response) {
             case 'Strongly Agree':
@@ -395,20 +373,17 @@ foreach ($sqdQuestions as $key => $question) {
         $row++;
     }
     
-    $row++; // Empty row between questions
+    $row++;
 }
 
-// Add borders to all data
 $lastRow = $row - 1;
 $sheet->getStyle("A1:D{$lastRow}")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
 
-// Set print area and page setup
 $sheet->getPageSetup()->setPrintArea("A1:D{$lastRow}");
 $sheet->getPageSetup()->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_PORTRAIT);
 $sheet->getPageSetup()->setFitToWidth(1);
 $sheet->getPageSetup()->setFitToHeight(0);
 
-// Generate filename
 $filename = "Feedback_Analysis_" . date('Y-m-d_His');
 if ($departmentId) {
     $deptStmt = $pdo->prepare("SELECT name FROM departments WHERE id = ?");
@@ -418,12 +393,10 @@ if ($departmentId) {
 }
 $filename .= ".xlsx";
 
-// Set headers for download
 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 header('Content-Disposition: attachment;filename="' . $filename . '"');
 header('Cache-Control: max-age=0');
 
-// Write file
 $writer = new Xlsx($spreadsheet);
 $writer->save('php://output');
 exit;

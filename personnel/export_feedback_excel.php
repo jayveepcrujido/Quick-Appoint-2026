@@ -16,7 +16,6 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 
 $authId = $_SESSION['auth_id'];
 
-// Get personnel's department
 $stmt = $pdo->prepare("SELECT department_id FROM lgu_personnel WHERE auth_id = ?");
 $stmt->execute([$authId]);
 $personnel = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -27,11 +26,9 @@ if (!$personnel) {
 
 $departmentId = $personnel['department_id'];
 
-// Get date filters
 $startDate = isset($_GET['start_date']) && !empty($_GET['start_date']) ? $_GET['start_date'] : null;
 $endDate = isset($_GET['end_date']) && !empty($_GET['end_date']) ? $_GET['end_date'] : null;
 
-// Build the WHERE clause
 $whereClause = "WHERE a.department_id = ?";
 $params = [$departmentId];
 
@@ -47,7 +44,6 @@ if ($startDate && $endDate) {
     $params[] = $endDate;
 }
 
-// Fetch feedbacks
 $feedbackStmt = $pdo->prepare("
     SELECT 
         af.id,
@@ -79,18 +75,15 @@ $feedbackStmt = $pdo->prepare("
 $feedbackStmt->execute($params);
 $feedbacks = $feedbackStmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Create new Spreadsheet
 $spreadsheet = new Spreadsheet();
 $sheet = $spreadsheet->getActiveSheet();
 
-// Set document properties
 $spreadsheet->getProperties()
     ->setCreator("LGU Quick Appoint")
     ->setTitle("Feedback Report")
     ->setSubject("Client Feedback Data")
     ->setDescription("Exported feedback data from LGU Quick Appoint system");
 
-// Set column widths
 $sheet->getColumnDimension('A')->setWidth(20);
 $sheet->getColumnDimension('B')->setWidth(25);
 $sheet->getColumnDimension('C')->setWidth(30);
@@ -109,13 +102,11 @@ $sheet->getColumnDimension('O')->setWidth(20);
 $sheet->getColumnDimension('P')->setWidth(20);
 $sheet->getColumnDimension('Q')->setWidth(40);
 
-// Title
 $sheet->setCellValue('A1', 'CLIENT FEEDBACK REPORT');
 $sheet->mergeCells('A1:Q1');
 $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(16);
 $sheet->getStyle('A1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
-// Date range
 $dateRangeText = 'Report Generated: ' . date('F d, Y g:i A');
 if ($startDate || $endDate) {
     $dateRangeText .= ' | Period: ';
@@ -127,7 +118,6 @@ $sheet->setCellValue('A2', $dateRangeText);
 $sheet->mergeCells('A2:Q2');
 $sheet->getStyle('A2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
-// Headers
 $headers = [
     'Transaction ID',
     'Resident Name',
@@ -154,7 +144,6 @@ foreach ($headers as $header) {
     $col++;
 }
 
-// Style headers
 $headerStyle = [
     'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
     'fill' => [
@@ -175,7 +164,6 @@ $headerStyle = [
 $sheet->getStyle('A4:Q4')->applyFromArray($headerStyle);
 $sheet->getRowDimension('4')->setRowHeight(30);
 
-// Data rows
 $row = 5;
 foreach ($feedbacks as $feedback) {
     $sheet->setCellValue('A' . $row, $feedback['transaction_id']);
@@ -196,7 +184,6 @@ foreach ($feedbacks as $feedback) {
     $sheet->setCellValue('P' . $row, $feedback['cc2_answer'] ?? 'N/A');
     $sheet->setCellValue('Q' . $row, $feedback['suggestions'] ?? '');
     
-    // Apply borders
     $sheet->getStyle('A' . $row . ':Q' . $row)->applyFromArray([
         'borders' => [
             'allBorders' => [
@@ -206,30 +193,25 @@ foreach ($feedbacks as $feedback) {
         ]
     ]);
     
-    // Wrap text for suggestions
     $sheet->getStyle('Q' . $row)->getAlignment()->setWrapText(true);
     
     $row++;
 }
 
-// Auto-size rows for wrapped text
 for ($i = 5; $i < $row; $i++) {
     $sheet->getRowDimension($i)->setRowHeight(-1);
 }
 
-// Generate filename
 $filename = 'Feedback_Report_' . date('Y-m-d_His');
 if ($startDate || $endDate) {
     $filename .= '_' . ($startDate ?? 'All') . '_to_' . ($endDate ?? 'All');
 }
 $filename .= '.xlsx';
 
-// Set headers for download
 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 header('Content-Disposition: attachment;filename="' . $filename . '"');
 header('Cache-Control: max-age=0');
 
-// Write file
 $writer = new Xlsx($spreadsheet);
 $writer->save('php://output');
 exit;

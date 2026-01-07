@@ -2,7 +2,6 @@
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-// Load PHPMailer classes
 require 'PHPMailer-master/src/PHPMailer.php';
 require 'PHPMailer-master/src/SMTP.php';
 require 'PHPMailer-master/src/Exception.php';
@@ -11,22 +10,19 @@ function sendResetEmail($recipientEmail, $recipientName, $resetLink) {
     $mail = new PHPMailer(true);
 
     try {
-        // Enable verbose debug output (remove this in production)
-        $mail->SMTPDebug = 2; // Set to 0 in production
+        $mail->SMTPDebug = 2; 
         $mail->Debugoutput = function($str, $level) {
             error_log("PHPMailer: $str");
         };
 
-        // Server settings
         $mail->isSMTP();
         $mail->Host       = 'smtp.gmail.com';
         $mail->SMTPAuth   = true;
         $mail->Username   = 'jvcrujido@gmail.com';
-        $mail->Password   = 'jqwcysmffzbxoeaj'; // FIXED: Removed spaces from app password
+        $mail->Password   = 'jqwcysmffzbxoeaj'; 
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = 587;
         
-        // Additional options that often help
         $mail->SMTPOptions = array(
             'ssl' => array(
                 'verify_peer' => false,
@@ -35,12 +31,10 @@ function sendResetEmail($recipientEmail, $recipientName, $resetLink) {
             )
         );
 
-        // Sender and recipient
         $mail->setFrom('jvcrujido@gmail.com', 'LGU Quick Appoint');
         $mail->addAddress($recipientEmail, $recipientName);
         $mail->addReplyTo('jvcrujido@gmail.com', 'LGU Support');
 
-        // Email content
         $mail->isHTML(true);
         $mail->Subject = 'Password Reset Request - LGU Quick Appoint';
         $mail->Body    = "
@@ -118,7 +112,6 @@ function sendResetEmail($recipientEmail, $recipientName, $resetLink) {
         </html>
         ";
 
-        // Plain text alternative
         $mail->AltBody = "Hi {$recipientName},\n\n"
                        . "We received a request to reset your password.\n\n"
                        . "Click this link to reset your password:\n{$resetLink}\n\n"
@@ -129,7 +122,6 @@ function sendResetEmail($recipientEmail, $recipientName, $resetLink) {
         $mail->send();
         return true;
     } catch (Exception $e) {
-        // Return the actual error message for debugging
         error_log("Email Error: " . $mail->ErrorInfo);
         return "Email Error: " . $mail->ErrorInfo;
     }
@@ -139,21 +131,18 @@ function sendAppointmentConfirmation($recipientEmail, $recipientName, $appointme
     $mail = new PHPMailer(true);
 
     try {
-        // Server settings
         $mail->isSMTP();
         $mail->Host       = 'smtp.gmail.com';
         $mail->SMTPAuth   = true;
         $mail->Username   = 'jvcrujido@gmail.com';
-        $mail->Password   = 'jqwcysmffzbxoeaj'; // Replace with your actual app password
+        $mail->Password   = 'jqwcysmffzbxoeaj'; 
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = 587;
 
-        // Sender and recipient
         $mail->setFrom('jvcrujido@gmail.com', 'LGU Quick Appoint');
         $mail->addAddress($recipientEmail, $recipientName);
         $mail->addReplyTo('jvcrujido@gmail.com', 'LGU Support');
 
-        // Format requirements list
         $requirementsList = '';
         if (!empty($appointmentDetails['requirements'])) {
             foreach ($appointmentDetails['requirements'] as $req) {
@@ -163,7 +152,6 @@ function sendAppointmentConfirmation($recipientEmail, $recipientName, $appointme
             $requirementsList = "<li style='margin: 8px 0; color: #2c3e50;'>Valid ID</li>";
         }
 
-        // Email content
         $mail->isHTML(true);
         $mail->Subject = 'Appointment Confirmed: ' . $appointmentDetails['service_name'] . ' on ' . $appointmentDetails['date'];
         $mail->Body = "
@@ -279,7 +267,6 @@ function sendAppointmentConfirmation($recipientEmail, $recipientName, $appointme
 function sendRescheduleNotification($recipientEmail, $recipientName, $details) {
     $mail = new PHPMailer(true);
     try {
-        // SMTP Settings
         $mail->isSMTP();
         $mail->Host       = 'smtp.gmail.com';
         $mail->SMTPAuth   = true;
@@ -325,7 +312,6 @@ function sendPersonnelRescheduleNotification($recipientEmail, $recipientName, $d
     $mail = new PHPMailer(true);
 
     try {
-        // 1. Server Settings (Same as your working resident email)
         $mail->isSMTP();
         $mail->Host       = 'smtp.gmail.com';
         $mail->SMTPAuth   = true;
@@ -334,11 +320,9 @@ function sendPersonnelRescheduleNotification($recipientEmail, $recipientName, $d
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = 587;
 
-        // 2. Sender & Recipient
         $mail->setFrom('jvcrujido@gmail.com', 'LGU System Admin'); 
         $mail->addAddress($recipientEmail, $recipientName);
 
-        // 3. Email Content
         $mail->isHTML(true);
         $mail->Subject = 'Activity Log: Appointment Rescheduled';
         
@@ -381,7 +365,6 @@ function sendPersonnelRescheduleNotification($recipientEmail, $recipientName, $d
         $mail->send();
         return true;
     } catch (Exception $e) {
-        // Log error but don't stop the script
         error_log("Personnel Email Error: " . $mail->ErrorInfo);
         return false;
     }
@@ -391,7 +374,6 @@ function sendPersonnelWelcomeEmail($recipientEmail, $recipientName, $details) {
     $mail = new PHPMailer(true);
 
     try {
-        // Server settings
         $mail->isSMTP();
         $mail->Host       = 'smtp.gmail.com';
         $mail->SMTPAuth   = true;
@@ -404,7 +386,6 @@ function sendPersonnelWelcomeEmail($recipientEmail, $recipientName, $details) {
         $mail->addAddress($recipientEmail, $recipientName);
         $mail->addReplyTo('jvcrujido@gmail.com', 'LGU Support');
 
-        // Role badge
         $roleBadge = $details['is_department_head'] 
             ? "<span style='background: #f59e0b; color: white; padding: 5px 12px; border-radius: 15px; font-size: 12px; font-weight: bold;'>👑 Department Head</span>"
             : "<span style='background: #3498db; color: white; padding: 5px 12px; border-radius: 15px; font-size: 12px; font-weight: bold;'>👤 Personnel</span>";
@@ -524,7 +505,6 @@ function sendPersonnelWelcomeEmail($recipientEmail, $recipientName, $details) {
         </html>
         ";
 
-        // Plain text alternative
         $mail->AltBody = "Welcome to LGU Quick Appoint!\n\n"
                        . "Hi {$recipientName},\n\n"
                        . "Your account has been created.\n\n"
@@ -548,7 +528,6 @@ function sendCoPersonnelWelcomeEmail($recipientEmail, $recipientName, $details) 
     $mail = new PHPMailer(true);
 
     try {
-        // Server settings
         $mail->isSMTP();
         $mail->Host       = 'smtp.gmail.com';
         $mail->SMTPAuth   = true;
@@ -698,7 +677,6 @@ function sendCoPersonnelWelcomeEmail($recipientEmail, $recipientName, $details) 
         </html>
         ";
 
-        // Plain text alternative
         $mail->AltBody = "Welcome to LGU Quick Appoint!\n\n"
                        . "Hi {$recipientName},\n\n"
                        . "{$details['created_by']} has added you as a co-personnel member.\n\n"
@@ -722,7 +700,6 @@ function sendRescheduleApprovedEmail($recipientEmail, $recipientName, $details) 
     $mail = new PHPMailer(true);
     
     try {
-        // SMTP Settings
         $mail->isSMTP();
         $mail->Host       = 'smtp.gmail.com';
         $mail->SMTPAuth   = true;

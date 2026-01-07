@@ -7,7 +7,6 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
 
 <style>
-/* Reset */
 * { margin:0; padding:0; box-sizing:border-box; }
 body, html {
   font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -24,15 +23,14 @@ body::before {
   top: 0;
   width: 100%;
   height: 100%;
-  background: rgba(255, 255, 255, 0.7); /* white transparent overlay */
-  z-index: 0; /* sit above background */
+  background: rgba(255, 255, 255, 0.7);
+  z-index: 0;
 }
 header, main, footer {
   position: relative;
   z-index: 1;
 }
 
-/* Header */
 header {
   display:flex; justify-content:space-between; align-items:center;
   padding:1rem 1.5rem;
@@ -119,7 +117,6 @@ footer .contacts ul li a {
 }
 footer .contacts ul li a:hover { color:#a8e0ff; }
 
-/* Mobile Adjustments */
 @media(max-width:480px) {
   main h1 { font-size:1.6rem; }
   main p { font-size:0.95rem; }

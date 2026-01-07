@@ -1,5 +1,4 @@
 <?php
-// ajax/ajax_delete_department.php
 include '../../conn.php';
 
 header('Content-Type: application/json');
@@ -15,17 +14,14 @@ $id = $_POST['id'];
 try {
     $pdo->beginTransaction();
 
-    // 1. Delete requirements linked to services of this department
     $stmt = $pdo->prepare("DELETE sr FROM service_requirements sr 
                            INNER JOIN department_services ds ON sr.service_id = ds.id 
                            WHERE ds.department_id = ?");
     $stmt->execute([$id]);
 
-    // 2. Delete services linked to this department
     $stmt = $pdo->prepare("DELETE FROM department_services WHERE department_id = ?");
     $stmt->execute([$id]);
 
-    // 3. Delete the department itself
     $stmt = $pdo->prepare("DELETE FROM departments WHERE id = ?");
     $stmt->execute([$id]);
 

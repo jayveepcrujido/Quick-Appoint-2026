@@ -5,7 +5,6 @@ header('Content-Type: application/json');
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $userOTP = $_POST['otp'] ?? '';
     
-    // Validate OTP input
     if (empty($userOTP)) {
         echo json_encode([
             'success' => false,
@@ -14,7 +13,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
     
-    // Check if OTP exists in session
     if (!isset($_SESSION['registration_otp'])) {
         echo json_encode([
             'success' => false,
@@ -23,9 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
     
-    // Check if OTP has expired
     if (time() > $_SESSION['registration_otp_expiry']) {
-        // Clear expired OTP
         unset($_SESSION['registration_otp']);
         unset($_SESSION['registration_otp_expiry']);
         
@@ -36,12 +32,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
     
-    // Verify OTP
     if ($userOTP === $_SESSION['registration_otp']) {
-        // Mark OTP as verified
         $_SESSION['otp_verified'] = true;
         
-        // Clear OTP from session (one-time use)
         unset($_SESSION['registration_otp']);
         unset($_SESSION['registration_otp_expiry']);
         

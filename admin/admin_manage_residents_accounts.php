@@ -7,11 +7,9 @@ if (!isset($_SESSION['auth_id']) || $_SESSION['role'] !== 'Admin') {
 
 include '../conn.php';
 
-// Handle delete request
 if (isset($_POST['delete_id'])) {
     $deleteId = $_POST['delete_id'];
 
-    // Delete auth first (residents.auth_id references auth.id, ON DELETE CASCADE will remove resident)
     $stmt = $pdo->prepare("SELECT auth_id FROM residents WHERE id = ?");
     $stmt->execute([$deleteId]);
     $authId = $stmt->fetchColumn();
@@ -24,7 +22,6 @@ if (isset($_POST['delete_id'])) {
     exit();
 }
 
-// Get all residents with their auth info
 $stmt = $pdo->prepare("
     SELECT r.id, r.first_name, r.middle_name, r.last_name, r.created_at, a.email
     FROM residents r
@@ -35,10 +32,8 @@ $stmt = $pdo->prepare("
 $stmt->execute();
 $residents = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Get statistics
 $totalResidents = count($residents);
 
-// New residents this month
 $stmt = $pdo->prepare("
     SELECT COUNT(*) as count
     FROM residents r
@@ -48,7 +43,6 @@ $stmt = $pdo->prepare("
 $stmt->execute();
 $newThisMonth = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
 
-// Gender count
 $stmt = $pdo->prepare("
     SELECT 
         SUM(CASE WHEN sex = 'Male' THEN 1 ELSE 0 END) as male_count,
@@ -665,7 +659,6 @@ $('#confirmDelete').click(function() {
             if (response.status === 'success') {
                 $('#deleteModal').modal('hide');
                 
-                // Show success message
                 $('body').append(`
                     <div class="alert alert-success alert-dismissible fade show position-fixed" 
                          style="top: 20px; right: 20px; z-index: 9999; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.2);">
@@ -688,22 +681,17 @@ $('#confirmDelete').click(function() {
     }
 });
 
-// Search functionality
 $('#searchInput').on('keyup', function() {
     const value = $(this).val().toLowerCase().trim();
     
     if (value === '') {
-        // Show all items when search is cleared
         $('#residentsTable tbody tr').show();
         $('.mobile-card').show();
     } else {
-        // Filter table rows
         $('#residentsTable tbody tr').each(function() {
             const text = $(this).text().toLowerCase();
             $(this).toggle(text.indexOf(value) > -1);
         });
-        
-        // Filter mobile cards
         $('.mobile-card').each(function() {
             const text = $(this).text().toLowerCase();
             $(this).toggle(text.indexOf(value) > -1);

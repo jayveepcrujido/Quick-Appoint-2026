@@ -6,7 +6,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email']);
     $password = $_POST['password'];
 
-    // Fetch user from auth
     $query = "SELECT id AS auth_id, email, password, role 
               FROM auth 
               WHERE email = :email";
@@ -19,14 +18,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $isPasswordValid = password_verify($password, $dbPassword) || $password === $dbPassword;
 
         if ($isPasswordValid) {
-            // Upgrade plain password to hashed
             if ($password === $dbPassword) {
                 $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
                 $pdo->prepare("UPDATE auth SET password = :hashedPassword WHERE id = :id")
                     ->execute(['hashedPassword' => $hashedPassword, 'id' => $auth['auth_id']]);
             }
 
-            // Fetch profile info based on role
             $user = null;
             switch ($auth['role']) {
                 case 'Admin':
@@ -57,7 +54,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if ($user) {
-                // Set session
                 $_SESSION['auth_id'] = $auth['auth_id'];
                 $_SESSION['role'] = $auth['role'];
                 $_SESSION['user_name'] = $user['first_name'] . ' ' . $user['last_name'];
@@ -66,7 +62,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['department_id'] = $user['department_id'];
                 }
 
-                // Redirect to the correct dashboard
                 switch ($auth['role']) {
                     case 'Admin':
                         header('Location: admin/admin_dashboard.php');
@@ -598,14 +593,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        // Add loading state to button on submit
         document.getElementById('loginForm').addEventListener('submit', function() {
             const btn = document.getElementById('loginBtn');
             btn.classList.add('loading');
             btn.textContent = 'Signing in...';
         });
 
-        // Add input focus animation
         document.querySelectorAll('.form-control').forEach(input => {
             input.addEventListener('focus', function() {
                 this.parentElement.parentElement.classList.add('focused');

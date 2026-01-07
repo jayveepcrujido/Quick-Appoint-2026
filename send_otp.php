@@ -9,7 +9,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $phone = $_POST['phone'] ?? '';
     $name = $_POST['name'] ?? '';
     
-    // Validate inputs
     if (empty($email) || empty($phone) || empty($name)) {
         echo json_encode([
             'success' => false,
@@ -18,24 +17,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
     
-    // Generate 6-digit OTP
+
     $otp = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
     
-    // Store OTP in session with expiry (5 minutes)
     $_SESSION['registration_otp'] = $otp;
-    $_SESSION['registration_otp_expiry'] = time() + (5 * 60); // 5 minutes
+    $_SESSION['registration_otp_expiry'] = time() + (5 * 60);
     $_SESSION['registration_email'] = $email;
     $_SESSION['registration_phone'] = $phone;
     $_SESSION['registration_name'] = $name;
     
-    // Initialize SMS service
     $smsService = new SMSService();
     
     $emailSent = false;
     $smsSent = false;
     $errors = [];
     
-    // Send OTP via Email
     try {
         $emailSent = sendOTPEmail($email, $name, $otp);
     } catch (Exception $e) {
@@ -43,7 +39,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         error_log("OTP Email Error: " . $e->getMessage());
     }
     
-    // Send OTP via SMS (using your existing method)
     try {
         $smsSent = $smsService->sendVerificationOTP($phone, $otp);
         if (!$smsSent) {
@@ -54,7 +49,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         error_log("OTP SMS Error: " . $e->getMessage());
     }
     
-    // Check if at least one method succeeded
     if ($emailSent || $smsSent) {
         $message = 'OTP sent successfully!';
         if ($emailSent && $smsSent) {
@@ -86,9 +80,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ]);
 }
 
-/**
- * Send OTP via Email
- */
 function sendOTPEmail($recipientEmail, $recipientName, $otp) {
     require_once 'PHPMailer-master/src/PHPMailer.php';
     require_once 'PHPMailer-master/src/SMTP.php';
@@ -97,7 +88,6 @@ function sendOTPEmail($recipientEmail, $recipientName, $otp) {
     $mail = new PHPMailer\PHPMailer\PHPMailer(true);
     
     try {
-        // SMTP Configuration
         $mail->isSMTP();
         $mail->Host       = 'smtp.gmail.com';
         $mail->SMTPAuth   = true;
@@ -114,13 +104,11 @@ function sendOTPEmail($recipientEmail, $recipientName, $otp) {
             )
         );
         
-        // Email Settings
         $mail->setFrom('jvcrujido@gmail.com', 'LGU Quick Appoint');
         $mail->addAddress($recipientEmail, $recipientName);
         $mail->isHTML(true);
         $mail->Subject = 'Registration OTP - LGU Quick Appoint';
         
-        // Email Body
         $mail->Body = "
         <!DOCTYPE html>
         <html>

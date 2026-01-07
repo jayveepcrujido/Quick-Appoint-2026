@@ -7,7 +7,6 @@ if (!isset($_SESSION['auth_id']) || $_SESSION['role'] !== 'LGU Personnel') {
 
 include '../conn.php';
 
-// Get personnel department using auth_id
 $stmt = $pdo->prepare("SELECT department_id FROM lgu_personnel WHERE auth_id = ?");
 $stmt->execute([$_SESSION['auth_id']]);
 $personnel = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -19,11 +18,9 @@ if (!$personnel) {
 
 $departmentId = $personnel['department_id'];
 
-// Get date filters from GET parameters
 $startDate = isset($_GET['start_date']) && !empty($_GET['start_date']) ? $_GET['start_date'] : null;
 $endDate = isset($_GET['end_date']) && !empty($_GET['end_date']) ? $_GET['end_date'] : null;
 
-// Build the WHERE clause with date filters
 $whereClause = "WHERE a.department_id = ?";
 $params = [$departmentId];
 
@@ -39,7 +36,6 @@ if ($startDate && $endDate) {
     $params[] = $endDate;
 }
 
-// Fetch appointments with resident info
 $stmt = $pdo->prepare("
     SELECT a.id, a.transaction_id, a.status, a.scheduled_for, a.reason, a.requested_at,
            r.first_name, r.last_name
@@ -141,7 +137,6 @@ $appointments = $stmt->fetchAll(PDO::FETCH_ASSOC);
             overflow: hidden;
         }
 
-        /* Desktop Table View */
         .desktop-table {
             display: none;
         }
@@ -244,7 +239,6 @@ $appointments = $stmt->fetchAll(PDO::FETCH_ASSOC);
             color: #7f8c8d;
         }
 
-        /* Mobile Card View */
         .mobile-cards {
             display: block;
         }
@@ -316,7 +310,6 @@ $appointments = $stmt->fetchAll(PDO::FETCH_ASSOC);
             margin: 0;
         }
 
-        /* Tablet breakpoint (768px and up) */
         @media (min-width: 768px) {
             body {
                 padding: 1.5rem 0;
@@ -339,7 +332,6 @@ $appointments = $stmt->fetchAll(PDO::FETCH_ASSOC);
             }
         }
 
-        /* Desktop breakpoint (992px and up) */
         @media (min-width: 992px) {
             body {
                 padding: 2rem 0;
@@ -394,13 +386,12 @@ $appointments = $stmt->fetchAll(PDO::FETCH_ASSOC);
             }
         }
 
-        /* Large desktop (1200px and up) */
         @media (min-width: 1200px) {
             .table-responsive {
                 border-radius: 12px;
             }
         }
-        /* Date Filter Styles */
+
 .datepicker {
     cursor: pointer;
     background-color: white;
@@ -451,7 +442,7 @@ $appointments = $stmt->fetchAll(PDO::FETCH_ASSOC);
     box-shadow: 0 5px 15px rgba(149, 165, 166, 0.3);
     color: white;
 }
-/* Flatpickr Custom Styling */
+
 .flatpickr-calendar {
     background: white;
     border: 2px solid #3498db;
@@ -514,7 +505,6 @@ $appointments = $stmt->fetchAll(PDO::FETCH_ASSOC);
     border-color: #e67e22;
 }
 
-/* Date input cursor */
 .datepicker {
     cursor: pointer;
     background-color: white;
@@ -583,7 +573,6 @@ $appointments = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </form>
 </div>
 
-    <!-- Desktop Table View -->
     <div class="table-card desktop-table">
         <div class="table-responsive">
             <table id="appointmentsTable" class="table">
@@ -648,7 +637,6 @@ $appointments = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
     </div>
 
-    <!-- Mobile Card View -->
     <div class="mobile-cards">
         <?php if (!empty($appointments)): ?>
             <?php foreach ($appointments as $row): ?>
@@ -716,12 +704,9 @@ $appointments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 </div>
 
 <script>
-// Appointment status page specific filter functions
 function applyAppointmentFilters() {
     const startDate = document.getElementById('start_date').value;
     const endDate = document.getElementById('end_date').value;
-    
-    console.log('🔍 Apply appointment filters clicked - Start:', startDate, 'End:', endDate);
     
     let url = 'personnel_view_appointments_status.php';
     const params = [];
@@ -763,8 +748,7 @@ function clearAppointmentFilters() {
     'use strict';
     
     console.log('=== Appointment Status Page Loading ===');
-    
-    // Clean up previous instance if exists
+
     if (window.appointmentStatusCleanup) {
         console.log('Cleaning up previous instance...');
         try {
@@ -774,23 +758,15 @@ function clearAppointmentFilters() {
         }
     }
     
-    // Store Flatpickr instances
     let startDatePicker = null;
     let endDatePicker = null;
     let statusFilterHandler = null;
     
-    // Initialize function
     function initializePage() {
-        console.log('Initializing appointment status page...');
-        
-        // Wait a bit for DOM to be fully ready
         setTimeout(function() {
-            
-            // Check if Flatpickr is available
             if (typeof flatpickr === 'undefined') {
                 console.error('❌ Flatpickr not loaded!');
                 
-                // Try to load it dynamically
                 if (!document.querySelector('script[src*="flatpickr"]')) {
                     console.log('Attempting to load Flatpickr...');
                     const script = document.createElement('script');
@@ -807,14 +783,12 @@ function clearAppointmentFilters() {
             initializeDatePickers();
             initializeStatusFilter();
             
-        }, 200); // Give time for content to settle
+        }, 200);
     }
     
-    // Initialize date pickers
     function initializeDatePickers() {
         console.log('Initializing date pickers...');
         
-        // Get input elements
         const startDateInput = document.getElementById('start_date');
         const endDateInput = document.getElementById('end_date');
         
@@ -825,7 +799,6 @@ function clearAppointmentFilters() {
         
         console.log('✓ Date inputs found:', startDateInput.id, endDateInput.id);
         
-        // Destroy existing instances if they exist
         if (startDatePicker) {
             try {
                 startDatePicker.destroy();
@@ -844,7 +817,6 @@ function clearAppointmentFilters() {
             }
         }
         
-        // Initialize Start Date Picker
         try {
             startDatePicker = flatpickr(startDateInput, {
                 dateFormat: 'Y-m-d',
@@ -869,7 +841,6 @@ function clearAppointmentFilters() {
             console.error('❌ Error initializing start date picker:', e);
         }
         
-        // Initialize End Date Picker
         try {
             endDatePicker = flatpickr(endDateInput, {
                 dateFormat: 'Y-m-d',
@@ -894,7 +865,6 @@ function clearAppointmentFilters() {
             console.error('❌ Error initializing end date picker:', e);
         }
         
-        // Set initial constraints if values exist
         const startVal = startDateInput.value;
         const endVal = endDateInput.value;
         
@@ -918,7 +888,6 @@ function clearAppointmentFilters() {
         });
     }
     
-    // Initialize status filter
     function initializeStatusFilter() {
         console.log('Initializing status filter...');
         
@@ -928,17 +897,14 @@ function clearAppointmentFilters() {
             return;
         }
         
-        // Remove old handler if exists
         if (statusFilterHandler) {
             statusFilter.removeEventListener('change', statusFilterHandler);
         }
         
-        // Create new handler
         statusFilterHandler = function() {
             const selectedStatus = this.value;
             console.log('Filtering by status:', selectedStatus || 'All');
 
-            // Filter desktop table rows
             const tableRows = document.querySelectorAll("#appointmentsTable tbody tr");
             tableRows.forEach(function(row) {
                 const rowStatus = row.getAttribute('data-status');
@@ -949,7 +915,6 @@ function clearAppointmentFilters() {
                 }
             });
 
-            // Filter mobile cards
             const mobileCards = document.querySelectorAll(".appointment-mobile-card");
             mobileCards.forEach(function(card) {
                 const cardStatus = card.getAttribute('data-status');
@@ -961,12 +926,10 @@ function clearAppointmentFilters() {
             });
         };
         
-        // Attach new handler
         statusFilter.addEventListener('change', statusFilterHandler);
         console.log('✓ Status filter initialized');
     }
     
-    // Cleanup function
     window.appointmentStatusCleanup = function() {
         console.log('=== Cleaning up appointment status page ===');
         
@@ -991,7 +954,6 @@ function clearAppointmentFilters() {
             }
         }
         
-        // Remove status filter handler
         const statusFilter = document.getElementById('statusFilter');
         if (statusFilter && statusFilterHandler) {
             statusFilter.removeEventListener('change', statusFilterHandler);
@@ -1002,7 +964,6 @@ function clearAppointmentFilters() {
         console.log('✓ Cleanup complete');
     };
     
-    // Initialize immediately if DOM is ready, otherwise wait
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initializePage);
         console.log('Waiting for DOMContentLoaded...');
@@ -1011,18 +972,15 @@ function clearAppointmentFilters() {
         initializePage();
     }
     
-    // Also initialize on jQuery ready (for compatibility)
     if (typeof jQuery !== 'undefined') {
         $(document).ready(function() {
             console.log('jQuery ready fired');
-            // Only initialize if not already done
             if (!startDatePicker && !endDatePicker) {
                 initializePage();
             }
         });
     }
     
-    // Cleanup on page unload
     window.addEventListener('beforeunload', function() {
         if (window.appointmentStatusCleanup) {
             window.appointmentStatusCleanup();

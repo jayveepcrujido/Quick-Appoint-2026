@@ -1,12 +1,10 @@
 <?php
-// Session already started by parent dashboard - just check it
 if (!isset($_SESSION)) {
     session_start();
 }
 
 include '../conn.php';
 
-// Session check
 if (!isset($_SESSION['auth_id']) || $_SESSION['role'] !== 'LGU Personnel') {
     if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest') {
         echo json_encode(['status' => 'error', 'message' => 'Session expired. Please refresh the page.']);
@@ -19,7 +17,6 @@ if (!isset($_SESSION['auth_id']) || $_SESSION['role'] !== 'LGU Personnel') {
 
 $authId = $_SESSION['auth_id'];
 
-// Get personnel's department_id
 try {
     $stmt = $pdo->prepare("SELECT department_id FROM lgu_personnel WHERE auth_id = ?");
     $stmt->execute([$authId]);
@@ -34,7 +31,6 @@ try {
     die("<div class='alert alert-danger'>Error: " . htmlspecialchars($e->getMessage()) . "</div>");
 }
 
-// Handle POST request for creating/updating dates
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['available_date'])) {
     try {
         $stmt = $pdo->prepare("
@@ -62,7 +58,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['available_date'])) {
     }
 }
 
-// Handle DELETE request
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_date'])) {
     try {
         $deleteDate = $_POST['delete_date'];
@@ -77,7 +72,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_date'])) {
     }
 }
 
-// Fetch available dates
 $stmt = $pdo->prepare("
     SELECT date_time, DATE(date_time) as date, am_slots, pm_slots, am_booked, pm_booked 
     FROM available_dates 
@@ -1235,7 +1229,6 @@ body.modal-open {
     const amSlots = parseInt($('#bulkAMSlots').val()) || 0;
     const pmSlots = parseInt($('#bulkPMSlots').val()) || 0;
     
-    // Validation
     if (!startDate || !endDate) {
       alert('Please select both start and end dates.');
       return;
@@ -1267,22 +1260,16 @@ body.modal-open {
     let current = new Date(start);
     
     while (current <= end) {
-      // Skip weekends (0 = Sunday, 6 = Saturday)
       if (current.getDay() !== 0 && current.getDay() !== 6) {
-        // Skip past dates
         if (current >= today) {
           const dateStr = current.toISOString().split('T')[0];
           
-          // Only add if not already in the form or existing dates
           if ($(`#dateInputs > div[data-date="${dateStr}"]`).length === 0) {
-            // Check if date already exists in database
             if (existingDatesData.includes(dateStr)) {
               skippedCount++;
             } else {
-              // Add to calendar selection
               $(`.calendar-day[data-date="${dateStr}"]`).addClass('selected');
               
-              // Add to form
               const inputHTML = `
                 <div class="mb-2 border p-3" data-date="${dateStr}" style="border-radius: 8px; border-left: 4px solid #0D92F4 !important;">
                   <div class="d-flex justify-content-between align-items-center mb-2">
@@ -1315,7 +1302,6 @@ body.modal-open {
     
     checkSubmitButton();
     
-    // Show feedback
     let message = '';
     if (addedCount > 0) {
       message += `${addedCount} date(s) added successfully!`;
@@ -1336,7 +1322,6 @@ body.modal-open {
       $('#response-msg').empty();
     }, 4000);
     
-    // Clear the bulk form
     $('#bulkStartDate').val('');
     $('#bulkEndDate').val('');
     $('#bulkAMSlots').val('5');
@@ -1474,7 +1459,6 @@ body.modal-open {
           }
           
           if (result.status === 'success') {
-            // Update local data
             availableDatesData[date] = {
               am_slots: amSlots,
               pm_slots: pmSlots,
@@ -1489,11 +1473,9 @@ body.modal-open {
             hideModal('editModal');
             
             setTimeout(() => {
-              // Refresh calendar with updated data
               generateCalendar(currentMonth, currentYear);
               showSuccessModal(result.message);
-              
-              // Auto-hide success modal after 2 seconds
+
               setTimeout(() => {
                 hideModal('successModal');
               }, 2000);
@@ -1526,7 +1508,6 @@ body.modal-open {
           }
           
           if (result.status === 'success') {
-            // Remove from local data
             delete availableDatesData[dateToDelete];
             const index = existingDatesData.indexOf(dateToDelete);
             if (index > -1) {
@@ -1536,11 +1517,9 @@ body.modal-open {
             hideModal('deleteModal');
             
             setTimeout(() => {
-              // Refresh calendar with updated data
               generateCalendar(currentMonth, currentYear);
               showSuccessModal(result.message);
               
-              // Auto-hide success modal after 2 seconds
               setTimeout(() => {
                 hideModal('successModal');
               }, 2000);
@@ -1585,7 +1564,6 @@ body.modal-open {
           }
           
           if (result.status === 'success') {
-            // Update local data for newly created dates
             $('#dateInputs > div').each(function() {
               const date = $(this).attr('data-date');
               const amSlots = parseInt($(this).find('input[name*="[am]"]').val());
@@ -1603,21 +1581,16 @@ body.modal-open {
               }
             });
             
-            // Clear the form
             $('#dateInputs').empty();
             $('.calendar-day.selected').removeClass('selected');
             checkSubmitButton();
             
-            // Show success message
             $('#response-msg').html('<div class="alert alert-success alert-dismissible fade show"><button type="button" class="close" data-dismiss="alert">&times;</button>' + result.message + '</div>');
             
-            // Refresh calendar
             generateCalendar(currentMonth, currentYear);
             
-            // Reset button
             $('#submitDatesBtn').prop('disabled', false).html('<i class="fas fa-check-circle mr-1"></i> Submit Available Dates');
             
-            // Auto-hide success message after 3 seconds
             setTimeout(() => {
               $('#response-msg').empty();
             }, 3000);
@@ -1667,7 +1640,6 @@ body.modal-open {
         generateCalendar(currentMonth, currentYear);
         checkSubmitButton();
         
-        // Set minimum date for bulk date inputs to today
         const today = new Date().toISOString().split('T')[0];
         $('#bulkStartDate, #bulkEndDate').attr('min', today);
         

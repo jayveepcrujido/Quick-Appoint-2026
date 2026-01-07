@@ -16,7 +16,6 @@ if (!$department_id) {
     exit();
 }
 
-// 1. Get Pending Appointments
 $query = "
     SELECT 
         a.id, a.transaction_id, a.status, a.reason, a.scheduled_for, a.requested_at, a.available_date_id,
@@ -36,12 +35,10 @@ $appointments = $pdo->prepare($query);
 $appointments->execute([$department_id]);
 $appointmentData = $appointments->fetchAll(PDO::FETCH_ASSOC);
 
-// 2. Fetch Unique Services
 $serviceQuery = $pdo->prepare("SELECT DISTINCT ds.service_name FROM appointments a LEFT JOIN department_services ds ON a.service_id = ds.id WHERE a.department_id = ?");
 $serviceQuery->execute([$department_id]);
 $services = $serviceQuery->fetchAll(PDO::FETCH_ASSOC);
 
-// 3. Stats
 $statsQuery = $pdo->prepare("SELECT COUNT(*) as total_pending, COUNT(CASE WHEN DATE(scheduled_for) = CURDATE() THEN 1 END) as today_pending, COUNT(CASE WHEN YEARWEEK(scheduled_for) = YEARWEEK(NOW()) THEN 1 END) as week_pending, COUNT(CASE WHEN MONTH(scheduled_for) = MONTH(NOW()) AND YEAR(scheduled_for) = YEAR(NOW()) THEN 1 END) as month_pending FROM appointments WHERE department_id = ? AND status = 'Pending'");
 $statsQuery->execute([$department_id]);
 $stats = $statsQuery->fetch(PDO::FETCH_ASSOC);
@@ -70,7 +67,6 @@ $stats = $statsQuery->fetch(PDO::FETCH_ASSOC);
         #appointments-table td { vertical-align: middle; padding: 1rem; color: #4a5568; }
         .table-success { background-color: #d4edda !important; transition: background-color 1s ease; }
         
-        /* === CARD GRID STYLES (New) === */
         .dates-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; max-height: 400px; overflow-y: auto; padding: 0.5rem; }
         .date-card { border: 2px solid #e0e6ed; border-radius: 12px; padding: 1rem; cursor: default; background: white; position: relative; transition: all 0.2s; }
         .date-card.active-date { border-color: #3498db; background: #f0f7ff; box-shadow: 0 0 10px rgba(52, 152, 219, 0.2); }
@@ -281,17 +277,12 @@ $stats = $statsQuery->fetch(PDO::FETCH_ASSOC);
 <script>
 $(document).ready(function () {
 
-    // ============================================
-    // NEW: SCROLL TO HIGHLIGHTED APPOINTMENT
-    // ============================================
     const highlightTransactionId = sessionStorage.getItem('highlightAppointment');
     
     if (highlightTransactionId) {
         console.log('Looking for transaction:', highlightTransactionId);
         
-        // Small delay to ensure page is fully loaded
         setTimeout(function() {
-            // Find the row containing this transaction ID
             const targetRow = $('#appointments-tbody tr').filter(function() {
                 return $(this).find('.badge-primary').text().trim() === highlightTransactionId;
             });
@@ -299,14 +290,11 @@ $(document).ready(function () {
             if (targetRow.length > 0) {
                 console.log('Found appointment row, scrolling...');
                 
-                // Highlight the row with animation
                 targetRow.addClass('table-warning');
                 
-                // Scroll to the row smoothly
                 $('html, body').animate({
-                    scrollTop: targetRow.offset().top - 150 // 150px offset from top
+                    scrollTop: targetRow.offset().top - 150
                 }, 800, function() {
-                    // Flash effect after scrolling
                     targetRow.addClass('table-success');
                     setTimeout(function() {
                         targetRow.removeClass('table-warning table-success');
@@ -317,34 +305,19 @@ $(document).ready(function () {
                 console.log('Appointment not found in current table');
             }
             
-            // Clear the sessionStorage after use
             sessionStorage.removeItem('highlightAppointment');
             
-        }, 500); // 500ms delay for page render
+        }, 500);
     }
 
-    // ============================================
-    // Helper: Update Table & Stats
-    // ============================================
     function removeRowAndRefresh(id) {
         const row = $('#row_' + id);
-        // Note: For 'Manage Appointments', if you simply reschedule (not delete/complete),
-        // you might want to UPDATE the row instead of remove it.
-        // But if rescheduling might change sort order, reloading is safer.
-        // For now, we update the text to show the new date:
-        
-        // This is handled inside the AJAX success callback below.
-        
         const totalEl = $('#statTotal');
         let currentTotal = parseInt(totalEl.text());
         if(!isNaN(currentTotal) && currentTotal > 0) {
-            // totalEl.text(currentTotal - 1); // Only decrease if deleting/completing
         }
     }
 
-    // ============================================
-    // 1. VIEW DETAILS
-    // ============================================
     $('.btn-view-details').click(function() {
         const data = $(this).data('details');
         $('#viewTransId').text(data.transaction_id);
@@ -378,13 +351,9 @@ $(document).ready(function () {
         $('#fullImageModal').modal('show');
     });
 
-    // ============================================
-    // 2. RESCHEDULE LOGIC (CARD GRID)
-    // ============================================
     $('.btn-open-reschedule').click(function() {
         const btn = $(this);
         
-        // Reset
         $('#reschApptId').val(btn.data('id'));
         $('#reschOldDateId').val(btn.data('old-date-id'));
         $('#reschOldTime').val(btn.data('old-time'));
@@ -401,7 +370,6 @@ $(document).ready(function () {
         
         $('#sharedRescheduleModal').modal('show');
 
-        // Fetch Dates
         $.ajax({
             url: 'get_available_dates.php',
             type: 'POST',
@@ -446,7 +414,6 @@ $(document).ready(function () {
         return `<div class="time-slot-option clickable-slot" data-time="${timeValue}" data-label="${timeStr}"><span>${timeStr}</span> <span class="badge badge-success">${remaining} left</span></div>`;
     }
 
-    // Handle Selection
     $(document).on('click', '.clickable-slot', function() {
         $('.clickable-slot').removeClass('selected');
         $('.date-card').removeClass('active-date');
@@ -462,7 +429,6 @@ $(document).ready(function () {
         $('#btnConfirmReschedule').prop('disabled', false);
     });
 
-    // Submit
     $('#sharedRescheduleForm').on('submit', function(e) {
         e.preventDefault();
         const btn = $('#btnConfirmReschedule');
@@ -480,12 +446,10 @@ $(document).ready(function () {
                     $('#sharedRescheduleModal').modal('hide');
                     btn.html(originalText);
                     
-                    // Update Row
                     const apptId = $('#reschApptId').val();
                     const row = $('#row_' + apptId);
-                    const newTime = $('#reschSummaryText').text(); // e.g. "Dec 25 at Morning"
+                    const newTime = $('#reschSummaryText').text();
                     
-                    // Format for table display
                     const parts = newTime.split(' at ');
                     const datePart = parts[0];
                     const timePart = parts[1];
@@ -507,9 +471,6 @@ $(document).ready(function () {
         });
     });
 
-    // ============================================
-    // 3. ACTIONS (Delete/Complete)
-    // ============================================
     $(document).on('click', '.btn-complete-action, .btn-delete-action', function() {
         const id = $(this).data('id');
         const isDelete = $(this).hasClass('btn-delete-action');
@@ -521,7 +482,6 @@ $(document).ready(function () {
                 $('#row_' + id).fadeOut(400, function() { $(this).remove(); });
                 $('#sharedViewModal').modal('hide');
                 
-                // Update stats
                 const totalEl = $('#statTotal');
                 let currentTotal = parseInt(totalEl.text());
                 if(!isNaN(currentTotal) && currentTotal > 0) totalEl.text(currentTotal - 1);
@@ -529,9 +489,6 @@ $(document).ready(function () {
         }
     });
 
-    // ============================================
-    // 4. FILTERS
-    // ============================================
     function applyFilters() {
         const searchVal = $('#searchInput').val().toLowerCase();
         const selectedService = $('#serviceFilter').val().toLowerCase();

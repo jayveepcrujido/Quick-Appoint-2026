@@ -4,7 +4,6 @@ include '../conn.php';
 
 header('Content-Type: application/json');
 
-// Check if user is logged in
 if (!isset($_SESSION['auth_id'])) {
     echo json_encode(['hasNew' => false, 'count' => 0]);
     exit;
@@ -13,7 +12,6 @@ if (!isset($_SESSION['auth_id'])) {
 $authId = $_SESSION['auth_id'];
 
 try {
-    // Get personnel_id from lgu_personnel table using auth_id
     $personnelStmt = $pdo->prepare("SELECT id FROM lgu_personnel WHERE auth_id = ? LIMIT 1");
     $personnelStmt->execute([$authId]);
     $personnelData = $personnelStmt->fetch(PDO::FETCH_ASSOC);
@@ -25,8 +23,6 @@ try {
     
     $personnelId = $personnelData['id'];
     
-    // Check for unread notifications for this personnel
-    // Join with appointments to ensure we only count notifications for appointments assigned to this personnel
     $stmt = $pdo->prepare("
         SELECT COUNT(*) as unread_count 
         FROM notifications n

@@ -45,7 +45,6 @@ if (!$user) {
     exit();
 }
 
-// Format full name
 $full_name = trim(($user['first_name'] ?? '') . ' ' . ($user['middle_name'] ?? '') . ' ' . ($user['last_name'] ?? ''));
 ?>
 <!DOCTYPE html>

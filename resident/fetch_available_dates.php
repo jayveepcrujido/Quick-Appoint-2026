@@ -7,12 +7,11 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-$departmentId = $_SESSION['department_id']; // Ensure this is set correctly
+$departmentId = $_SESSION['department_id'];
 
 $month = $_GET['month'];
 $year = $_GET['year'];
 
-// Prepare the SQL statement to fetch available dates and slots
 $stmt = $pdo->prepare("
     SELECT 
         DATE(date_time) as date, 
@@ -29,7 +28,6 @@ $stmt->execute([$departmentId, $month + 1, $year]);
 
 $dates = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Prepare the response in a structured format
 $availableDates = [];
 foreach ($dates as $row) {
     $availableDates[$row['date']] = [
@@ -40,6 +38,5 @@ foreach ($dates as $row) {
     ];
 }
 
-// Return the available dates as JSON
 echo json_encode($availableDates);
 ?>

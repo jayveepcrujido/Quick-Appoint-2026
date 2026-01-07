@@ -13,6 +13,7 @@ include '../includes/auto_mark_noshow.php';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Resident's Dashboard</title> 
+    <link rel="icon" href="../assets/images/logo.png" type="image/png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/boxicons/2.1.4/css/boxicons.min.css" rel="stylesheet">
@@ -578,6 +579,90 @@ include '../includes/auto_mark_noshow.php';
             backdrop-filter: blur(3px);
             transition: all 0.3s ease;
         }
+        /* --- Start of Infographic Styles --- */
+        .process-wrapper {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem 1rem;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .process-title {
+            text-align: center;
+            font-weight: 700;
+            color: var(--dark-color);
+            margin-bottom: 2rem;
+            font-size: 1.25rem;
+        }
+
+        .step-item {
+            text-align: center;
+            position: relative;
+            z-index: 1;
+            padding: 0 10px;
+        }
+
+        .step-icon-circle {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #e0f2fe, #bae6fd);
+            color: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 1.8rem;
+            box-shadow: 0 4px 6px rgba(37, 99, 235, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .step-item:hover .step-icon-circle {
+            transform: scale(1.1);
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .step-text {
+            font-weight: 600;
+            color: var(--dark-color);
+            font-size: 0.95rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .step-desc {
+            font-size: 0.8rem;
+            color: #64748b;
+            line-height: 1.4;
+        }
+
+        @media (min-width: 992px) {
+            .step-item::after {
+                content: '';
+                position: absolute;
+                top: 30px;
+                left: 50%;
+                width: 100%;
+                height: 3px;
+                background: #e2e8f0;
+                z-index: -1;
+            }
+            
+            .step-item:last-child::after {
+                display: none;
+            }
+        }
+        
+        @media (max-width: 991px) {
+            .step-item {
+                margin-bottom: 2rem;
+            }
+            .step-item:last-child {
+                margin-bottom: 0;
+            }
+        }
     </style>
 
     <script>
@@ -714,7 +799,7 @@ include '../includes/auto_mark_noshow.php';
     <!-- Sidebar -->
     <div class="l-navbar" id="nav-bar">
         <a href="residents_dashboard.php" style="display: block; cursor: pointer;">
-            <img src="../assets/images/Unisan_logo.png" id="sidebar-logo" alt="Sidebar Logo" class="header_img" style="cursor: pointer;">
+            <img src="../assets/images/Unisan_Logo.png" id="sidebar-logo" alt="Sidebar Logo" class="header_img" style="cursor: pointer;">
         </a>
         <h4 style="text-align: center; color: white;">Residents Menu</h4>
         <nav class="nav">
@@ -750,6 +835,51 @@ include '../includes/auto_mark_noshow.php';
                     Welcome Back, <?php echo isset($_SESSION['user_name']) ? htmlspecialchars($_SESSION['user_name']) : 'Resident'; ?>!
                 </h2>
                 <p>Manage your appointments, explore departments, and share your feedback all in one place.</p>
+            </div>
+
+            <div class="process-wrapper">
+                <h4 class="process-title">How to Book an Appointment</h4>
+                <div class="row">
+                    <div class="col-lg-2 col-md-4 col-6 offset-lg-1 step-item">
+                        <div class="step-icon-circle">
+                            <i class='bx bx-menu'></i>
+                        </div>
+                        <div class="step-text">1. Open Menu</div>
+                        <div class="step-desc">Click the toggle button</div>
+                    </div>
+
+                    <div class="col-lg-2 col-md-4 col-6 step-item">
+                        <div class="step-icon-circle">
+                            <i class='bx bx-user'></i>
+                        </div>
+                        <div class="step-text">2. Book an Appointment</div>
+                        <div class="step-desc">Click "View Departments"</div>
+                    </div>
+
+                    <div class="col-lg-2 col-md-4 col-6 step-item">
+                        <div class="step-icon-circle">
+                            <i class='bx bx-mouse-alt'></i>
+                        </div>
+                        <div class="step-text">3. Select Service</div>
+                        <div class="step-desc">Choose the service you need</div>
+                    </div>
+
+                    <div class="col-lg-2 col-md-4 col-6 step-item">
+                        <div class="step-icon-circle">
+                            <i class='bx bx-calendar-event'></i>
+                        </div>
+                        <div class="step-text">4. Pick Date</div>
+                        <div class="step-desc">Select date on calendar</div>
+                    </div>
+
+                    <div class="col-lg-2 col-md-4 offset-md-4 offset-lg-0 col-12 step-item">
+                        <div class="step-icon-circle">
+                            <i class='bx bx-check-double'></i>
+                        </div>
+                        <div class="step-text">5. Confirm</div>
+                        <div class="step-desc">Click "Book Now"</div>
+                    </div>
+                </div>
             </div>
 
             <!-- Section Title -->

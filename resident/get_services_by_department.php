@@ -1,4 +1,3 @@
-// get_services_by_department.php
 <?php
 include '../conn.php';
 

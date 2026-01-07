@@ -7,15 +7,10 @@ if (!isset($_SESSION['auth_id']) || $_SESSION['role'] !== 'Admin') {
 
 include '../conn.php';
 
-// Fetch departments for filter
 $departments = $pdo->query("SELECT id, name FROM departments")->fetchAll(PDO::FETCH_ASSOC);
 
-// Get filter
 $filter = $_GET['department_id'] ?? '';
 
-// ✅ Adjusted query for new schema
-// - Residents come from `residents` (not `users`)
-// - We still join appointments & departments
 $sql = "SELECT c.*, r.first_name, r.last_name, d.name AS department_name
         FROM commendations c
         JOIN appointments a ON c.appointment_id = a.id

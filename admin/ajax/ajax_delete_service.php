@@ -16,11 +16,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['service_id'])) {
     try {
         $pdo->beginTransaction();
         
-        // First, delete all requirements associated with this service
         $stmt = $pdo->prepare("DELETE FROM service_requirements WHERE service_id = ?");
         $stmt->execute([$serviceId]);
-        
-        // Then delete the service itself
+
         $stmt = $pdo->prepare("DELETE FROM department_services WHERE id = ?");
         $stmt->execute([$serviceId]);
         

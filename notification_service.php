@@ -1,12 +1,6 @@
 <?php
-/**
- * Unified Notification Service - Email & SMS Integration
- * File: notification_service.php
- * Combines email (PHPMailer) and SMS (PhilSMS) notifications
- */
-
-require_once 'send_reset_email.php'; // Your existing email functions
-require_once 'sms_functions.php';    // Your SMS functions
+require_once 'send_reset_email.php'; 
+require_once 'sms_functions.php'; 
 
 class NotificationService {
     private $smsService;
@@ -51,16 +45,14 @@ class NotificationService {
             }
         }
         
-        // Send SMS with OTP
         if ($this->smsEnabled && !empty($phone)) {
             try {
-                // Generate OTP if not provided
                 if (empty($otp)) {
                     $otp = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
                 }
                 
                 $results['sms'] = $this->smsService->sendPasswordResetOTP($phone, $name, $otp);
-                $results['otp'] = $otp; // Return OTP for storage/verification
+                $results['otp'] = $otp; 
                 
                 if (!$results['sms']) {
                     $results['errors'][] = "SMS: Failed to send OTP";
@@ -87,7 +79,6 @@ class NotificationService {
             'errors' => []
         ];
         
-        // Prepare appointment details for email
         $emailDetails = [
             'service_name' => $data['service_name'] ?? 'Service',
             'date' => $data['date'] ?? date('M j, Y'),
@@ -115,7 +106,6 @@ class NotificationService {
             }
         }
         
-        // Send SMS
         if ($this->smsEnabled && !empty($data['phone'])) {
             try {
                 $smsDetails = [
@@ -157,7 +147,6 @@ class NotificationService {
             'errors' => []
         ];
         
-        // Prepare appointment details
         $details = [
             'resident_name' => $data['resident_name'] ?? 'Resident',
             'service_name' => $data['service_name'] ?? 'Service',
@@ -168,8 +157,7 @@ class NotificationService {
             'reason' => $data['reason'] ?? 'Not specified',
             'requirements' => $data['requirements'] ?? ['Valid ID']
         ];
-        
-        // Send Email to Personnel
+
         if ($this->emailEnabled && !empty($data['personnel_email'])) {
             try {
                 $results['email'] = sendPersonnelAppointmentNotification(
@@ -186,15 +174,13 @@ class NotificationService {
                 error_log("Personnel email failed: " . $e->getMessage());
             }
         }
-        
-        // Send SMS to Personnel (Optional - brief notification)
+
         if ($this->smsEnabled && !empty($data['personnel_phone'])) {
             try {
                 $smsMessage = "New appointment assigned: {$details['resident_name']} - "
                             . "{$details['service_name']} on {$details['date']} at {$details['time']}. "
                             . "Ref: {$details['transaction_id']}. Check email for details.";
                 
-                // Use generic sendSMS method (we'll add this below)
                 $results['sms'] = $this->sendCustomSMS(
                     $data['personnel_phone'],
                     $smsMessage
@@ -232,7 +218,6 @@ class NotificationService {
             'transaction_id' => $data['transaction_id'] ?? 'N/A'
         ];
         
-        // Send Email to Resident
         if ($this->emailEnabled && !empty($data['email'])) {
             try {
                 $results['email'] = sendRescheduleNotification(
@@ -249,7 +234,6 @@ class NotificationService {
             }
         }
         
-        // Send SMS to Resident
         if ($this->smsEnabled && !empty($data['phone'])) {
             try {
                 $results['sms'] = $this->smsService->sendRescheduleNotification(
@@ -290,7 +274,6 @@ class NotificationService {
             'transaction_id' => $data['transaction_id'] ?? 'N/A'
         ];
         
-        // Send Email to Personnel
         if ($this->emailEnabled && !empty($data['personnel_email'])) {
             try {
                 $results['email'] = sendPersonnelRescheduleNotification(
@@ -323,7 +306,6 @@ class NotificationService {
             'errors' => []
         ];
         
-        // SMS Reminder (more effective than email for reminders)
         if ($this->smsEnabled && !empty($data['phone'])) {
             try {
                 $appointmentDetails = [
@@ -345,9 +327,6 @@ class NotificationService {
                 $results['errors'][] = "SMS Error: " . $e->getMessage();
             }
         }
-        
-        // Optional: Add email reminder function if needed
-        
         return $results;
     }
     
@@ -364,7 +343,6 @@ class NotificationService {
             'errors' => []
         ];
         
-        // Send SMS
         if ($this->smsEnabled && !empty($data['phone'])) {
             try {
                 $results['sms'] = $this->smsService->sendCancellationNotification(
@@ -381,9 +359,6 @@ class NotificationService {
                 $results['errors'][] = "SMS Error: " . $e->getMessage();
             }
         }
-        
-        // TODO: Add email cancellation function if needed
-        
         return $results;
     }
     

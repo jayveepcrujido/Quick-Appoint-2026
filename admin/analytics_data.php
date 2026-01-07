@@ -18,7 +18,6 @@ if ($conn->connect_error) {
 
 $filter = $_GET['filter'] ?? 'monthly';
 
-// Build WHERE clause based on filter
 function getDateFilter($filter) {
     switch($filter) {
         case 'weekly':
@@ -35,7 +34,6 @@ function getDateFilter($filter) {
 
 $dateFilter = getDateFilter($filter);
 
-// Appointments by Department
 $deptLabels = [];
 $deptCounts = [];
 $res = $conn->query("SELECT d.name, COUNT(a.id) AS total FROM appointments a 
@@ -47,7 +45,6 @@ while ($row = $res->fetch_assoc()) {
     $deptCounts[] = (int)$row['total'];
 }
 
-// Appointments by Service
 $serviceLabels = [];
 $serviceCounts = [];
 $res = $conn->query("SELECT s.service_name, COUNT(a.id) AS total 
@@ -60,10 +57,8 @@ while ($row = $res->fetch_assoc()) {
     $serviceCounts[] = (int)$row['total'];
 }
 
-// Monthly Trend (always for current year, but filtered by time range)
 $monthlyData = array_fill(1, 12, 0);
 if ($filter === 'weekly') {
-    // For weekly, show last 7 days instead
     $dayLabels = [];
     $dayCounts = [];
     $res = $conn->query("SELECT DATE(requested_at) AS d, COUNT(*) AS c 

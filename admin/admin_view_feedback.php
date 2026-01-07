@@ -7,16 +7,13 @@ if (!isset($_SESSION['auth_id']) || $_SESSION['role'] !== 'Admin') {
 
 include '../conn.php';
 
-// Get all departments for filter dropdown
 $deptStmt = $pdo->query("SELECT id, name FROM departments ORDER BY name ASC");
 $departments = $deptStmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Get filters from GET parameters
 $departmentId = isset($_GET['department_id']) && !empty($_GET['department_id']) ? intval($_GET['department_id']) : null;
 $startDate = isset($_GET['start_date']) && !empty($_GET['start_date']) ? $_GET['start_date'] : null;
 $endDate = isset($_GET['end_date']) && !empty($_GET['end_date']) ? $_GET['end_date'] : null;
 
-// Build the WHERE clause with filters
 $whereClause = "WHERE 1=1";
 $params = [];
 
@@ -37,7 +34,6 @@ if ($startDate && $endDate) {
     $params[] = $endDate;
 }
 
-// Fetch all feedbacks based on filters
 $feedbackStmt = $pdo->prepare("
     SELECT 
         af.id,
@@ -73,12 +69,10 @@ $feedbackStmt = $pdo->prepare("
 $feedbackStmt->execute($params);
 $feedbacks = $feedbackStmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Calculate statistics
 $totalFeedbacks = count($feedbacks);
 $satisfactionScores = [];
 $averageScores = [];
 
-// Count feedbacks by department
 $deptFeedbackCount = [];
 foreach ($feedbacks as $feedback) {
     $deptName = $feedback['department_name'];
@@ -87,7 +81,6 @@ foreach ($feedbacks as $feedback) {
     }
     $deptFeedbackCount[$deptName]++;
     
-    // Calculate scores
     for ($i = 0; $i <= 8; $i++) {
         $answer = $feedback["sqd{$i}_answer"];
         if ($answer && $answer !== 'N/A') {
@@ -108,13 +101,11 @@ foreach ($feedbacks as $feedback) {
     }
 }
 
-// Calculate overall satisfaction (SQD0)
 $overallSatisfaction = 0;
 if (isset($averageScores['sqd0']) && $averageScores['sqd0']['count'] > 0) {
     $overallSatisfaction = round(($averageScores['sqd0']['total'] / $averageScores['sqd0']['count']) * 20, 1);
 }
 
-// Get department with most feedbacks
 $topDepartment = '';
 $maxFeedbacks = 0;
 foreach ($deptFeedbackCount as $dept => $count) {
@@ -136,7 +127,6 @@ foreach ($deptFeedbackCount as $dept => $count) {
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap4.min.css"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <style>
-        /* Copy all the CSS from personnel_view_feedbacks.php here */
         :root {
             --primary-blue: #0D92F4;
             --secondary-blue: #27548A;
@@ -878,7 +868,6 @@ foreach ($deptFeedbackCount as $dept => $count) {
     letter-spacing: 0.5px;
 }
 
-/* Modal specific styles */
 #analysisModal .modal-body {
     padding: 1.5rem;
     background: var(--bg-light);
@@ -951,7 +940,6 @@ foreach ($deptFeedbackCount as $dept => $count) {
         </div>
         <?php endif; ?>
         
-        <!-- Filter Form -->
         <div class="content-card mb-4">
             <div class="filter-header">
                 <i class="fas fa-filter"></i>
@@ -1098,7 +1086,6 @@ foreach ($deptFeedbackCount as $dept => $count) {
         </div>
     </div>
 
-    <!-- Feedback Detail Modal -->
     <div class="modal fade" id="feedbackModal" tabindex="-1">
         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content">
@@ -1122,7 +1109,6 @@ foreach ($deptFeedbackCount as $dept => $count) {
         </div>
     </div>
 
-    <!-- Analysis Modal -->
     <div class="modal fade" id="analysisModal" tabindex="-1">
         <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content">
@@ -1143,7 +1129,6 @@ foreach ($deptFeedbackCount as $dept => $count) {
                     </div>
                 </div>
                 <div class="modal-body" id="analysisModalBody">
-                    <!-- Analysis content will be loaded here -->
                 </div>
             </div>
         </div>
@@ -1444,7 +1429,6 @@ foreach ($deptFeedbackCount as $dept => $count) {
     function showAnalysis() {
     console.log('📊 Generating analysis...');
     
-    // Question definitions
     const sqdQuestions = {
         'sqd0': 'I am satisfied with the service that I availed.',
         'sqd1': 'I spent a reasonable amount of time for my transaction.',
@@ -1465,7 +1449,6 @@ foreach ($deptFeedbackCount as $dept => $count) {
         'Strongly Disagree': 1
     };
     
-    // Initialize stats
     const questionStats = {};
     Object.keys(sqdQuestions).forEach(key => {
         questionStats[key] = {
@@ -1483,7 +1466,6 @@ foreach ($deptFeedbackCount as $dept => $count) {
         };
     });
     
-    // Calculate statistics
     feedbackData.forEach(feedback => {
         Object.keys(sqdQuestions).forEach(key => {
             const answer = feedback[key + '_answer'];
@@ -1503,7 +1485,6 @@ foreach ($deptFeedbackCount as $dept => $count) {
         });
     });
     
-    // Generate HTML
     let html = '<div class="analysis-summary">';
     html += '<h5><i class="fas fa-info-circle"></i> Overall Summary</h5>';
     html += '<div class="summary-stats">';
@@ -1532,7 +1513,6 @@ foreach ($deptFeedbackCount as $dept => $count) {
     html += '</div>';
     html += '</div></div>';
     
-    // Generate question analysis cards
     Object.keys(sqdQuestions).forEach((key, index) => {
         const stats = questionStats[key];
         const avgScore = stats.scoreCount > 0 ? (stats.scoreTotal / stats.scoreCount).toFixed(2) : 0;

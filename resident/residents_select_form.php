@@ -29,7 +29,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'Residents') {
             margin-bottom: 0.5rem;
         }
         .top-wrapper {
-            padding-top: 60px; /* Adjust this value as needed */
+            padding-top: 60px;
         }
 <a href="#" class="nav_link" onclick="loadContent('residents_view_departments.php')">
     </style>
@@ -64,7 +64,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'Residents') {
         </div>
     </div>
 
-    <!-- Font Awesome for icons -->
     <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </body>
 </html>

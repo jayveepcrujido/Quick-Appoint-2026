@@ -1,9 +1,7 @@
 <?php
-// ajax_update_department.php
 include '../../conn.php';
 header('Content-Type: application/json');
 
-// Validate POST
 $deptId = $_POST['department_id'] ?? null;
 $name = trim($_POST['name'] ?? '');
 $acronym = trim($_POST['acronym'] ?? '');
@@ -22,21 +20,18 @@ if (!$deptId || !$name || empty($serviceNames)) {
 try {
     $pdo->beginTransaction();
 
-    // Update department with acronym
     $stmt = $pdo->prepare("UPDATE departments SET name = ?, acronym = ?, description = ? WHERE id = ?");
     $stmt->execute([$name, $acronym, $description, $deptId]);
 
-    // Update services
     foreach ($serviceNames as $index => $serviceName) {
         $serviceId = $serviceIds[$index];
 
         if (strpos($serviceId, 'new') === 0) {
-            // New service - insert it first
             $stmt = $pdo->prepare("INSERT INTO department_services (department_id, service_name) VALUES (?, ?)");
             $stmt->execute([$deptId, trim($serviceName)]);
             $newServiceId = $pdo->lastInsertId();
 
-            // Add requirements using the original temp ID from the form
+
             if (!empty($requirementsMap[$serviceId])) {
                 foreach ($requirementsMap[$serviceId] as $req) {
                     if (trim($req) !== '') {
@@ -46,15 +41,12 @@ try {
                 }
             }
         } else {
-            // Existing service
             $stmt = $pdo->prepare("UPDATE department_services SET service_name = ? WHERE id = ?");
             $stmt->execute([trim($serviceName), $serviceId]);
 
-            // Delete old requirements
             $stmt = $pdo->prepare("DELETE FROM service_requirements WHERE service_id = ?");
             $stmt->execute([$serviceId]);
 
-            // Insert new requirements
             if (!empty($requirementsMap[$serviceId])) {
                 foreach ($requirementsMap[$serviceId] as $req) {
                     if (trim($req) !== '') {

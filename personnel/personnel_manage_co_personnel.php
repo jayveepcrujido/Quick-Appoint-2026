@@ -2,14 +2,12 @@
 include '../conn.php';
 session_start();
 
-// Security check
 if (!isset($_SESSION['auth_id']) || $_SESSION['role'] !== 'LGU Personnel') {
     http_response_code(403);
     echo '<div class="alert alert-danger">Unauthorized access</div>';
     exit();
 }
 
-// Check if user is department head
 if (!isset($_SESSION['is_department_head']) || !$_SESSION['is_department_head']) {
     echo '<div class="alert alert-warning">
             <i class="bx bx-error-circle"></i> 
@@ -23,7 +21,6 @@ $dept_stmt = $pdo->prepare("SELECT department_id FROM lgu_personnel WHERE id = ?
 $dept_stmt->execute([$personnel_id]);
 $department_id = $dept_stmt->fetchColumn();
 
-// Fetch co-personnel in the same department
 $co_personnel_query = $pdo->prepare("
     SELECT 
         lp.id,
@@ -46,7 +43,6 @@ $co_personnel_query = $pdo->prepare("
 $co_personnel_query->execute([$department_id, $personnel_id]);
 $co_personnel_list = $co_personnel_query->fetchAll(PDO::FETCH_ASSOC);
 
-// Get department name
 $dept_name_query = $pdo->prepare("SELECT name FROM departments WHERE id = ?");
 $dept_name_query->execute([$department_id]);
 $department_name = $dept_name_query->fetchColumn();
@@ -240,7 +236,6 @@ $department_name = $dept_name_query->fetchColumn();
             color: #94a3b8;
         }
 
-        /* Modal Styles */
         .modal-content {
             border-radius: 16px;
             border: none;
@@ -304,13 +299,11 @@ $department_name = $dept_name_query->fetchColumn();
 </head>
 <body>
     <div class="co-personnel-container">
-        <!-- Page Header -->
         <div class="page-header">
             <h2><i class='bx bx-user-plus'></i> Manage Co-Personnel</h2>
             <p>Department: <strong><?php echo htmlspecialchars($department_name); ?></strong></p>
         </div>
 
-        <!-- Action Bar -->
         <div class="action-bar">
             <div>
                 <h5 class="mb-0">Co-Personnel List</h5>
@@ -321,10 +314,8 @@ $department_name = $dept_name_query->fetchColumn();
             </button>
         </div>
 
-        <!-- Alert Messages -->
         <div id="alertMessage"></div>
 
-        <!-- Co-Personnel List -->
         <?php if (empty($co_personnel_list)): ?>
             <div class="empty-state">
                 <i class='bx bx-user-x'></i>
@@ -355,7 +346,6 @@ $department_name = $dept_name_query->fetchColumn();
                                 Added: <?php echo date('M d, Y', strtotime($person['created_at'])); ?>
                             </div>
                             
-                            <!-- UPDATED: Only show if created by another personnel -->
                             <?php if ($person['created_by_personnel_id'] && $person['creator_first_name']): ?>
                                 <div class="meta-item">
                                     <i class='bx bx-user'></i>
@@ -364,7 +354,6 @@ $department_name = $dept_name_query->fetchColumn();
                             <?php endif; ?>
                         </div>
                         
-                        <!-- REMOVED: Badge showing created_by_admin -->
                     </div>
                     <div class="personnel-actions">
                         <button class="btn-action btn-edit" onclick="editPersonnel(<?php echo $person['id']; ?>)">
@@ -380,7 +369,6 @@ $department_name = $dept_name_query->fetchColumn();
         <?php endif; ?>
     </div>
 
-    <!-- Add Co-Personnel Modal -->
     <div class="modal fade" id="addCoPersonnelModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
@@ -430,7 +418,6 @@ $department_name = $dept_name_query->fetchColumn();
         </div>
     </div>
 
-    <!-- Edit Co-Personnel Modal -->
     <div class="modal fade" id="editCoPersonnelModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
@@ -482,7 +469,6 @@ $department_name = $dept_name_query->fetchColumn();
         </div>
     </div>
 
-    <!-- Delete Confirmation Modal -->
     <div class="modal fade" id="deleteConfirmModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
@@ -509,7 +495,6 @@ $department_name = $dept_name_query->fetchColumn();
     </div>
 
 <script>
-// Add Co-Personnel
 $('#addCoPersonnelForm').on('submit', function(e) {
     e.preventDefault();
     
@@ -517,13 +502,11 @@ $('#addCoPersonnelForm').on('submit', function(e) {
     const submitBtn = $(this).find('button[type="submit"]');
     const originalBtnText = submitBtn.html();
     
-    // Validate password match
     if (formData.get('password') !== formData.get('confirm_password')) {
         showAlert('Passwords do not match!', 'danger');
         return;
     }
     
-    // Disable button and show loading
     submitBtn.prop('disabled', true).html('<i class="bx bx-loader-alt bx-spin"></i> Creating...');
     
     $.ajax({
@@ -538,8 +521,6 @@ $('#addCoPersonnelForm').on('submit', function(e) {
                 showAlert(response.message, 'success');
                 $('#addCoPersonnelModal').modal('hide');
                 $('#addCoPersonnelForm')[0].reset();
-                
-                // Dynamically refresh the page content
                 refreshCoPersonnelList();
             } else {
                 showAlert(response.message, 'danger');
@@ -554,7 +535,6 @@ $('#addCoPersonnelForm').on('submit', function(e) {
     });
 });
 
-// Edit Personnel
 function editPersonnel(id) {
     $.ajax({
         url: 'ajax/get_co_personnel.php',
@@ -579,7 +559,6 @@ function editPersonnel(id) {
     });
 }
 
-// Update Personnel
 $('#editCoPersonnelForm').on('submit', function(e) {
     e.preventDefault();
     
@@ -587,7 +566,6 @@ $('#editCoPersonnelForm').on('submit', function(e) {
     const submitBtn = $(this).find('button[type="submit"]');
     const originalBtnText = submitBtn.html();
     
-    // Validate password match if passwords provided
     const password = formData.get('password');
     const confirmPassword = formData.get('confirm_password');
     
@@ -598,7 +576,6 @@ $('#editCoPersonnelForm').on('submit', function(e) {
         }
     }
     
-    // Disable button and show loading
     submitBtn.prop('disabled', true).html('<i class="bx bx-loader-alt bx-spin"></i> Updating...');
     
     $.ajax({
@@ -613,8 +590,6 @@ $('#editCoPersonnelForm').on('submit', function(e) {
             if (response.success) {
                 showAlert(response.message, 'success');
                 $('#editCoPersonnelModal').modal('hide');
-                
-                // Dynamically refresh the page content
                 refreshCoPersonnelList();
             } else {
                 showAlert(response.message, 'danger');
@@ -629,20 +604,17 @@ $('#editCoPersonnelForm').on('submit', function(e) {
     });
 });
 
-// Confirm Delete
 function confirmDelete(id, name) {
     $('#deletePersonnelId').val(id);
     $('#deletePersonnelName').text(name);
     $('#deleteConfirmModal').modal('show');
 }
 
-// Delete Personnel
 function deletePersonnel() {
     const id = $('#deletePersonnelId').val();
     const deleteBtn = $('#deleteConfirmModal').find('.btn-danger');
     const originalBtnText = deleteBtn.html();
     
-    // Disable button and show loading
     deleteBtn.prop('disabled', true).html('<i class="bx bx-loader-alt bx-spin"></i> Deleting...');
     
     $.ajax({
@@ -653,13 +625,8 @@ function deletePersonnel() {
         success: function(response) {
             if (response.success) {
                 showAlert(response.message, 'success');
-                
-                // FIXED: Reset button state before hiding modal
                 deleteBtn.prop('disabled', false).html(originalBtnText);
-                
                 $('#deleteConfirmModal').modal('hide');
-                
-                // Dynamically refresh the page content
                 refreshCoPersonnelList();
             } else {
                 showAlert(response.message, 'danger');
@@ -674,14 +641,11 @@ function deletePersonnel() {
     });
 }
 
-// Dynamic Refresh Function - Simplified and more robust
 function refreshCoPersonnelList() {
-    console.log('Starting refresh...'); // DEBUG
+    console.log('Starting refresh...');
     
-    // Remove existing content first
     $('.personnel-card, .empty-state').remove();
     
-    // Show loading indicator
     const loadingHtml = `
         <div class="text-center py-5" id="loadingIndicator" style="background: white; border-radius: 12px; margin-top: 1rem; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
             <i class='bx bx-loader-alt bx-spin' style='font-size: 3rem; color: #0D92F4;'></i>
@@ -690,7 +654,6 @@ function refreshCoPersonnelList() {
     `;
     $('.action-bar').after(loadingHtml);
     
-    // Fetch fresh data
     $.ajax({
         url: 'ajax/get_co_personnel_list.php',
         method: 'GET',
@@ -698,16 +661,13 @@ function refreshCoPersonnelList() {
         cache: false,
         timeout: 10000,
         success: function(response) {
-            console.log('AJAX Success:', response); // DEBUG
+            console.log('AJAX Success:', response);
             
-            // Remove loading
             $('#loadingIndicator').remove();
             
             if (response.success) {
-                // Update count
                 $('.action-bar small').text('Total: ' + response.count + ' personnel');
                 
-                // Build and insert personnel cards
                 if (response.data && response.data.length > 0) {
                     response.data.forEach(function(person) {
                         const middleInitial = person.middle_name ? person.middle_name.charAt(0) + '. ' : '';
@@ -718,7 +678,6 @@ function refreshCoPersonnelList() {
                             year: 'numeric'
                         });
                         
-                        // Creator info
                         let creatorHtml = '';
                         if (person.created_by_personnel_id && person.creator_first_name) {
                             creatorHtml = `
@@ -762,7 +721,6 @@ function refreshCoPersonnelList() {
                     });
                     
                 } else {
-                    // Show empty state
                     const emptyStateHtml = `
                         <div class="empty-state">
                             <i class='bx bx-user-x'></i>
@@ -773,7 +731,6 @@ function refreshCoPersonnelList() {
                     $('.action-bar').after(emptyStateHtml);
                 }
                 
-                // Clean up modals
                 cleanupModals();
                 
             } else {
@@ -788,10 +745,8 @@ function refreshCoPersonnelList() {
                 responseText: xhr.responseText
             });
             
-            // Remove loading
             $('#loadingIndicator').remove();
             
-            // Show error message
             const errorHtml = `
                 <div class="empty-state">
                     <i class='bx bx-error-circle' style="color: #ef4444;"></i>
@@ -809,7 +764,6 @@ function refreshCoPersonnelList() {
     });
 }
 
-// Clean up modal backdrops
 function cleanupModals() {
     $('.modal-backdrop').remove();
     $('body').removeClass('modal-open');
@@ -817,14 +771,11 @@ function cleanupModals() {
     $('body').css('overflow', '');
 }
 
-// Ensure modals are cleaned up on hide
 $('.modal').on('hidden.bs.modal', function() {
     cleanupModals();
 });
 
-// Show Alert - Top Right Toast Notification
 function showAlert(message, type) {
-    // Remove any existing alerts
     $('.toast-notification').remove();
     
     const bgColor = type === 'success' ? 'linear-gradient(135deg, #10b981, #059669)' : 
@@ -876,7 +827,6 @@ function showAlert(message, type) {
     
     $('body').append(alertHtml);
     
-    // Auto-dismiss after 4 seconds
     setTimeout(() => {
         $('.toast-notification').fadeOut(400, function() {
             $(this).remove();
@@ -884,7 +834,6 @@ function showAlert(message, type) {
     }, 4000);
 }
 
-// Add animation keyframes if not exists
 if (!$('#toastAnimationStyles').length) {
     $('head').append(`
         <style id="toastAnimationStyles">

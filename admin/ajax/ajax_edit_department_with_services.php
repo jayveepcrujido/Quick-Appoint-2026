@@ -1,5 +1,4 @@
 <?php
-// ajax_edit_department_with_services.php
 include '../../conn.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -18,11 +17,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         $pdo->beginTransaction();
 
-        // Update department info
         $stmt = $pdo->prepare("UPDATE departments SET name = ?, description = ? WHERE id = ?");
         $stmt->execute([$name, $desc, $deptId]);
 
-        // Delete old services and their requirements
         $oldServices = $pdo->prepare("SELECT id FROM department_services WHERE department_id = ?");
         $oldServices->execute([$deptId]);
         $serviceIds = $oldServices->fetchAll(PDO::FETCH_COLUMN);
@@ -34,7 +31,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $pdo->prepare("DELETE FROM department_services WHERE department_id = ?")->execute([$deptId]);
 
-        // Insert new services and requirements
         $svcStmt = $pdo->prepare("INSERT INTO department_services (department_id, service_name) VALUES (?, ?)");
         $reqStmt = $pdo->prepare("INSERT INTO service_requirements (service_id, requirement) VALUES (?, ?)");
 
@@ -44,12 +40,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $svcStmt->execute([$deptId, trim($svc)]);
                 $newServiceId = $pdo->lastInsertId();
 
-                // Insert corresponding requirements if any
                 while ($reqIndex < count($requirements) && trim($requirements[$reqIndex]) !== '') {
                     $reqStmt->execute([$newServiceId, trim($requirements[$reqIndex])]);
                     $reqIndex++;
 
-                    // If the next service starts, break to continue outer loop
                     if (isset($services[$reqIndex])) break;
                 }
             }

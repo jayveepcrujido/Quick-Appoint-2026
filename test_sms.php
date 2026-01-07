@@ -1,12 +1,6 @@
 <?php
-/**
- * PhilSMS Test Script
- * Run this file to test your SMS integration
- */
+require 'sms_functions.php'; 
 
-require 'sms_functions.php'; // Your PhilSMS integration file
-
-// Enable error reporting
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
@@ -16,9 +10,7 @@ echo "<hr>";
 // Initialize SMS Service
 $smsService = new SMSService();
 
-// ============================================
-// TEST 1: Phone Number Validation
-// ============================================
+
 echo "<h2>Test 1: Phone Number Validation</h2>";
 
 $testNumbers = [

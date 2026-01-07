@@ -1,7 +1,5 @@
 <?php
 session_start();
-
-// DB Connection
 $host = "localhost";
 $username = "root";
 $password = "";
@@ -18,7 +16,6 @@ if (!$personnel_department_id) {
     die(json_encode(['error' => 'No department ID']));
 }
 
-// Build date filter
 $date_condition = '';
 switch ($date_filter_type) {
     case 'week':

@@ -14,7 +14,6 @@ try {
     $startDate = $_GET['start_date'] ?? '';
     $endDate = $_GET['end_date'] ?? '';
 
-    // Base query
     $query = "
         SELECT a.id, a.status, a.scheduled_for, a.reason, a.requested_at,
                r.first_name, r.last_name,
@@ -27,25 +26,21 @@ try {
 
     $params = [];
 
-    // Add department filter if provided
     if (!empty($departmentId)) {
         $query .= " AND a.department_id = :department_id";
         $params[':department_id'] = $departmentId;
     }
 
-    // Add status filter if provided
     if (!empty($status)) {
         $query .= " AND a.status = :status";
         $params[':status'] = $status;
     }
 
-    // Add start date filter if provided
     if (!empty($startDate)) {
         $query .= " AND DATE(a.scheduled_for) >= :start_date";
         $params[':start_date'] = $startDate;
     }
 
-    // Add end date filter if provided
     if (!empty($endDate)) {
         $query .= " AND DATE(a.scheduled_for) <= :end_date";
         $params[':end_date'] = $endDate;
@@ -57,7 +52,6 @@ try {
     $stmt->execute($params);
     $appointments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Format dates for display
     foreach ($appointments as &$appointment) {
         if ($appointment['scheduled_for']) {
             $appointment['scheduled_for'] = date('F j, Y • g:i A', strtotime($appointment['scheduled_for']));

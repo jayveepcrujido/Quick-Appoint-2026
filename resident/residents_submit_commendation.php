@@ -8,7 +8,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'Residents') {
 include '../conn.php';
 $userId = $_SESSION['user_id'];
 
-// ✅ Fetch eligible appointments (Completed + no commendation yet)
 $query = "
     SELECT a.id AS appointment_id, d.name AS department_name, a.scheduled_for
     FROM appointments a
@@ -21,13 +20,11 @@ $stmt = $pdo->prepare($query);
 $stmt->execute(['user_id' => $userId]);
 $appointments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// ❌ No eligible appointment
 if (empty($appointments)) {
     echo "<div class='alert alert-warning'>You have no completed appointments eligible for commendation submission.</div>";
     exit();
 }
 
-// ✅ Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax'])) {
     header('Content-Type: application/json');
 
@@ -39,7 +36,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax'])) {
 
     if ($appointmentId && $employeeName && $commendation) {
         try {
-            // Insert commendation (created_at will be set automatically)
             $stmtInsert = $pdo->prepare("INSERT INTO commendations 
             (user_id, appointment_id, employee_name, office, service_requested, commendation_text)
             VALUES (:user_id, :appointment_id, :employee_name, :office, :service_requested, :commendation_text)");
@@ -52,7 +48,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax'])) {
             'commendation_text' => $commendation
         ]);
 
-            // Update appointment status
             $stmtUpdate = $pdo->prepare("UPDATE appointments SET commendation_status = 'done' WHERE id = :appointment_id");
             $stmtUpdate->execute(['appointment_id' => $appointmentId]);
 
@@ -75,7 +70,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax'])) {
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body class="p-4"></body>
-<!-- ✅ Commendation Form UI -->
 <div class="container my-4">
     <div class="card shadow-lg rounded-lg border-0">
         <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
@@ -127,8 +121,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax'])) {
     </div>
 </div>
 
-
-<!-- ✅ AJAX Submission -->
 <script>
     $('#commendation-form').on('submit', function(e) {
         e.preventDefault();

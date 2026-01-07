@@ -77,6 +77,7 @@ try {
         transition: all 0.3s ease;
         border-left: 4px solid transparent;
         margin-bottom: 15px;
+        cursor: pointer;
     }
     
     .notification-card:hover {
@@ -237,7 +238,9 @@ try {
                 ?>
                 
                 <div class="card notification-card <?php echo $notification['is_read'] ? 'read' : 'unread'; ?>" 
-                     data-type="<?php echo $notificationType; ?>">
+                    data-type="<?php echo $notificationType; ?>"
+                    data-transaction-id="<?php echo htmlspecialchars($notification['transaction_id']); ?>"
+                    style="cursor: pointer;">
                     <div class="card-body">
                         <div class="d-flex">
                             <div class="notification-icon <?php echo $iconClass; ?> mr-3">
@@ -292,12 +295,8 @@ try {
                                     </span>
                                 </div>
                                 <div class="mt-3">
-                                    <button class="btn btn-sm btn-primary" 
-                                            onclick="viewAppointment(<?php echo $notification['appointment_id']; ?>)">
-                                        <i class='bx bx-show'></i> View Appointment
-                                    </button>
                                     <button class="btn btn-sm btn-outline-danger" 
-                                            onclick="deleteNotification(<?php echo $notification['id']; ?>, this)">
+                                            onclick="event.stopPropagation(); deleteNotification(<?php echo $notification['id']; ?>, this)">
                                         <i class='bx bx-trash'></i> Delete
                                     </button>
                                 </div>
@@ -332,10 +331,21 @@ try {
         }
     });
     
-    // View appointment details
-    function viewAppointment(appointmentId) {
-        loadContent('personnel_manage_appointments.php?id=' + appointmentId);
-    }
+    // Make entire card clickable to view appointment
+    $(document).on('click', '.notification-card', function(e) {
+        // Don't trigger if clicking the delete button
+        if ($(e.target).closest('.btn-outline-danger').length > 0) {
+            return;
+        }
+        
+        const transactionId = $(this).data('transaction-id');
+        
+        // Store transaction ID in sessionStorage for highlighting
+        sessionStorage.setItem('highlightAppointment', transactionId);
+        
+        // Redirect to manage appointments page
+        loadContent('personnel_manage_appointments.php');
+    });
     
     // Delete single notification
     function deleteNotification(notificationId, button) {

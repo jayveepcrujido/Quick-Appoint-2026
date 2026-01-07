@@ -7,7 +7,6 @@ if (!isset($_SESSION['auth_id'])) {
     exit();
 }
 
-// Fetch departments with services and requirements
 $query = "SELECT d.*, 
                 s.id AS service_id,
                 s.service_name,
@@ -20,7 +19,6 @@ $stmt = $pdo->prepare($query);
 $stmt->execute();
 $rawResults = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Organize data
 $departments = [];
 foreach ($rawResults as $row) {
     $deptId = $row['id'];
@@ -554,7 +552,6 @@ h3.mb-4 i {
 </div>
 
 <script>
-// Search functionality
 $('#searchInput').on('input', function() {
     const val = $(this).val().toLowerCase();
     $('.department-card').each(function() {
@@ -568,7 +565,6 @@ $('#clearSearch').click(function() {
     $('.department-card').show();
 });
 
-// Download transaction slip
 document.getElementById("downloadTransactionBtn").addEventListener("click", function() {
     const modalContent = document.getElementById("transactionModalContent");
     const footer = modalContent.querySelector(".no-capture");

@@ -1,12 +1,10 @@
 <?php
-// Keep session alive
 ini_set('session.gc_maxlifetime', 86400);
 ini_set('session.cookie_lifetime', 86400);
 session_set_cookie_params(86400);
 
 session_start();
 
-// Simply touch the session to keep it alive
 if (isset($_SESSION['auth_id'])) {
     $_SESSION['last_activity'] = time();
     echo json_encode(['status' => 'alive', 'time' => time()]);

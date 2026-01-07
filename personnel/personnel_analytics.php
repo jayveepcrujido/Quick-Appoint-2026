@@ -2,7 +2,6 @@
 session_start();
 include '../conn.php';
 
-// Ensure only Admin / LGU Personnel can access
 if (!isset($_SESSION['auth_id']) || !in_array($_SESSION['role'], ['Admin','LGU Personnel'])) {
     header("Location: ../login.php");
     exit();
@@ -25,7 +24,6 @@ if ($role === 'LGU Personnel') {
     $departmentName = $row['name'];
 }
 
-// ================== TOTALS ==================
 $query = "SELECT 
             COUNT(*) AS total,
             SUM(CASE WHEN status='Pending' THEN 1 ELSE 0 END) AS pending,
@@ -37,7 +35,6 @@ if ($departmentId) $stmt->bindValue(':dept', $departmentId);
 $stmt->execute();
 $totals = $stmt->fetch(PDO::FETCH_ASSOC);
 
-// ================== TODAY'S APPOINTMENTS ==================
 $query = "SELECT COUNT(*) FROM appointments WHERE DATE(scheduled_for) = CURDATE()";
 if ($departmentId) $query .= " AND department_id = :dept";
 $stmt = $pdo->prepare($query);
@@ -45,7 +42,6 @@ if ($departmentId) $stmt->bindValue(':dept', $departmentId);
 $stmt->execute();
 $todayAppointments = $stmt->fetchColumn();
 
-// ================== TRENDS DATA (ALL TIME) ==================
 $query = "SELECT DATE_FORMAT(requested_at, '%Y-%m-%d') as date, COUNT(*) as total
           FROM appointments";
 if ($departmentId) $query .= " WHERE department_id = :dept";
@@ -55,7 +51,6 @@ if ($departmentId) $stmt->bindValue(':dept', $departmentId);
 $stmt->execute();
 $allTrends = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// ================== APPOINTMENT STATUS WITH DATES ==================
 $query = "SELECT status, DATE_FORMAT(requested_at, '%Y-%m-%d') as date, COUNT(*) as total 
           FROM appointments";
 if ($departmentId) $query .= " WHERE department_id = :dept";
@@ -65,7 +60,6 @@ if ($departmentId) $stmt->bindValue(':dept', $departmentId);
 $stmt->execute();
 $statusByDate = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// ================== APPOINTMENTS BY SERVICE WITH DATES ==================
 $query = "SELECT s.service_name, DATE_FORMAT(a.requested_at, '%Y-%m-%d') as date, COUNT(a.id) as total
           FROM appointments a
           JOIN department_services s ON a.service_id = s.id";
@@ -76,7 +70,6 @@ if ($departmentId) $stmt->bindValue(':dept', $departmentId);
 $stmt->execute();
 $serviceByDate = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// ================== AM/PM APPOINTMENTS WITH DATES ==================
 $query = "SELECT DATE_FORMAT(requested_at, '%Y-%m-%d') as date,
           CASE WHEN HOUR(scheduled_for) < 12 THEN 'AM' ELSE 'PM' END as period,
           COUNT(*) as total
@@ -456,10 +449,10 @@ $amPmByDate = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
         canvas { max-width: 100%; }
-        /* Touch-Friendly Improvements */
+
         @media (hover: none) and (pointer: coarse) {
             .filter-btn {
-                min-height: 44px; /* iOS recommended touch target */
+                min-height: 44px;
                 min-width: 44px;
             }
             
@@ -467,7 +460,6 @@ $amPmByDate = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 min-height: 44px;
             }
             
-            /* Disable hover effects on touch devices */
             .filter-btn:hover,
             .info-card:hover,
             .title-icon:hover {
@@ -475,13 +467,11 @@ $amPmByDate = $stmt->fetchAll(PDO::FETCH_ASSOC);
             }
         }
 
-        /* Smooth scrolling */
         html {
             scroll-behavior: smooth;
             -webkit-overflow-scrolling: touch;
         }
 
-        /* Prevent horizontal scroll on mobile */
         body {
             overflow-x: hidden;
         }
@@ -493,7 +483,6 @@ $amPmByDate = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     @media (max-width: 1024px) {
-        /* Tablet Layout */
         main {
             padding: 15px;
         }
@@ -539,7 +528,6 @@ $amPmByDate = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     @media (max-width: 768px) {
-        /* Mobile Landscape & Small Tablets */
         body {
             font-size: 14px;
         }
@@ -556,7 +544,7 @@ $amPmByDate = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
         .page-header::before,
         .page-header::after {
-            display: none; /* Remove decorative elements on mobile */
+            display: none;
         }
         
         .header-container {
@@ -605,7 +593,6 @@ $amPmByDate = $stmt->fetchAll(PDO::FETCH_ASSOC);
             padding: 12px 18px;
         }
         
-        /* Summary Cards */
         .summary {
             grid-template-columns: repeat(2, 1fr);
             gap: 12px;
@@ -630,7 +617,6 @@ $amPmByDate = $stmt->fetchAll(PDO::FETCH_ASSOC);
             font-size: 11px;
         }
         
-        /* Global Filter Bar */
         .global-filter-bar {
             padding: 15px 18px;
             margin: 0 12px 18px 12px;
@@ -656,7 +642,6 @@ $amPmByDate = $stmt->fetchAll(PDO::FETCH_ASSOC);
             font-size: 11px;
         }
         
-        /* Chart Grid */
         .grid {
             grid-template-columns: 1fr;
             gap: 15px;
@@ -683,7 +668,6 @@ $amPmByDate = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     @media (max-width: 480px) {
-        /* Mobile Portrait */
         body {
             font-size: 13px;
         }
@@ -753,7 +737,6 @@ $amPmByDate = $stmt->fetchAll(PDO::FETCH_ASSOC);
             font-size: 0.85rem;
         }
         
-        /* Summary Cards - Single Column */
         .summary {
             grid-template-columns: 1fr;
             gap: 10px;
@@ -788,7 +771,6 @@ $amPmByDate = $stmt->fetchAll(PDO::FETCH_ASSOC);
             font-size: 11px;
         }
         
-        /* Global Filter Bar */
         .global-filter-bar {
             padding: 12px 15px;
             margin: 0 10px 15px 10px;
@@ -815,7 +797,6 @@ $amPmByDate = $stmt->fetchAll(PDO::FETCH_ASSOC);
             letter-spacing: 0.3px;
         }
         
-        /* Charts */
         .grid {
             gap: 12px;
         }
@@ -837,7 +818,6 @@ $amPmByDate = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     @media (max-width: 360px) {
-        /* Extra Small Devices */
         .page-header {
             padding: 12px;
             margin: 8px;
@@ -861,7 +841,6 @@ $amPmByDate = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
     }
 
-    /* Landscape Orientation Fix */
     @media (max-height: 500px) and (orientation: landscape) {
         .page-header {
             padding: 12px 20px;
@@ -889,7 +868,6 @@ $amPmByDate = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
     }
 
-    /* Print Styles */
     @media print {
         .global-filter-bar {
             display: none;
@@ -984,7 +962,6 @@ $amPmByDate = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </div>
         </div>
 
-        <!-- Global Filter Bar -->
         <div class="global-filter-bar">
             <div class="filter-title">
                 <i class='bx bx-filter-alt'></i>
@@ -998,7 +975,6 @@ $amPmByDate = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </div>
         </div>
 
-        <!-- Charts Grid -->
         <div class="grid">
             <div class="card">
                 <h3>
@@ -1039,18 +1015,15 @@ $amPmByDate = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </main>
 
 <script>
-// Make initialization function globally accessible
 window.initDashboardCharts = function() {
     console.log('Initializing dashboard charts...');
     
-    // Destroy existing charts first
     if (window.dashboardCharts) {
         Object.values(window.dashboardCharts).forEach(chart => {
             if (chart) chart.destroy();
         });
     }
     
-    // Reset chart instances
     window.dashboardCharts = {
         status: null,
         service: null,
@@ -1058,7 +1031,6 @@ window.initDashboardCharts = function() {
         trends: null
     };
     
-    // Wait a bit for DOM to be ready
     setTimeout(() => {
         const canvases = {
             status: document.getElementById('apptChart'),
@@ -1067,7 +1039,6 @@ window.initDashboardCharts = function() {
             trends: document.getElementById('monthlyChart')
         };
         
-        // Check if all canvases exist
         const allExist = Object.values(canvases).every(canvas => canvas !== null);
         
         if (!allExist) {
@@ -1093,7 +1064,6 @@ const amPmByDateData = <?= json_encode($amPmByDate) ?>;
 
 let currentGlobalPeriod = 'weekly';
 
-// Filter data by time period
 function filterDataByPeriod(data, period) {
     if (!data || data.length === 0) return [];
     
@@ -1119,7 +1089,6 @@ function filterDataByPeriod(data, period) {
     });
 }
 
-// Process status data
 function processStatusData(period) {
     const filtered = filterDataByPeriod(statusByDateData, period);
     const statusTotals = {};
@@ -1134,7 +1103,6 @@ function processStatusData(period) {
     };
 }
 
-// Process service data
 function processServiceData(period) {
     const filtered = filterDataByPeriod(serviceByDateData, period);
     const serviceTotals = {};
@@ -1149,7 +1117,6 @@ function processServiceData(period) {
     };
 }
 
-// Process AM/PM data
 function processAmPmData(period) {
     const filtered = filterDataByPeriod(amPmByDateData, period);
     let amCount = 0;
@@ -1245,7 +1212,6 @@ function updateAllCharts(period) {
     
     if (!window.dashboardCharts) return;
     
-    // Update Status Chart
     const statusData = processStatusData(period);
     if (window.dashboardCharts.status && statusData.labels.length > 0) {
         window.dashboardCharts.status.data.labels = statusData.labels;
@@ -1253,7 +1219,6 @@ function updateAllCharts(period) {
         window.dashboardCharts.status.update('active');
     }
     
-    // Update Service Chart
     const serviceData = processServiceData(period);
     if (window.dashboardCharts.service && serviceData.labels.length > 0) {
         window.dashboardCharts.service.data.labels = serviceData.labels;
@@ -1263,14 +1228,12 @@ function updateAllCharts(period) {
         window.dashboardCharts.service.update('active');
     }
     
-    // Update AM/PM Chart
     const amPmData = processAmPmData(period);
     if (window.dashboardCharts.amPm) {
         window.dashboardCharts.amPm.data.datasets[0].data = [amPmData.am, amPmData.pm];
         window.dashboardCharts.amPm.update('active');
     }
     
-    // Update Trends Chart
     const trendsData = processDataByPeriod(allTrendsData, period);
     if (window.dashboardCharts.trends) {
         window.dashboardCharts.trends.data.labels = trendsData.labels;
@@ -1285,7 +1248,6 @@ function createAllCharts() {
     const amPmCanvas = document.getElementById('amPmChart');
     const monthlyCanvas = document.getElementById('monthlyChart');
     
-    // Status Pie Chart
     const initialStatusData = processStatusData('weekly');
     if (initialStatusData.labels.length > 0 && apptCanvas) {
         window.dashboardCharts.status = new Chart(apptCanvas, {
@@ -1337,7 +1299,6 @@ function createAllCharts() {
         });
     }
 
-    // Service Bar Chart
     const initialServiceData = processServiceData('weekly');
     if (initialServiceData.labels.length > 0 && serviceCanvas) {
         const colors = ['#667eea', '#f093fb', '#4facfe', '#43e97b', '#f5576c', '#764ba2', '#f5af19'];
@@ -1380,7 +1341,6 @@ function createAllCharts() {
         });
     }
     
-    // AM/PM Chart
     const initialAmPmData = processAmPmData('weekly');
     if (amPmCanvas) {
         window.dashboardCharts.amPm = new Chart(amPmCanvas, {
@@ -1432,7 +1392,6 @@ function createAllCharts() {
         });
     }
     
-    // Trends Line Chart
     const initialTrendsData = processDataByPeriod(allTrendsData, 'weekly');
     if (initialTrendsData.labels.length > 0 && monthlyCanvas) {
         window.dashboardCharts.trends = new Chart(monthlyCanvas, {
@@ -1485,7 +1444,6 @@ function createAllCharts() {
         });
     }
     
-    // Global filter buttons
     document.querySelectorAll('#global-filter .filter-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             document.querySelectorAll('#global-filter .filter-btn').forEach(b => b.classList.remove('active'));
@@ -1521,7 +1479,6 @@ function animateElements() {
     }
 }
 
-// Clock management using native setInterval (bypassing tracking)
 let clockInterval = null;
 
 function updateDateTime() {
@@ -1543,19 +1500,16 @@ function updateDateTime() {
 }
 
 function startClock() {
-    // Clear existing interval if any
     if (clockInterval) {
         clearInterval(clockInterval);
         clockInterval = null;
     }
     
-    // Use originalSetInterval to bypass global tracking
-    updateDateTime(); // Update immediately
+    updateDateTime();
     if (typeof originalSetInterval !== 'undefined') {
         clockInterval = originalSetInterval(updateDateTime, 1000);
         console.log('✓ Clock started (using original setInterval)');
     } else {
-        // Fallback to regular setInterval if original not available
         clockInterval = setInterval(updateDateTime, 1000);
         console.log('✓ Clock started (using regular setInterval)');
     }
@@ -1569,12 +1523,10 @@ function stopClock() {
     }
 }
 
-// Cleanup function for analytics page
 window.analyticsPageCleanup = function() {
     console.log('🧹 Analytics page cleanup...');
     stopClock();
     
-    // Destroy all charts
     if (window.dashboardCharts) {
         Object.values(window.dashboardCharts).forEach(function(chart) {
             if (chart && typeof chart.destroy === 'function') {
@@ -1585,10 +1537,8 @@ window.analyticsPageCleanup = function() {
     }
 };
 
-// Store reference to startClock globally
 window.startAnalyticsClock = startClock;
 
-// Auto-initialize on page load
 window.initDashboardCharts();
 startClock();
 </script>

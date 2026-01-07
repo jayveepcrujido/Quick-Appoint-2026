@@ -73,6 +73,29 @@ if ($user_department_id) {
     ");
     $tasks_query->execute([$user_department_id, $today]);
     $today_tasks = $tasks_query->fetchAll(PDO::FETCH_ASSOC);
+
+    $reschedule_query = $pdo->prepare("
+        SELECT 
+            rr.id as reschedule_id,
+            rr.appointment_id,
+            rr.old_scheduled_for,
+            rr.requested_schedule,
+            rr.reason,
+            rr.created_at,
+            a.transaction_id,
+            CONCAT(r.first_name, ' ', r.last_name) as resident_name,
+            ds.service_name
+        FROM reschedule_requests rr
+        JOIN appointments a ON rr.appointment_id = a.id
+        JOIN residents r ON rr.resident_id = r.id
+        LEFT JOIN department_services ds ON a.service_id = ds.id
+        WHERE a.department_id = ? 
+        AND rr.status = 'Pending'
+        ORDER BY rr.created_at DESC
+        LIMIT 5
+    ");
+    $reschedule_query->execute([$user_department_id]);
+    $reschedule_requests = $reschedule_query->fetchAll(PDO::FETCH_ASSOC);
     
     // Get pending appointments count
     $pending_query = $pdo->prepare("
@@ -82,6 +105,15 @@ if ($user_department_id) {
     ");
     $pending_query->execute([$user_department_id]);
     $pending_count = $pending_query->fetchColumn();
+
+    $reschedule_count_query = $pdo->prepare("
+        SELECT COUNT(*) 
+        FROM reschedule_requests rr
+        JOIN appointments a ON rr.appointment_id = a.id
+        WHERE a.department_id = ? AND rr.status = 'Pending'
+    ");
+    $reschedule_count_query->execute([$user_department_id]);
+    $reschedule_count = $reschedule_count_query->fetchColumn();
     
     // Get completed today count
     $completed_query = $pdo->prepare("
@@ -102,6 +134,7 @@ if ($user_department_id) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LGU Personnel Dashboard</title>
+    <link rel="icon" href="../assets/images/logo.png" type="image/png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/boxicons/2.1.4/css/boxicons.min.css" rel="stylesheet">
@@ -1358,7 +1391,7 @@ function loadContent(page) {
     <!-- Sidebar -->
     <div class="l-navbar" id="nav-bar">
         <a href="personnel_dashboard.php" style="display: block; cursor: pointer;">
-            <img src="../assets/images/Unisan_logo.png" id="sidebar-logo" alt="Sidebar Logo" class="header_img" style="cursor: pointer;">
+            <img src="../assets/images/Unisan_Logo.png" id="sidebar-logo" alt="Sidebar Logo" class="header_img" style="cursor: pointer;">
         </a>
         <h4 style="text-align: center; color: white;">Personnel Menu</h4>
         <nav class="nav">
@@ -1387,9 +1420,9 @@ function loadContent(page) {
             <a href="javascript:void(0);" class="nav_link" onclick="return loadContent('personnel_view_appointments_status.php');">
                 <i class='bx bx-calendar-check'></i> <span>All Appointments</span>
             </a>
-            <a href="javascript:void(0);" class="nav_link" onclick="return loadContent('reschedule_requests.php');">
+            <!-- <a href="javascript:void(0);" class="nav_link" onclick="return loadContent('reschedule_requests.php');">
                 <i class='bx bx-calendar-check'></i> <span>Reschedule Appointments</span>
-            </a>
+            </a> -->
             <a href="javascript:void(0);" class="nav_link" onclick="return loadContent('create_available_dates.php');">
                 <i class='bx bx-calendar-plus'></i> <span>Create Available Dates</span>
             </a>
@@ -1441,15 +1474,54 @@ function loadContent(page) {
                             <div class="stat-label">Scheduled Today</div>
                         </div>
                         <div class="stat-card">
+                            <div class="stat-number"><?php echo $reschedule_count; ?></div>
+                            <div class="stat-label">Reschedule Requests</div>
+                        </div>
+                        <div class="stat-card">
                             <div class="stat-number"><?php echo $completed_today; ?></div>
                             <div class="stat-label">Completed Today</div>
                         </div>
-                    </div>
+    </div>
                 
                 
                 <!-- Today's Appointments -->
                 <div class="tasks-list">
+                    <?php if (!empty($reschedule_requests)): ?>
+                        <h6 class="text-muted font-weight-bold mb-2 mt-3">
+                            <i class='bx bx-calendar-edit'></i> Pending Reschedule Requests
+                        </h6>
+                        <?php foreach ($reschedule_requests as $request): ?>
+                            <?php 
+                                $oldHour = date('H', strtotime($request['old_scheduled_for']));
+                                $newHour = date('H', strtotime($request['requested_schedule']));
+                                $oldPeriod = $oldHour < 12 ? 'Morning' : 'Afternoon';
+                                $newPeriod = $newHour < 12 ? 'Morning' : 'Afternoon';
+                            ?>
+                            <div class="task-item" 
+                                style="border-left-color: #f59e0b; cursor: pointer;"
+                                onclick="loadContent('reschedule_requests.php')">
+                                <div class="task-main-info">
+                                    <span class="task-time" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                                        <i class='bx bx-calendar-edit'></i>
+                                        Reschedule
+                                    </span>
+                                    <span class="task-name"><?php echo htmlspecialchars($request['resident_name']); ?></span>
+                                    <span class="task-service-compact">
+                                        <?php echo date('M d', strtotime($request['old_scheduled_for'])); ?> (<?php echo $oldPeriod; ?>) 
+                                        → <?php echo date('M d', strtotime($request['requested_schedule'])); ?> (<?php echo $newPeriod; ?>)
+                                    </span>
+                                </div>
+                                <span class="task-status-badge pending">
+                                    Pending Review
+                                </span>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+
                     <?php if (!empty($today_tasks)): ?>
+                        <h6 class="text-muted font-weight-bold mb-2 <?php echo !empty($reschedule_requests) ? 'mt-4' : 'mt-3'; ?>">
+                            <i class='bx bx-calendar-check'></i> Today's Appointments
+                        </h6>
                         <?php foreach ($today_tasks as $task): ?>
                             <div class="task-item status-<?php echo strtolower($task['status']); ?>" 
                                 data-transaction-id="<?php echo $task['transaction_id']; ?>">
@@ -1479,7 +1551,9 @@ function loadContent(page) {
                                 </button>
                             </div>
                         <?php endif; ?>
-                    <?php else: ?>
+                    <?php endif; ?>
+                    
+                    <?php if (empty($today_tasks) && empty($reschedule_requests)): ?>
                         <div class="no-tasks">
                             <i class='bx bx-check-circle'></i>
                             <p>No appointments scheduled for today. You're all caught up!</p>

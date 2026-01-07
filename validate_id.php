@@ -1,10 +1,8 @@
 <?php
-// validate_id.php - Validates uploaded ID against selected ID type using Tesseract OCR
 
 class IDValidator {
     private $tesseractPath = 'C:\\Program Files\\Tesseract-OCR\\tesseract.exe';
     
-    // Updated keywords for all ID types
     private $idKeywords = [
         'Integrated Bar of the Philippines' => [
             'required' => ['integrated bar', 'ibp', 'lawyer'],
@@ -185,14 +183,9 @@ class IDValidator {
     }
 }
 
-// ============================================
-// AJAX REQUEST HANDLER
-// ============================================
-// If this file is called directly via HTTP (not included)
 if (basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME'])) {
     header('Content-Type: application/json');
     
-    // Only allow POST requests
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         echo json_encode([
             'success' => false,
@@ -201,7 +194,6 @@ if (basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME'])) {
         exit;
     }
     
-    // Check if required files are uploaded
     if (!isset($_FILES['id_front']) || !isset($_FILES['selfie_with_id']) || !isset($_POST['id_type'])) {
         echo json_encode([
             'success' => false,
@@ -224,13 +216,11 @@ if (basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME'])) {
             throw new Exception('Error uploading selfie image');
         }
         
-        // Create temporary directory if it doesn't exist
         $tempDir = sys_get_temp_dir() . '/id_validation/';
         if (!is_dir($tempDir)) {
             mkdir($tempDir, 0777, true);
         }
         
-        // Save uploaded files temporarily
         $temp_id_path = $tempDir . uniqid() . '_' . basename($id_front_file['name']);
         $temp_selfie_path = $tempDir . uniqid() . '_' . basename($selfie_file['name']);
         
@@ -239,16 +229,13 @@ if (basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME'])) {
         }
         
         if (!move_uploaded_file($selfie_file['tmp_name'], $temp_selfie_path)) {
-            // Clean up first file
             if (file_exists($temp_id_path)) unlink($temp_id_path);
             throw new Exception('Failed to save selfie image');
         }
         
-        // Perform OCR validation
         $validator = new IDValidator();
         $validationResult = $validator->validateID($temp_id_path, $id_type);
         
-        // Clean up temporary files
         if (file_exists($temp_id_path)) unlink($temp_id_path);
         if (file_exists($temp_selfie_path)) unlink($temp_selfie_path);
         
@@ -269,7 +256,6 @@ if (basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME'])) {
         }
         
     } catch (Exception $e) {
-        // Log error for debugging
         error_log('ID Validation Error: ' . $e->getMessage());
         
         echo json_encode([
@@ -278,6 +264,6 @@ if (basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME'])) {
         ]);
     }
     
-    exit; // Important: Stop execution after handling AJAX request
+    exit;
 }
 ?>

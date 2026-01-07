@@ -4,18 +4,16 @@ include '../conn.php';
 
 header('Content-Type: application/json');
 
-// Enable error logging
+
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 
-// Check authentication
 if (!isset($_SESSION['auth_id']) || $_SESSION['role'] !== 'LGU Personnel') {
     echo json_encode(['success' => false, 'message' => 'Unauthorized access']);
     exit();
 }
 
-// Get department_id
 try {
     $stmt = $pdo->prepare("SELECT department_id FROM lgu_personnel WHERE auth_id = ?");
     $stmt->execute([$_SESSION['auth_id']]);
@@ -32,8 +30,6 @@ try {
 }
 
 try {
-    // Get available dates (next 30 days, only future dates)
-    // FIXED: Using correct column name 'date_time' instead of 'available_date'
     $query = "
         SELECT 
             ad.id as date_id,
@@ -53,13 +49,11 @@ try {
     $stmt->execute([$department_id]);
     $dates = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // Process dates to include availability info
     $processedDates = [];
     foreach ($dates as $date) {
         $am_remaining = max(0, $date['am_slots'] - $date['am_booked']);
         $pm_remaining = max(0, $date['pm_slots'] - $date['pm_booked']);
         
-        // Only include dates that have at least one available slot
         if ($am_remaining > 0 || $pm_remaining > 0) {
             $processedDates[] = [
                 'date_id' => (int)$date['date_id'],

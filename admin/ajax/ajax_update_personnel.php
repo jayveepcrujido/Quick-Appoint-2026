@@ -25,7 +25,6 @@ try {
     $email = trim($_POST['email'] ?? '');
     $is_department_head = isset($_POST['is_department_head']) ? 1 : 0;
 
-    // Validation
     if ($id <= 0) {
         http_response_code(400);
         echo json_encode(['success' => false, 'message' => 'Invalid personnel ID.']);
@@ -50,13 +49,11 @@ try {
         exit;
     }
 
-    // Sanitize inputs
     $first_name = htmlspecialchars($first_name, ENT_QUOTES, 'UTF-8');
     $middle_name = htmlspecialchars($middle_name, ENT_QUOTES, 'UTF-8');
     $last_name = htmlspecialchars($last_name, ENT_QUOTES, 'UTF-8');
     $email = filter_var($email, FILTER_SANITIZE_EMAIL);
 
-    // Get auth_id
     $stmt = $pdo->prepare("SELECT auth_id FROM lgu_personnel WHERE id = ?");
     $stmt->execute([$id]);
     $auth_id = $stmt->fetchColumn();
@@ -67,7 +64,6 @@ try {
         exit;
     }
 
-    // Check if email exists for another user
     $check = $pdo->prepare("SELECT id FROM auth WHERE email = ? AND id != ?");
     $check->execute([$email, $auth_id]);
     if ($check->fetch()) {
@@ -76,7 +72,6 @@ try {
         exit;
     }
 
-    // If setting as department head, check if department already has one
     if ($is_department_head) {
         $check_head = $pdo->prepare("
             SELECT id FROM lgu_personnel 
@@ -92,7 +87,6 @@ try {
 
     $pdo->beginTransaction();
 
-    // Update lgu_personnel - ADDED is_department_head
     $stmt = $pdo->prepare("
         UPDATE lgu_personnel 
         SET first_name = ?, middle_name = ?, last_name = ?, department_id = ?, is_department_head = ?
@@ -100,7 +94,6 @@ try {
     ");
     $stmt->execute([$first_name, $middle_name, $last_name, $department_id, $is_department_head, $id]);
 
-    // Update auth email
     $stmt = $pdo->prepare("UPDATE auth SET email = ? WHERE id = ?");
     $stmt->execute([$email, $auth_id]);
 

@@ -1,16 +1,13 @@
 <?php 
 session_start();
 
-// Set JSON header early
 header('Content-Type: application/json');
 
-// Check authentication
 if (!isset($_SESSION['auth_id']) || $_SESSION['role'] !== 'Resident') {
     echo json_encode(['error' => 'Unauthorized access']);
     exit();
 }
 
-// Check for appointment ID
 if (!isset($_GET['appointment_id']) || empty($_GET['appointment_id'])) {
     echo json_encode(['error' => 'No appointment ID provided']);
     exit();
@@ -21,7 +18,6 @@ try {
     $authId = $_SESSION['auth_id'];
     $appointmentId = intval($_GET['appointment_id']);
 
-    // Verify the appointment belongs to this resident
     $stmt = $pdo->prepare("SELECT id FROM residents WHERE auth_id = ? LIMIT 1");
     $stmt->execute([$authId]);
     $resident = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -33,7 +29,6 @@ try {
     
     $residentId = $resident['id'];
 
-    // Fetch appointment details with feedback
     $query = "
         SELECT 
             a.id, 
@@ -74,7 +69,6 @@ try {
         exit();
     }
 
-    // Define questions
     $questions = [
         'sqd0' => 'I am satisfied with the service I availed.',
         'sqd1' => 'I spent a reasonable amount of time for my transaction.',
@@ -86,7 +80,6 @@ try {
         'sqd8' => 'I was treated courteously by the staff, and (if asked for help) the staff was helpful.'
     ];
 
-    // Rating values mapping
     $ratingValues = [
         'Strongly Agree' => 5,
         'Agree' => 4,
@@ -95,7 +88,6 @@ try {
         'Strongly Disagree' => 1
     ];
 
-    // Process responses
     $ratings = [];
     $responses = [];
     
@@ -113,10 +105,8 @@ try {
         }
     }
 
-    // Calculate average rating
     $averageRating = count($ratings) > 0 ? array_sum($ratings) / count($ratings) : 0;
 
-    // Calculate rating distribution
     $ratingCounts = [
         'Strongly Agree' => 0,
         'Agree' => 0,
@@ -133,7 +123,6 @@ try {
         elseif ($rating == 1) $ratingCounts['Strongly Disagree']++;
     }
 
-    // Determine satisfaction level and color
     $satisfactionLevel = '';
     $satisfactionColor = '';
 
@@ -154,7 +143,6 @@ try {
         $satisfactionColor = '#e74c3c';
     }
 
-    // Prepare response data
     $data = [
         'appointment' => [
             'id' => $appointment['id'],

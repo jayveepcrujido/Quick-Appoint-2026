@@ -2,7 +2,6 @@
 session_start();
 include '../conn.php';
 
-// Check if user is logged in
 if (!isset($_SESSION['auth_id'])) {
     header('Location: ../login.php');
     exit;
@@ -10,7 +9,6 @@ if (!isset($_SESSION['auth_id'])) {
 
 $authId = $_SESSION['auth_id'];
 
-// Get resident_id from residents table using auth_id
 try {
     $residentStmt = $pdo->prepare("SELECT id FROM residents WHERE auth_id = ? LIMIT 1");
     $residentStmt->execute([$authId]);
@@ -25,7 +23,6 @@ try {
     die("Error fetching resident data: " . $e->getMessage());
 }
 
-// Mark all notifications as read when page is loaded
 try {
     $markSeenStmt = $pdo->prepare("
         UPDATE appointments 
@@ -34,11 +31,9 @@ try {
     ");
     $markSeenStmt->execute([$residentId]);
 } catch (PDOException $e) {
-    // Log error but don't stop page load
     error_log("Error marking appointments as seen: " . $e->getMessage());
 }
 
-// Fetch all notifications for the resident
 try {
     $stmt = $pdo->prepare("
         SELECT 
@@ -68,7 +63,6 @@ try {
     $stmt->execute([$residentId]);
     $notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // Count notifications by status
     $pendingCount = 0;
     $completedCount = 0;
     foreach ($notifications as $notification) {
@@ -187,7 +181,6 @@ try {
             width: 100%;
         }
     }
-    /* Add these new classes to your existing CSS */
     .icon-rejected {
         background-color: #fee2e2;
         color: #dc2626;
@@ -198,7 +191,6 @@ try {
         color: #059669;
     }
 
-    /* Optional: specific badge for rejection */
     .badge-danger {
         background-color: #dc3545;
         color: #fff;
@@ -206,7 +198,6 @@ try {
 </style>
 
 <div class="container-fluid py-4">
-    <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
         <h2 class="mb-2 mb-md-0"><i class='bx bx-bell'></i> My Notifications</h2>
         <?php if (count($notifications) > 0): ?>
@@ -225,7 +216,6 @@ try {
     </div>
     <?php endif; ?>
 
-    <!-- Filter Tabs -->
     <div class="filter-tabs">
         <button class="btn btn-primary filter-btn active" data-filter="all">
             <i class='bx bx-list-ul'></i> All (<?php echo count($notifications); ?>)
@@ -238,52 +228,43 @@ try {
         </button>
     </div>
 
-    <!-- Notifications List -->
 <div class="notifications-list">
     <?php if (count($notifications) > 0): ?>
         <?php foreach ($notifications as $notification): ?>
             <?php
-            // 1. Initialize variables
             $iconClass = 'icon-info';
             $iconName = 'bx-bell';
             $statusClass = 'secondary';
-            $statusText = $notification['appointment_status']; // Default
+            $statusText = $notification['appointment_status'];
             $notificationType = strtolower($notification['appointment_status']);
 
-            // 2. Check Message Content for Reschedule Logic
             $msgLower = strtolower($notification['message']);
             $isRescheduleApproved = strpos($msgLower, 'reschedule request has been approved') !== false;
             $isRescheduleRejected = strpos($msgLower, 'reschedule request has been rejected') !== false;
 
-            // 3. Determine Styling based on specific logic
             if ($isRescheduleRejected) {
-                // REJECTED STATE
                 $iconClass = 'icon-rejected';
                 $iconName = 'bx-x-circle';
                 $statusText = 'Reschedule Rejected';
                 $statusClass = 'danger';
             } 
             elseif ($isRescheduleApproved) {
-                // APPROVED STATE
                 $iconClass = 'icon-approved';
                 $iconName = 'bx-calendar-check';
                 $statusText = 'Reschedule Approved';
                 $statusClass = 'success';
             } 
             elseif ($notification['appointment_status'] === 'Completed') {
-                // COMPLETED STATE
                 $iconClass = 'icon-completed';
                 $iconName = 'bx-check-circle';
                 $statusClass = 'success';
             } 
             elseif ($notification['appointment_status'] === 'Pending') {
-                // PENDING STATE
                 $iconClass = 'icon-pending';
                 $iconName = 'bx-time';
                 $statusClass = 'warning';
             }
             
-            // 4. Calculate time ago (Your existing logic)
             $timeAgo = time() - strtotime($notification['created_at']);
             if ($timeAgo < 60) {
                 $timeText = 'Just now';
@@ -297,7 +278,6 @@ try {
                 $timeText = date('M d, Y', strtotime($notification['created_at']));
             }
             
-            // 5. Parse scheduled_for
             $appointmentDate = '';
             $appointmentTime = '';
             if ($notification['scheduled_for']) {
@@ -306,7 +286,6 @@ try {
                 $appointmentTime = $scheduledDateTime->format('h:i A');
             }
             
-            // 6. Department Display
             $departmentDisplay = $notification['department_acronym'] 
                 ? $notification['department_acronym'] 
                 : $notification['department_name'];
@@ -383,7 +362,6 @@ try {
 </div>
 
 <script>
-    // Filter notifications
     $('.filter-btn').click(function() {
         $('.filter-btn').removeClass('active btn-primary').addClass('btn-outline-primary');
         $(this).removeClass('btn-outline-primary').addClass('btn-primary active');
@@ -397,13 +375,10 @@ try {
             $('.notification-card[data-type="' + filter + '"]').show();
         }
         
-        // Check if any notifications are visible
         checkEmptyState();
     });
     
-    // View appointment details
     function viewAppointment(appointmentId, status) {
-        // Redirect based on appointment status with appointment ID as parameter
         if (status === 'completed') {
             loadContent('residents_completed_appointments.php?highlight=' + appointmentId);
         } else if (status === 'pending') {
@@ -411,12 +386,10 @@ try {
         }else if (status === 'rejected') {
             loadContent('residents_noshow_appointments.php?highlight=' + appointmentId);
         } else {
-            // Default fallback
             loadContent('residents_view_appointments.php?id=' + appointmentId);
         }
     }
     
-    // Delete single notification
     function deleteNotification(notificationId, button) {
         if (confirm('Are you sure you want to delete this notification?')) {
             $.ajax({
@@ -428,11 +401,7 @@ try {
                     if (response.success) {
                         $(button).closest('.notification-card').fadeOut(300, function() {
                             $(this).remove();
-                            
-                            // Check if no notifications left
                             checkEmptyState();
-                            
-                            // Update filter counts
                             updateFilterCounts();
                         });
                     } else {
@@ -446,7 +415,6 @@ try {
         }
     }
     
-    // Clear all notifications
     function clearAllNotifications() {
         if (confirm('Are you sure you want to clear all notifications? This action cannot be undone.')) {
             $.ajax({
@@ -456,11 +424,7 @@ try {
                 success: function(response) {
                     if (response.success) {
                         showEmptyState();
-                        
-                        // Update the header to remove notification badge
                         $('#notificationBadge').hide();
-                        
-                        // Update filter counts
                         updateFilterCounts();
                     } else {
                         alert('Error clearing notifications: ' + response.message);
@@ -473,7 +437,6 @@ try {
         }
     }
     
-    // Check if empty state should be shown
     function checkEmptyState() {
         const visibleCards = $('.notification-card:visible').length;
         const emptyState = $('.empty-state');
@@ -493,7 +456,6 @@ try {
         }
     }
     
-    // Show empty state
     function showEmptyState() {
         $('.notifications-list').html(`
             <div class="empty-state">
@@ -504,7 +466,6 @@ try {
         `);
     }
     
-    // Update filter counts
     function updateFilterCounts() {
         const totalCount = $('.notification-card').length;
         const pendingCount = $('.notification-card[data-type="pending"]').length;

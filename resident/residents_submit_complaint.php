@@ -8,7 +8,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'Residents') {
 include '../conn.php';
 $userId = $_SESSION['user_id'];
 
-// ✅ Fetch completed appointments with pending complaint status
 $query = "
     SELECT a.id AS appointment_id, d.name AS department_name, a.scheduled_for
     FROM appointments a
@@ -21,13 +20,11 @@ $stmt = $pdo->prepare($query);
 $stmt->execute(['user_id' => $userId]);
 $appointments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// 🛑 Block form if no valid appointments
 if (empty($appointments)) {
     echo "<div class='alert alert-warning'>You have no completed appointments eligible for complaint submission.</div>";
     exit();
 }
 
-// ✅ Handle complaint submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax'])) {
     header('Content-Type: application/json');
 
@@ -86,7 +83,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax'])) {
 
         <div class="card-body">
             <form id="complaint-form">
-                <!-- Appointment Selection -->
                 <div class="form-group">
                     <label for="appointment_id" class="font-weight-bold">Select Completed Appointment:</label>
                     <select name="appointment_id" class="form-control custom-select" required>
@@ -99,7 +95,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax'])) {
                     </select>
                 </div>
 
-                <!-- Personal Information -->
                 <div class="form-group">
                     <label for="employee_name" class="font-weight-bold">Name of Employee:</label>
                     <input type="text" name="employee_name" class="form-control" placeholder="e.g., John Doe" required>
@@ -110,7 +105,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax'])) {
                     <input type="text" name="office" class="form-control" placeholder="e.g., Civil Registry">
                 </div>
 
-                <!-- Complaint Type -->
                 <div class="form-group">
                     <label class="font-weight-bold">Nature of Complaint:</label>
                     <div class="border rounded p-3 bg-light">
@@ -138,13 +132,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax'])) {
                     </div>
                 </div>
 
-                <!-- Additional Details -->
                 <div class="form-group">
                     <label for="additional_details" class="font-weight-bold">Additional Details:</label>
                     <textarea class="form-control" name="additional_details" rows="4" placeholder="Please describe the issue in detail..."></textarea>
                 </div>
 
-                <!-- Submit Button -->
                 <button type="submit" class="btn btn-danger btn-block py-2">
                     <i class="fas fa-paper-plane mr-1"></i> Submit Complaint
                 </button>
@@ -153,8 +145,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax'])) {
     </div>
 </div>
 
-
-<!-- AJAX -->
 <script>
     $('#complaint-form').on('submit', function(e) {
         e.preventDefault();

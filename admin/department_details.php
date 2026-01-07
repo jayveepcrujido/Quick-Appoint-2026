@@ -7,7 +7,6 @@ if (!isset($_GET['id'])) {
 
 $id = intval($_GET['id']);
 
-// Fetch department
 $stmt = $pdo->prepare("SELECT * FROM departments WHERE id = ?");
 $stmt->execute([$id]);
 $department = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -16,7 +15,6 @@ if (!$department) {
     die("Department not found.");
 }
 
-// Fetch services for this department
 $serviceStmt = $pdo->prepare("SELECT * FROM department_services WHERE department_id = ?");
 $serviceStmt->execute([$id]);
 $services = $serviceStmt->fetchAll(PDO::FETCH_ASSOC);

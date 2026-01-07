@@ -8,7 +8,6 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Font;
 
-// DB Connection
 $host = "localhost";
 $username = "root";
 $password = "";
@@ -19,7 +18,6 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Get appointment data
 $appointmentLocations = [];
 $sql = "SELECT r.address, COUNT(a.id) as appointment_count
         FROM appointments a
@@ -36,7 +34,6 @@ while ($row = $result->fetch_assoc()) {
     ];
 }
 
-// Barangay coordinates for matching
 $barangayCoords = [
     'Bulo', 'Punta', 'San Roque', 'Poblacion', 'Cabulihan', 'Mairok', 
     'Tubigan', 'Balagbag', 'Balanacan', 'Plaridel', 'Pagaguasan', 'Poctol',
@@ -44,7 +41,6 @@ $barangayCoords = [
     'Maligaya', 'Tagumpay', 'Sildora'
 ];
 
-// Extract barangay function
 function extractBarangay($address, $barangayList) {
     $lower = strtolower(trim($address));
     
@@ -58,7 +54,6 @@ function extractBarangay($address, $barangayList) {
     return 'Unclassified';
 }
 
-// Group by barangay
 $barangayData = [];
 foreach ($appointmentLocations as $apt) {
     $barangay = extractBarangay($apt['address'], $barangayCoords);
@@ -70,21 +65,17 @@ foreach ($appointmentLocations as $apt) {
     $barangayData[$barangay] += $apt['count'];
 }
 
-// Sort by count
 arsort($barangayData);
 $total = array_sum($barangayData);
 
-// Create Spreadsheet
 $spreadsheet = new Spreadsheet();
 $sheet = $spreadsheet->getActiveSheet();
 $sheet->setTitle('Barangay Appointments');
 
-// Set column widths
 $sheet->getColumnDimension('A')->setWidth(10);
 $sheet->getColumnDimension('B')->setWidth(35);
 $sheet->getColumnDimension('C')->setWidth(28);
 
-// Title Row (A1:C1)
 $sheet->mergeCells('A1:C1');
 $sheet->setCellValue('A1', 'APPOINTMENT HOTSPOT REPORT');
 $sheet->getStyle('A1')->applyFromArray([
@@ -94,7 +85,6 @@ $sheet->getStyle('A1')->applyFromArray([
 ]);
 $sheet->getRowDimension(1)->setRowHeight(30);
 
-// Subtitle Row (A2:C2)
 $sheet->mergeCells('A2:C2');
 $sheet->setCellValue('A2', 'Municipality of Unisan, Quezon Province');
 $sheet->getStyle('A2')->applyFromArray([
@@ -104,7 +94,6 @@ $sheet->getStyle('A2')->applyFromArray([
 ]);
 $sheet->getRowDimension(2)->setRowHeight(25);
 
-// Info rows
 $sheet->setCellValue('A4', 'Report Generated:');
 $sheet->setCellValue('B4', date('F j, Y, g:i A'));
 $sheet->setCellValue('A5', 'Total Barangays with Appointments:');
@@ -116,7 +105,6 @@ $sheet->getStyle('A4:A6')->applyFromArray([
     'font' => ['bold' => true, 'size' => 10]
 ]);
 
-// Column Headers (Row 8)
 $sheet->setCellValue('A8', 'No.');
 $sheet->setCellValue('B8', 'Barangay');
 $sheet->setCellValue('C8', 'Number of Appointments');
@@ -129,7 +117,6 @@ $sheet->getStyle('A8:C8')->applyFromArray([
 ]);
 $sheet->getRowDimension(8)->setRowHeight(20);
 
-// Data Rows
 $row = 9;
 $index = 1;
 foreach ($barangayData as $barangay => $count) {
@@ -137,7 +124,6 @@ foreach ($barangayData as $barangay => $count) {
     $sheet->setCellValue('B' . $row, $barangay);
     $sheet->setCellValue('C' . $row, $count);
     
-    // Alternating row colors
     $fillColor = ($index % 2 == 0) ? 'F0F9FF' : 'FFFFFF';
     $sheet->getStyle('A' . $row . ':C' . $row)->applyFromArray([
         'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => $fillColor]],
@@ -152,7 +138,6 @@ foreach ($barangayData as $barangay => $count) {
     $index++;
 }
 
-// Total Row
 $sheet->setCellValue('A' . $row, '');
 $sheet->setCellValue('B' . $row, 'TOTAL');
 $sheet->setCellValue('C' . $row, $total);
@@ -165,15 +150,12 @@ $sheet->getStyle('A' . $row . ':C' . $row)->applyFromArray([
 ]);
 $sheet->getRowDimension($row)->setRowHeight(22);
 
-// Generate filename
 $filename = 'Appointment_Hotspot_Report_' . date('Y-m-d') . '.xlsx';
 
-// Set headers for download
 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 header('Content-Disposition: attachment;filename="' . $filename . '"');
 header('Cache-Control: max-age=0');
 
-// Write file
 $writer = new Xlsx($spreadsheet);
 $writer->save('php://output');
 

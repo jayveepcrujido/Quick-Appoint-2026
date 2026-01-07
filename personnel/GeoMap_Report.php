@@ -1,16 +1,13 @@
 <?php
 session_start();
 
-// Check if user is logged in
 if (!isset($_SESSION['personnel_id'])) {
     die("Unauthorized access");
 }
 
-// Get parameters
 $date_filter = $_POST['date_filter'] ?? 'all';
 $department_id = $_POST['department_id'] ?? $_SESSION['department_id'];
 
-// DB Connection
 $host = "localhost";
 $username = "root";
 $password = "";
@@ -21,7 +18,6 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Get department info
 $dept_sql = "SELECT name, acronym FROM departments WHERE id = ?";
 $dept_stmt = $conn->prepare($dept_sql);
 $dept_stmt->bind_param("i", $department_id);
@@ -31,7 +27,6 @@ $department = $dept_result->fetch_assoc();
 $dept_name = $department['acronym'] ?: $department['name'];
 $dept_stmt->close();
 
-// Build query based on date filter
 $sql = "SELECT r.address, 
         COUNT(DISTINCT a.id) as appointment_count,
         COUNT(DISTINCT r.id) as resident_count,
@@ -43,7 +38,6 @@ $sql = "SELECT r.address,
         AND r.address != ''
         AND a.department_id = ?";
 
-// Add date filtering
 if ($date_filter !== 'all') {
     switch ($date_filter) {
         case 'week':
@@ -65,7 +59,6 @@ $stmt->bind_param("i", $department_id);
 $stmt->execute();
 $result = $stmt->get_result();
 
-// Prepare data
 $data = [];
 while ($row = $result->fetch_assoc()) {
     $data[] = $row;
@@ -73,12 +66,10 @@ while ($row = $result->fetch_assoc()) {
 $stmt->close();
 $conn->close();
 
-// Calculate statistics
 $totalLocations = count($data);
 $totalAppointments = array_sum(array_column($data, 'appointment_count'));
 $totalResidents = array_sum(array_column($data, 'resident_count'));
 
-// Filter label
 $filter_labels = [
     'all' => 'All Time',
     'week' => 'Past Week',
@@ -86,15 +77,11 @@ $filter_labels = [
     'year' => 'Past Year'
 ];
 
-// Generate filename
 $filename = "Appointment_Hotspot_Report_" . date('Ymd') . ".xls";
 
-// Set headers for Excel
 header('Content-Type: application/vnd.ms-excel');
 header('Content-Disposition: attachment; filename="' . $filename . '"');
 header('Cache-Control: max-age=0');
-
-// Start HTML output for Excel
 ?>
 <html xmlns:o="urn:schemas-microsoft-com:office:office"
       xmlns:x="urn:schemas-microsoft-com:office:excel"

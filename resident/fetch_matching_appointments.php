@@ -15,7 +15,6 @@ if (!isset($_POST['date'])) {
 $userId = $_SESSION['user_id'];
 $selectedDate = $_POST['date'];
 
-// Query other appointments matching this date
 $query = "SELECT COUNT(*) AS count FROM appointments 
           WHERE scheduled_for = :scheduled_for 
           AND user_id != :user_id 
@@ -28,7 +27,6 @@ $stmt->execute([
 $result = $stmt->fetch(PDO::FETCH_ASSOC);
 $count = $result ? $result['count'] : 0;
 
-// Output the results table
 echo "
 <table class='table table-bordered'>
     <thead class='thead-light'>

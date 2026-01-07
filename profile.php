@@ -2,7 +2,6 @@
 session_start();
 require_once 'conn.php';
 
-// Guard: must be logged in
 if (!isset($_SESSION['auth_id']) || empty($_SESSION['auth_id'])) {
   echo "<div class='alert alert-danger m-3'>Unauthorized access.</div>";
   exit();
@@ -21,7 +20,7 @@ try {
     $stmt = $pdo->prepare("SELECT r.*, a.email FROM residents r JOIN auth a ON a.id = r.auth_id WHERE r.auth_id = ? LIMIT 1");
   } elseif ($role === 'Admin') {
     $stmt = $pdo->prepare("SELECT ad.*, a.email FROM admins ad JOIN auth a ON a.id = ad.auth_id WHERE ad.auth_id = ? LIMIT 1");
-  } else { // LGU Personnel
+  } else {
     $stmt = $pdo->prepare("SELECT lp.*, a.email, d.name AS department_name
                            FROM lgu_personnel lp
                            JOIN auth a ON a.id = lp.auth_id
@@ -197,7 +196,6 @@ function h($v){ return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
   cursor: not-allowed;
 }
 
-/* Enhanced Select Dropdown Styling - CRITICAL FIX */
 select.form-control {
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -218,7 +216,6 @@ select.form-control::-ms-expand {
   display: none;
 }
 
-/* Ensure all options are visible with proper colors */
 select.form-control option {
   color: #2d3748 !important;
   background-color: white !important;
@@ -226,19 +223,16 @@ select.form-control option {
   font-weight: 500 !important;
 }
 
-/* Fix for empty/placeholder options */
 select.form-control option[value=""] {
   color: #94a3b8 !important;
   font-style: italic;
 }
 
-/* Ensure selected option is visible */
 select.form-control option:checked {
   background-color: #3498db !important;
   color: white !important;
 }
 
-/* Modal select specific fixes */
 .modal-body select.form-control {
   color: #2d3748 !important;
   background-color: white !important;
@@ -250,7 +244,6 @@ select.form-control option:checked {
   background-color: white !important;
 }
 
-/* Fix disabled select */
 select.form-control:disabled {
   background-color: #f0f3f7 !important;
   color: #94a3b8 !important;
@@ -407,7 +400,6 @@ select.form-control:disabled {
   font-style: italic;
 }
 
-/* Fix for Address Modal Dropdown Text Visibility */
 #addressModal select.form-control {
   color: #2d3748 !important;
   background-color: white !important;
@@ -434,7 +426,6 @@ select.form-control:disabled {
   color: #94a3b8 !important;
 }
 
-/* Ensure dropdown options are visible */
 #provinceSelect option,
 #municipalitySelect option,
 #barangaySelect option {
@@ -442,14 +433,12 @@ select.form-control:disabled {
   background-color: white !important;
 }
 
-/* Fix hover state for options */
 #provinceSelect option:hover,
 #municipalitySelect option:hover,
 #barangaySelect option:hover {
   background-color: #f0f3f7 !important;
 }
 
-/* Override general form-control styles inside address modal */
 #addressModal .modal-body .form-control {
   background: white !important;
   color: #2d3748 !important;
@@ -462,7 +451,6 @@ select.form-control:disabled {
   border-color: #3498db;
 }
 
-/* Password Change Modal Styles */
 .bg-gradient-blue {
   background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
 }
@@ -736,7 +724,6 @@ select.form-control:disabled {
   cursor: not-allowed;
 }
 
-/* Animations */
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -756,7 +743,6 @@ select.form-control:disabled {
 .section-card:nth-child(2) { animation-delay: 0.2s; }
 .section-card:nth-child(3) { animation-delay: 0.3s; }
 
-/* Mobile Responsive */
 @media (max-width: 576px) {
   body {
     padding: 1rem 0;
@@ -875,7 +861,6 @@ select.form-control:disabled {
     <input type="hidden" name="street" id="hiddenStreet">
     <input type="hidden" name="house_number" id="hiddenHouseNumber">
 
-    <!-- Account Information -->
     <div class="section-card">
       <div class="section-title">
         <i class="fas fa-user-circle"></i>
@@ -991,7 +976,6 @@ select.form-control:disabled {
   </form>
 </div>
 
-<!-- Address Edit Modal -->
 <div class="modal fade" id="addressModal" tabindex="-1" role="dialog" data-backdrop="true">
   <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
     <div class="modal-content">
@@ -1048,7 +1032,6 @@ select.form-control:disabled {
   </div>
 </div>
 
-<!-- Change Password Modal -->
 <div class="modal fade" id="changePasswordModal" tabindex="-1" role="dialog" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document">
     <form id="changePasswordForm" class="modal-content">
@@ -1065,7 +1048,6 @@ select.form-control:disabled {
       <div class="modal-body">
         <input type="hidden" name="auth_id" value="<?php echo $auth_id; ?>">
         
-        <!-- Current Password -->
         <div class="form-group">
           <label for="currentPassword">
             <i class="fas fa-lock"></i>
@@ -1093,7 +1075,6 @@ select.form-control:disabled {
           </div>
         </div>
         
-        <!-- New Password -->
         <div class="form-group">
           <label for="newPassword">
             <i class="fas fa-key"></i>
@@ -1121,7 +1102,6 @@ select.form-control:disabled {
             </div>
           </div>
           
-          <!-- Password Strength Indicator -->
           <div class="strength-container">
             <div class="strength-header">
               <span class="strength-label">Password Strength</span>
@@ -1139,7 +1119,6 @@ select.form-control:disabled {
             </div>
           </div>
           
-          <!-- Password Requirements -->
           <div class="requirements-box">
             <div class="requirements-title">
               <i class="fas fa-info-circle"></i>
@@ -1162,7 +1141,6 @@ select.form-control:disabled {
           </div>
         </div>
         
-        <!-- Confirm Password -->
         <div class="form-group" style="margin-bottom: 0;">
           <label for="confirmPassword">
             <i class="fas fa-check-circle"></i>
@@ -1205,7 +1183,6 @@ select.form-control:disabled {
   </div>
 </div>
 
-<!-- Load jQuery and Bootstrap only if not already loaded -->
 <script>
 if (typeof jQuery === 'undefined') {
   document.write('<script src="https://code.jquery.com/jquery-3.6.0.min.js"><\/script>');
@@ -1216,20 +1193,16 @@ if (typeof bootstrap === 'undefined') {
 </script>
 
 <script>
-// Prevent multiple script execution when loaded via AJAX
 if (typeof window.profileScriptsLoaded === 'undefined') {
   window.profileScriptsLoaded = true;
 
-  // Only declare if not already declared
   if (typeof window.API_BASE === 'undefined') {
     window.API_BASE = 'https://psgc.gitlab.io/api';
   }
 }
 
-// Always make these functions available globally
 const API_BASE = window.API_BASE;
 
-// Auto-calculate age from birthday
 $('input[name="birthday"]').on('change', function() {
   const birthday = new Date($(this).val());
   const today = new Date();
@@ -1243,7 +1216,6 @@ $('input[name="birthday"]').on('change', function() {
   }
 });
 
-// MOVE ALL FUNCTION DECLARATIONS OUTSIDE THE IF BLOCK
 async function loadProvinces() {
   try {
     const response = await fetch(`${API_BASE}/provinces/`);
@@ -1263,7 +1235,6 @@ async function loadProvinces() {
   }
 }
 
-// Password toggle function
 function togglePassword(fieldId, button) {
   const field = document.getElementById(fieldId);
   const icon = button.querySelector('i');
@@ -1279,25 +1250,21 @@ function togglePassword(fieldId, button) {
   }
 }
 
-// Password validation
 function validatePassword() {
   const password = document.getElementById('newPassword').value;
   const strengthBar = document.getElementById('strengthBar');
   const strengthText = document.getElementById('strengthText');
   
-  // Check requirements
   const hasLength = password.length >= 8;
   const hasNumber = /\d/.test(password);
   const hasUppercase = /[A-Z]/.test(password);
   const hasLowercase = /[a-z]/.test(password);
   
-  // Update requirement indicators
   updateRequirement('req-length', hasLength);
   updateRequirement('req-number', hasNumber);
   updateRequirement('req-uppercase', hasUppercase);
   updateRequirement('req-lowercase', hasLowercase);
   
-  // Calculate strength
   let strength = 0;
   if (hasLength) strength++;
   if (hasNumber) strength++;
@@ -1306,7 +1273,6 @@ function validatePassword() {
   if (password.length >= 12) strength++;
   if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) strength++;
   
-  // Update strength bar
   const percentage = (strength / 6) * 100;
   strengthBar.style.width = percentage + '%';
   
@@ -1362,14 +1328,12 @@ function updateSubmitButton() {
   const confirmPassword = document.getElementById('confirmPassword').value;
   const submitBtn = document.getElementById('submitBtn');
   
-  // Check all requirements
   const hasLength = newPassword.length >= 8;
   const hasNumber = /\d/.test(newPassword);
   const hasUppercase = /[A-Z]/.test(newPassword);
   const hasLowercase = /[a-z]/.test(newPassword);
   const passwordsMatch = newPassword === confirmPassword && confirmPassword.length > 0;
   
-  // Enable submit button only if all requirements are met
   if (hasLength && hasNumber && hasUppercase && hasLowercase && passwordsMatch) {
     submitBtn.disabled = false;
   } else {
@@ -1377,9 +1341,7 @@ function updateSubmitButton() {
   }
 }
 
-// Event handlers - bind once
 $(document).ready(function() {
-  // Unbind first to prevent duplicate bindings
   $('#addressModal').off('show.bs.modal');
   $('#provinceSelect').off('change');
   $('#municipalitySelect').off('change');
@@ -1388,7 +1350,6 @@ $(document).ready(function() {
   $('#changePasswordForm').off('submit');
   $('#changePasswordModal').off('hidden.bs.modal');
   
-  // Force select visibility on page load
   $('select.form-control').each(function() {
     $(this).css({
       'color': '#2d3748',
@@ -1397,7 +1358,6 @@ $(document).ready(function() {
     });
   });
   
-  // Load provinces when modal opens
   $('#addressModal').on('show.bs.modal', function() {
     loadProvinces();
   });
@@ -1407,7 +1367,6 @@ $(document).ready(function() {
     const municipalitySelect = $('#municipalitySelect');
     const barangaySelect = $('#barangaySelect');
     
-    // Reset dependent dropdowns
     municipalitySelect.empty().append('<option value="">-- Select Municipality --</option>').prop('disabled', !provinceCode);
     barangaySelect.empty().append('<option value="">-- Select Barangay --</option>').prop('disabled', true);
     
@@ -1451,7 +1410,6 @@ $(document).ready(function() {
     }
   });
 
-  // Save address button
   $('#saveAddressBtn').on('click', function() {
     const province = $('#provinceSelect option:selected').data('name');
     const municipality = $('#municipalitySelect option:selected').data('name');
@@ -1459,31 +1417,25 @@ $(document).ready(function() {
     const street = $('#streetInput').val().trim();
     const houseNumber = $('#houseNumberInput').val().trim();
     
-    // Validation
     if (!province || !municipality || !barangay || !street) {
       alert('Please fill in all required fields (Province, Municipality, Barangay, and Street)');
       return;
     }
     
-    // Build address string
     const addressParts = [houseNumber, street, barangay, municipality, province].filter(Boolean);
     const fullAddress = addressParts.join(', ');
     
-    // Update display
     $('#addressDisplay').text(fullAddress).removeClass('empty');
     
-    // Update hidden fields
     $('#hiddenProvince').val(province);
     $('#hiddenMunicipality').val(municipality);
     $('#hiddenBarangay').val(barangay);
     $('#hiddenStreet').val(street);
     $('#hiddenHouseNumber').val(houseNumber);
     
-    // Close modal
     $('#addressModal').modal('hide');
   });
 
-  // Profile update form submission
   $("#updateProfileForm").on("submit", function(e){
     e.preventDefault();
     $.ajax({
@@ -1512,7 +1464,6 @@ $(document).ready(function() {
     });
   });
 
-  // Password change form
   $("#changePasswordForm").on("submit", function(e){
     e.preventDefault();
     $.ajax({
@@ -1549,7 +1500,6 @@ $(document).ready(function() {
     });
   });
 
-  // Reset form when modal is closed
   $('#changePasswordModal').on('hidden.bs.modal', function () {
     document.getElementById('changePasswordForm').reset();
     document.getElementById('strengthBar').style.width = '0%';
@@ -1561,7 +1511,6 @@ $(document).ready(function() {
     document.getElementById('submitBtn').disabled = true;
   });
   
-  // Fix modal backdrop issue when loaded in AJAX
   $('#addressModal').on('hidden.bs.modal', function () {
     $('.modal-backdrop').remove();
     $('body').removeClass('modal-open').css('padding-right', '');

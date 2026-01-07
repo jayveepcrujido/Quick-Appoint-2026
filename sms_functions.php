@@ -11,21 +11,14 @@ class SMSService {
     private $senderId;
     
     public function __construct() {
-        // Your PhilSMS API credentials
         $this->apiToken = '819|BHD3jSSjK2ExkHxIPFD1nXUjXTT6G9XvAnOGOgJB71d1051f';
         $this->apiUrl = 'https://dashboard.philsms.com/api/v3/sms/send';
         $this->senderId = 'PhilSMS'; // Default sender ID
     }
     
-    /**
-     * Send SMS using cURL with PhilSMS API v3
-     * FIXED: Send as JSON instead of form-encoded
-     */
     private function sendSMS($recipient, $message) {
-        // Format phone number
         $recipient = $this->formatPhoneNumber($recipient);
         
-        // Prepare POST data as ARRAY (will be converted to JSON)
         $postData = [
             'recipient' => $recipient,
             'sender_id' => $this->senderId,
@@ -33,7 +26,6 @@ class SMSService {
             'message' => $message
         ];
         
-        // Convert to JSON
         $jsonData = json_encode($postData);
         
         $ch = curl_init();
@@ -41,12 +33,12 @@ class SMSService {
         curl_setopt_array($ch, [
             CURLOPT_URL => $this->apiUrl,
             CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => $jsonData,  // Send as JSON string
+            CURLOPT_POSTFIELDS => $jsonData, 
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_SSL_VERIFYPEER => true,
             CURLOPT_HTTPHEADER => [
                 'Authorization: Bearer ' . $this->apiToken,
-                'Content-Type: application/json',  // CHANGED from form-urlencoded
+                'Content-Type: application/json',
                 'Accept: application/json',
                 'Content-Length: ' . strlen($jsonData)
             ]
@@ -58,7 +50,6 @@ class SMSService {
         
         curl_close($ch);
         
-        // Log the response for debugging
         error_log("PhilSMS Response Code: " . $httpCode);
         error_log("PhilSMS Response: " . $response);
         
@@ -67,18 +58,14 @@ class SMSService {
             return false;
         }
         
-        // Parse response
         $responseData = json_decode($response, true);
         
-        // Check if successful
-        // PhilSMS may return 'success', 'ok', or other status
         if ($httpCode == 200 && isset($responseData['status'])) {
             if (in_array(strtolower($responseData['status']), ['success', 'ok', 'sent', 'queued'])) {
                 return true;
             }
         }
         
-        // Log error if failed
         if (isset($responseData['message'])) {
             error_log("PhilSMS Error Message: " . $responseData['message']);
         }
@@ -97,19 +84,15 @@ class SMSService {
      * Converts: 09171234567 -> 639171234567
      */
     private function formatPhoneNumber($number) {
-        // Remove all non-numeric characters
         $number = preg_replace('/[^0-9]/', '', $number);
         
-        // Remove leading + if present
         if (substr($number, 0, 1) == '+') {
             $number = substr($number, 1);
         }
         
-        // If starts with 0, replace with 63
         if (substr($number, 0, 1) == '0') {
             $number = '63' . substr($number, 1);
         }
-        // If doesn't start with 63, add it
         elseif (substr($number, 0, 2) != '63') {
             $number = '63' . $number;
         }
@@ -125,7 +108,6 @@ class SMSService {
              . "is CONFIRMED on {$appointmentDetails['date']} at {$appointmentDetails['time']}. "
              . "Ref: {$appointmentDetails['transaction_id']}.";
     
-    // Check message length (160 chars for single SMS)
     if (strlen($message) > 160) {
         $message = $this->truncateMessage($message, 160);
     }
@@ -232,15 +214,10 @@ class SMSService {
     public function isValidPhilippineNumber($number) {
         $number = preg_replace('/[^0-9]/', '', $number);
         
-        // Valid formats:
-        // 09XXXXXXXXX (11 digits starting with 09)
-        // 639XXXXXXXXX (12 digits starting with 639)
-        // 9XXXXXXXXX (10 digits starting with 9)
-        
         $patterns = [
-            '/^09\d{9}$/',      // 09171234567
-            '/^639\d{9}$/',     // 639171234567
-            '/^9\d{9}$/'        // 9171234567
+            '/^09\d{9}$/',      
+            '/^639\d{9}$/',     
+            '/^9\d{9}$/'       
         ];
         
         foreach ($patterns as $pattern) {

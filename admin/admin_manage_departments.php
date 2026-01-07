@@ -6,7 +6,6 @@ if (!isset($_SESSION['auth_id']) || $_SESSION['role'] !== 'Admin') {
 }
 include '../conn.php';
 
-// Fetch departments with services
 $stmt = $pdo->query("SELECT d.*, 
                             GROUP_CONCAT(s.service_name ORDER BY s.id SEPARATOR ', ') AS services
                      FROM departments d
@@ -14,7 +13,6 @@ $stmt = $pdo->query("SELECT d.*,
                      GROUP BY d.id ORDER BY d.created_at DESC");
 $departments = $stmt->fetchAll();
 
-// Fetch all services and requirements per department
 $serviceMap = [];
 $stmt = $pdo->query("SELECT ds.id AS service_id, ds.department_id, ds.service_name, sr.requirement
                      FROM department_services ds
@@ -400,14 +398,14 @@ while ($row = $stmt->fetch()) {
         /* Modal Styles */
         .modal-content {
             border: none;
-            border-radius: 25px;
+            border-radius: 20px;
             overflow: hidden;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
         }
 
         .modal-header {
             border: none;
-            padding: 2rem 2.5rem;
+            padding: 1.75rem 2rem;
             position: relative;
         }
 
@@ -430,22 +428,25 @@ while ($row = $stmt->fetch()) {
             font-weight: 600;
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            font-size: 1.5rem;
+            gap: 0.625rem;
+            font-size: 1.25rem;
             margin: 0;
         }
 
         .modal-header h5 i {
-            font-size: 1.75rem;
+            font-size: 1.5rem;
+            flex-shrink: 0;
         }
 
         .modal-header .close {
             color: white;
             opacity: 1;
             text-shadow: none;
-            font-size: 2rem;
+            font-size: 1.75rem;
             font-weight: 300;
             transition: var(--transition);
+            padding: 0;
+            margin: -0.5rem -0.5rem -0.5rem auto;
         }
 
         .modal-header .close:hover {
@@ -453,7 +454,7 @@ while ($row = $stmt->fetch()) {
         }
 
         .modal-body {
-            padding: 2.5rem;
+            padding: 2rem;
             max-height: 70vh;
             overflow-y: auto;
         }
@@ -473,26 +474,27 @@ while ($row = $stmt->fetch()) {
         }
 
         .info-label {
-            font-weight: 700;
+            font-weight: 600;
             color: var(--primary-dark);
-            margin-bottom: 1rem;
+            margin-bottom: 0.875rem;
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            font-size: 1.1rem;
+            font-size: 0.95rem;
         }
 
         .info-label i {
             color: var(--primary-light);
-            font-size: 1.25rem;
+            font-size: 1.125rem;
+            flex-shrink: 0;
         }
 
         .service-item {
             background: #f8f9fa;
             border-left: 4px solid var(--primary-light);
-            padding: 1.5rem;
-            margin-bottom: 1.25rem;
-            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            border-radius: 10px;
             transition: var(--transition);
         }
 
@@ -502,10 +504,10 @@ while ($row = $stmt->fetch()) {
         }
 
         .service-name {
-            font-weight: 700;
+            font-weight: 600;
             color: var(--primary-dark);
-            font-size: 1.15rem;
-            margin-bottom: 1rem;
+            font-size: 0.95rem;
+            margin-bottom: 0.75rem;
             display: flex;
             align-items: center;
             gap: 0.5rem;
@@ -513,7 +515,8 @@ while ($row = $stmt->fetch()) {
 
         .service-name i {
             color: var(--primary-light);
-            font-size: 1.25rem;
+            font-size: 1.125rem;
+            flex-shrink: 0;
         }
 
         .requirement-list {
@@ -524,45 +527,48 @@ while ($row = $stmt->fetch()) {
 
         .requirement-list li {
             color: #5a6c7d;
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.625rem;
             display: flex;
             align-items: start;
-            gap: 0.75rem;
-            padding-left: 1rem;
+            gap: 0.625rem;
+            padding-left: 0;
+            font-size: 0.875rem;
         }
 
         .requirement-list li i {
             color: var(--primary-light);
-            margin-top: 0.25rem;
-            font-size: 1rem;
+            margin-top: 0.125rem;
+            font-size: 0.875rem;
+            flex-shrink: 0;
         }
 
         /* Form Styles */
         .form-group {
-            margin-bottom: 1.75rem;
+            margin-bottom: 1.5rem;
         }
 
         .form-label {
             font-weight: 600;
             color: var(--primary-dark);
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.625rem;
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            font-size: 1rem;
+            font-size: 0.875rem;
         }
 
         .form-label i {
             color: var(--primary-light);
-            font-size: 1.125rem;
+            font-size: 1rem;
+            flex-shrink: 0;
         }
 
         .form-control-custom {
             border: 2px solid #ecf0f1;
-            border-radius: 12px;
-            padding: 0.875rem 1.25rem;
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
             transition: var(--transition);
-            font-size: 0.95rem;
+            font-size: 0.875rem;
         }
 
         .form-control-custom:focus {
@@ -574,9 +580,9 @@ while ($row = $stmt->fetch()) {
         .service-edit-block {
             background: #f8f9fa;
             border: 2px solid #ecf0f1;
-            border-radius: 15px;
-            padding: 1.75rem;
-            margin-bottom: 1.25rem;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
             transition: var(--transition);
         }
 
@@ -585,18 +591,65 @@ while ($row = $stmt->fetch()) {
             box-shadow: 0 4px 15px rgba(52, 152, 219, 0.1);
         }
 
+        /* Service Group Styling for Add Modal */
+        .service-group {
+            background: #f8f9fa;
+            border: 2px solid #ecf0f1;
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            transition: var(--transition);
+        }
+
+        .service-group:hover {
+            border-color: var(--primary-light);
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.1);
+        }
+
+        .service-group-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.875rem;
+        }
+
+        .service-group-title {
+            font-weight: 600;
+            color: var(--primary-dark);
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .service-group-title i {
+            color: var(--primary-light);
+            font-size: 1rem;
+        }
+
+        .requirements-container {
+            margin-top: 0.875rem;
+            padding-top: 0.875rem;
+            border-top: 1px solid #dee2e6;
+        }
+
+        .requirement-input-group {
+            margin-bottom: 0.625rem;
+        }
+
         /* Button Styles */
         .btn-primary-custom {
             background: var(--primary-gradient);
             border: none;
             color: white;
-            padding: 0.875rem 2.25rem;
+            padding: 0.75rem 1.75rem;
             border-radius: 50px;
             font-weight: 600;
             transition: var(--transition);
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
+            font-size: 0.875rem;
         }
 
         .btn-primary-custom:hover {
@@ -609,13 +662,14 @@ while ($row = $stmt->fetch()) {
             background: var(--success-gradient);
             border: none;
             color: white;
-            padding: 0.875rem 2.25rem;
+            padding: 0.75rem 1.75rem;
             border-radius: 50px;
             font-weight: 600;
             transition: var(--transition);
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
+            font-size: 0.875rem;
         }
 
         .btn-success-custom:hover {
@@ -628,13 +682,14 @@ while ($row = $stmt->fetch()) {
             background: var(--warning-gradient);
             border: none;
             color: white;
-            padding: 0.875rem 2.25rem;
+            padding: 0.75rem 1.75rem;
             border-radius: 50px;
             font-weight: 600;
             transition: var(--transition);
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
+            font-size: 0.875rem;
         }
 
         .btn-warning-custom:hover {
@@ -643,10 +698,10 @@ while ($row = $stmt->fetch()) {
             color: white;
         }
 
-        .btn-outline-custom {
-            background: transparent;
-            border: 2px solid var(--primary-light);
-            color: var(--primary-light);
+        .btn-danger-custom {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            border: none;
+            color: white;
             padding: 0.75rem 1.75rem;
             border-radius: 50px;
             font-weight: 600;
@@ -654,6 +709,27 @@ while ($row = $stmt->fetch()) {
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .btn-danger-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(231, 76, 60, 0.3);
+            color: white;
+        }
+
+        .btn-outline-custom {
+            background: transparent;
+            border: 2px solid var(--primary-light);
+            color: var(--primary-light);
+            padding: 0.65rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
         }
 
         .btn-outline-custom:hover {
@@ -663,57 +739,63 @@ while ($row = $stmt->fetch()) {
         }
 
         .btn-sm-custom {
-            padding: 0.625rem 1.25rem;
-            font-size: 0.875rem;
+            padding: 0.5rem 1rem;
+            font-size: 0.8125rem;
         }
 
         .remove-btn {
             background: var(--danger-color);
             color: white;
             border: none;
-            padding: 0.625rem 1rem;
-            border-radius: 10px;
+            padding: 0.5rem 0.875rem;
+            border-radius: 8px;
             transition: var(--transition);
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 0.8125rem;
         }
 
         .remove-btn:hover {
             background: #c0392b;
-            transform: scale(1.1);
+            transform: scale(1.05);
         }
 
         .remove-btn i {
-            font-size: 1.125rem;
+            font-size: 1rem;
         }
 
         .modal-footer {
             border: none;
-            padding: 1.75rem 2.5rem;
+            padding: 1.5rem 2rem;
             background: #f8f9fa;
             display: flex;
-            gap: 1rem;
+            gap: 0.875rem;
             justify-content: flex-end;
         }
 
         /* Empty State */
         .empty-state {
             text-align: center;
-            padding: 4rem 2rem;
+            padding: 3rem 2rem;
             color: #95a5a6;
         }
 
         .empty-state i {
-            font-size: 5rem;
-            margin-bottom: 1.5rem;
+            font-size: 4rem;
+            margin-bottom: 1.25rem;
             opacity: 0.5;
             display: block;
         }
 
         .empty-state h4 {
             color: var(--primary-dark);
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.625rem;
+            font-size: 1.125rem;
+        }
+
+        .empty-state p {
+            font-size: 0.875rem;
         }
 
         /* Loading Animation */
@@ -750,7 +832,7 @@ while ($row = $stmt->fetch()) {
     }
     
     .modal-dialog {
-        margin: 1rem;
+        max-width: 900px; /* Wider modal */
     }
     
     .service-badge {
@@ -923,8 +1005,24 @@ while ($row = $stmt->fetch()) {
     }
     
     .input-group {
-        flex-wrap: nowrap;
+        display: flex;
+        align-items: stretch;
     }
+
+    .input-group .form-control {
+        flex: 1;
+    }
+
+    .input-group-append {
+        margin-left: -1px;
+        display: flex;
+    }
+
+    .input-group-append .btn {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+    }
+
     
     .info-label {
         font-size: 1rem;
@@ -1232,16 +1330,26 @@ while ($row = $stmt->fetch()) {
     
     /* Notification */
     .custom-notification {
-        top: 10px !important;
-        right: 10px !important;
-        left: 10px !important;
-        max-width: none !important;
-        font-size: 0.9rem;
-        padding: 0.875rem 1.25rem;
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        max-width: 400px;
+        z-index: 9999;
+        animation: slideInRight 0.3s ease-out;
     }
     
     .custom-notification i {
         font-size: 1.35rem !important;
+    }
+}
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
     }
 }
 
@@ -1698,96 +1806,406 @@ body {
         <?php endif; ?>
     </div>
 
-    <!-- Add Modal -->
-    <div class="modal fade" id="addModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <form id="addForm" class="modal-content">
-                <div class="modal-header success">
-                    <h5 class="modal-title">
-                        <i class='bx bx-plus-circle'></i>
-                        Add New Department
-                    </h5>
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+<div class="modal fade" id="addModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <form id="addForm" class="modal-content">
+            <div class="modal-header success">
+                <h5 class="modal-title">
+                    <i class='bx bx-plus-circle'></i>
+                    Add New Department
+                </h5>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Department Name -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class='bx bx-building'></i>
+                        Department Name
+                    </label>
+                    <input name="name" class="form-control form-control-custom" placeholder="Enter department name" required>
                 </div>
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label class="form-label">
-                            <i class='bx bx-building'></i>
-                            Department Name
-                        </label>
-                        <input name="name" class="form-control form-control-custom" placeholder="Enter department name" required>
-                    </div>
 
-                    <div class="form-group">
-                        <label class="form-label">
-                            <i class='bx bx-tag'></i>
-                            Acronym
-                        </label>
-                        <input name="acronym" class="form-control form-control-custom" placeholder="e.g., DOH, DILG">
-                    </div>
+                <!-- Acronym -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class='bx bx-tag'></i>
+                        Acronym
+                    </label>
+                    <input name="acronym" class="form-control form-control-custom" placeholder="e.g., DOH, DILG, MSWDO">
+                </div>
 
-                    <div class="form-group">
-                        <label class="form-label">
-                            <i class='bx bx-detail'></i>
-                            Description
-                        </label>
-                        <textarea name="description" class="form-control form-control-custom" rows="3" placeholder="Brief description of the department"></textarea>
-                    </div>
+                <!-- Description -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class='bx bx-detail'></i>
+                        Description
+                    </label>
+                    <textarea name="description" class="form-control form-control-custom" rows="3" placeholder="Brief description of the department"></textarea>
+                </div>
 
-                    <div class="form-group">
-                        <label class="form-label">
-                            <i class='bx bx-list-ul'></i>
-                            Services Offered
-                        </label>
-                        <div id="serviceFields">
-                            <div class="service-group mb-3">
-                                <div class="input-group mb-2">
-                                    <input type="text" name="services[]" class="form-control form-control-custom" placeholder="Enter a service" required>
-                                    <div class="input-group-append">
-                                        <button type="button" class="btn remove-btn removeService">
-                                            <i class='bx bx-x'></i>
-                                        </button>
+                <!-- Services Section -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class='bx bx-list-ul'></i>
+                        Services Offered
+                    </label>
+                    <div id="serviceFields">
+                        <!-- First Service Group -->
+                        <div class="service-group">
+                            <div class="service-group-header">
+                                <span class="service-group-title">
+                                    <i class='bx bx-briefcase'></i>
+                                    Service #1
+                                </span>
+                                <button type="button" class="btn remove-btn removeService" style="visibility: hidden;">
+                                    <i class='bx bx-x'></i>
+                                </button>
+                            </div>
+                            
+                            <!-- Service Name Input -->
+                            <div class="mb-3">
+                                <input type="text" name="services[]" class="form-control form-control-custom" placeholder="Enter service name" required>
+                            </div>
+                            
+                            <!-- Requirements Container -->
+                            <div class="requirements-container">
+                                <label class="form-label mb-2" style="font-size: 0.8125rem; font-weight: 500;">
+                                    <i class='bx bx-list-check'></i>
+                                    Requirements (Optional)
+                                </label>
+                                <div class="requirement-input-group">
+                                    <div class="input-group mb-2">
+                                        <input type="text" name="requirements[0][]" class="form-control form-control-custom" placeholder="Enter requirement">
+                                        <div class="input-group-append">
+                                            <button type="button" class="btn remove-btn removeRequirement" style="visibility: hidden;">
+                                                <i class='bx bx-x'></i>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
-                                <input type="text" name="requirements[]" class="form-control form-control-custom" placeholder="Requirement for above service (optional)">
+                                <button type="button" class="btn btn-outline-custom btn-sm-custom addRequirement" data-service-index="0">
+                                    <i class='bx bx-plus'></i>
+                                    Add Another Requirement
+                                </button>
                             </div>
                         </div>
-                        <button type="button" id="addService" class="btn btn-outline-custom btn-sm-custom">
-                            <i class='bx bx-plus'></i>
-                            Add Another Service
-                        </button>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-custom" data-dismiss="modal">
-                        <i class='bx bx-x'></i>
-                        Cancel
-                    </button>
-                    <button type="submit" class="btn btn-success-custom">
-                        <i class='bx bx-check-circle'></i>
-                        Add Department
+                    
+                    <!-- Add Another Service Button -->
+                    <button type="button" id="addService" class="btn btn-outline-custom btn-sm-custom mt-3">
+                        <i class='bx bx-plus-circle'></i>
+                        Add Another Service
                     </button>
                 </div>
-            </form>
-        </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-custom" data-dismiss="modal">
+                    <i class='bx bx-x'></i>
+                    Cancel
+                </button>
+                <button type="submit" class="btn btn-success-custom">
+                    <i class='bx bx-check-circle'></i>
+                    Add Department
+                </button>
+            </div>
+        </form>
     </div>
+</div>
 
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.js"></script>
 <script>
-$(document).ready(function() {
-    
-    // --- MODAL STATE MANAGEMENT ---
+(function() {
+    'use strict';
+
+    const NAMESPACE = 'deptMgmt_' + Date.now();
+    console.log('Initializing department management with namespace:', NAMESPACE);
+
+    if (window.deptMgmtCleanup) {
+        console.log('Cleaning up previous instance...');
+        try {
+            window.deptMgmtCleanup();
+        } catch (e) {
+            console.error('Error during cleanup:', e);
+        }
+    }
+
     let isModalTransitioning = false;
+    let isSubmitting = false;
+    let serviceIndex = 0;
 
-    // Force cleanup on any modal hide
-    $('.modal').on('hidden.bs.modal', function() {
-        cleanupModals();
-        isModalTransitioning = false;
-    });
+    function showModal(modalId) {
+        if (isModalTransitioning) return;
+        isModalTransitioning = true;
+        
+        const $modal = $('#' + modalId);
+        if ($modal.length === 0) {
+            console.error('Modal not found:', modalId);
+            isModalTransitioning = false;
+            return;
+        }
 
-    // --- 1. SEARCH FUNCTIONALITY ---
-    $('#searchInput').on('input', function() {
+        $modal.modal('show');
+        
+        setTimeout(() => {
+            isModalTransitioning = false;
+        }, 300);
+    }
+
+    function hideModal(modalId) {
+        if (isModalTransitioning) return;
+        isModalTransitioning = true;
+        
+        const $modal = $('#' + modalId);
+        if ($modal.length === 0) {
+            isModalTransitioning = false;
+            return;
+        }
+
+        $modal.modal('hide');
+        
+        setTimeout(() => {
+            cleanupModals();
+            isModalTransitioning = false;
+        }, 300);
+    }
+
+    function cleanupModals() {
+        $('.modal-backdrop').remove();
+        $('body').removeClass('modal-open');
+        $('body').css('padding-right', '');
+        $('body').css('overflow', '');
+    }
+
+    function showNotification(message, type) {
+        $('.custom-notification').remove();
+        
+        const bgColor = type === 'success' ? 'linear-gradient(135deg, #27ae60 0%, #229954 100%)' : 
+                       type === 'error' ? 'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)' : 
+                       'linear-gradient(135deg, #0D92F4, #27548A)';
+        
+        const icon = type === 'success' ? 'bx-check-circle' : 
+                    type === 'error' ? 'bx-error-circle' : 
+                    'bx-info-circle';
+        
+        const notification = $(`
+            <div class="custom-notification alert alert-dismissible fade show" style="
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                max-width: 400px;
+                z-index: 9999;
+                background: ${bgColor};
+                color: white;
+                padding: 1rem 1.5rem;
+                border-radius: 12px;
+                box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                animation: slideInRight 0.3s ease-out;
+            ">
+                <i class='bx ${icon}' style='font-size: 1.5rem;'></i>
+                <span style='font-weight: 500; flex: 1;'>${message}</span>
+                <button type="button" class="close text-white" style="padding: 0; margin: 0; font-size: 1.5rem; opacity: 0.8;" data-dismiss="alert">
+                    <span>&times;</span>
+                </button>
+            </div>
+        `);
+        
+        $('body').append(notification);
+        
+        setTimeout(function() {
+            notification.fadeOut(300, function() {
+                $(this).remove();
+            });
+        }, 4000);
+    }
+
+    function loadDepartmentData() {
+        $.ajax({
+            url: 'ajax/ajax_get_departments.php',
+            method: 'GET',
+            cache: false,
+            dataType: 'html',
+            success: function(html) {
+                try {
+                    const $temp = $('<div>').html(html);
+                    
+                    const newGridHtml = $temp.find('#departmentGrid').html();
+                    if (newGridHtml) {
+                        $('#departmentGrid').fadeOut(150, function() {
+                            $(this).html(newGridHtml).fadeIn(150);
+                        });
+                    }
+                    
+                    const $newStats = $temp.find('.stat-number');
+                    if ($newStats.length > 0) {
+                        $('.stat-number').each(function(index) {
+                            const newVal = $($newStats[index]).text();
+                            $(this).fadeOut(100, function() {
+                                $(this).text(newVal).fadeIn(100);
+                            });
+                        });
+                    }
+                    
+                    $('#searchInput').val('');
+                    $('#noResultsMessage').remove();
+                    
+                } catch(e) {
+                    console.error('Parse error:', e);
+                    showNotification('Data refreshed', 'success');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('AJAX Refresh Error:', {
+                    status: status,
+                    error: error,
+                    response: xhr.responseText
+                });
+                showNotification('Unable to refresh. Please reload manually.', 'error');
+            }
+        });
+    }
+
+    function serializeAddForm($form) {
+        const formData = new URLSearchParams();
+        
+        formData.append('name', $form.find('input[name="name"]').val());
+        formData.append('acronym', $form.find('input[name="acronym"]').val());
+        formData.append('description', $form.find('textarea[name="description"]').val());
+        
+        $('.service-group').each(function(index) {
+            const serviceName = $(this).find('input[name="services[]"]').val();
+            
+            if (serviceName && serviceName.trim()) {
+                formData.append('services[]', serviceName.trim());
+                
+                const requirements = [];
+                $(this).find('input[name^="requirements["]').each(function() {
+                    const reqValue = $(this).val();
+                    if (reqValue && reqValue.trim()) {
+                        requirements.push(reqValue.trim());
+                    }
+                });
+                
+                if (requirements.length > 0) {
+                    formData.append('requirements[]', requirements.join('|||'));
+                } else {
+                    formData.append('requirements[]', '');
+                }
+            }
+        });
+        
+        return formData.toString();
+    }
+
+    function submitAjaxForm($form, url, modalSelector, shouldReset) {
+        if (isSubmitting) {
+            console.log('Form submission already in progress');
+            return;
+        }
+
+        if (!confirm("Are you sure you want to proceed with this action?")) {
+            return;
+        }
+
+        isSubmitting = true;
+        const $btn = $form.find('button[type="submit"]');
+        const originalText = $btn.html();
+        
+        $btn.prop('disabled', true).html('<i class="bx bx-loader-alt bx-spin"></i> Processing...');
+
+        let formData;
+        if ($form.attr('id') === 'addForm') {
+            formData = serializeAddForm($form);
+        } else {
+            formData = $form.serialize();
+        }
+
+        $.ajax({
+            url: url,
+            method: 'POST',
+            data: formData,
+            dataType: 'json',
+            success: function(response) {
+                console.log('Success response:', response);
+                
+                if (shouldReset) {
+                    $form[0].reset();
+                    resetAddModalForm();
+                }
+
+                hideModal(modalSelector.replace('#', ''));
+                
+                showNotification(response.message || 'Operation completed successfully', 'success');
+                
+                setTimeout(() => {
+                    loadDepartmentData();
+                }, 300);
+            },
+            error: function(xhr) {
+                console.error('AJAX Error:', xhr);
+                
+                let errorMsg = "An error occurred";
+                
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    errorMsg = response.message || errorMsg;
+                } catch(e) {
+                    if (xhr.responseText) {
+                        errorMsg = xhr.responseText;
+                    }
+                }
+                
+                showNotification(errorMsg, 'error');
+            },
+            complete: function() {
+                $btn.prop('disabled', false).html(originalText);
+                isSubmitting = false;
+            }
+        });
+    }
+
+    function updateServiceNumbers() {
+        $('.service-group').each(function(index) {
+            $(this).find('.service-group-title').html(`
+                <i class='bx bx-briefcase'></i>
+                Service #${index + 1}
+            `);
+            
+            if (index === 0) {
+                $(this).find('.removeService').css('visibility', 'hidden');
+            } else {
+                $(this).find('.removeService').css('visibility', 'visible');
+            }
+        });
+    }
+
+    function updateRequirementButtons(container) {
+        const inputs = container.find('.input-group');
+        
+        if (inputs.length === 1) {
+            inputs.find('.removeRequirement').css('visibility', 'hidden');
+        } else {
+            inputs.find('.removeRequirement').css('visibility', 'visible');
+        }
+    }
+
+    function resetAddModalForm() {
+        $('.service-group').not(':first').remove();
+        
+        $('.requirement-input-group').first().find('.input-group').not(':first').remove();
+        
+        $('.service-group').first().find('.removeService').css('visibility', 'hidden');
+        $('.requirement-input-group').first().find('.removeRequirement').css('visibility', 'hidden');
+        
+        serviceIndex = 0;
+    }
+
+    $('#searchInput').on('input.' + NAMESPACE, function() {
         const val = $(this).val().toLowerCase();
         let visibleCount = 0;
         
@@ -1798,7 +2216,6 @@ $(document).ready(function() {
             if (isVisible) visibleCount++;
         });
         
-        // Handle Empty State
         if (visibleCount === 0 && val !== '') {
             if ($('#noResultsMessage').length === 0) {
                 $('#departmentGrid').append(`
@@ -1814,29 +2231,91 @@ $(document).ready(function() {
         }
     });
 
-    $('#clearFilters').click(function() {
+    $('#clearFilters').on('click.' + NAMESPACE, function() {
         $('#searchInput').val('').trigger('input');
     });
 
-    // --- 2. DYNAMIC INPUT FIELDS (Event Delegation) ---
-
-    // Add Service (Add Modal)
-    $(document).on('click', '#addService', function() {
+    $(document).on('click.' + NAMESPACE, '#addService', function() {
+        serviceIndex++;
+        const serviceCount = $('.service-group').length + 1;
+        
         const group = `
-            <div class="service-group mb-3">
-                <div class="input-group mb-2">
-                    <input type="text" name="services[]" class="form-control form-control-custom" placeholder="Enter a service" required>
-                    <div class="input-group-append">
-                        <button type="button" class="btn remove-btn removeService"><i class='bx bx-x'></i></button>
-                    </div>
+            <div class="service-group">
+                <div class="service-group-header">
+                    <span class="service-group-title">
+                        <i class='bx bx-briefcase'></i>
+                        Service #${serviceCount}
+                    </span>
+                    <button type="button" class="btn remove-btn removeService">
+                        <i class='bx bx-x'></i>
+                    </button>
                 </div>
-                <input type="text" name="requirements[]" class="form-control form-control-custom" placeholder="Requirement (optional)">
+                
+                <div class="mb-3">
+                    <input type="text" name="services[]" class="form-control form-control-custom" placeholder="Enter service name" required>
+                </div>
+                
+                <div class="requirements-container">
+                    <label class="form-label mb-2" style="font-size: 0.8125rem; font-weight: 500;">
+                        <i class='bx bx-list-check'></i>
+                        Requirements (Optional)
+                    </label>
+                    <div class="requirement-input-group">
+                        <div class="input-group mb-2">
+                            <input type="text" name="requirements[${serviceIndex}][]" class="form-control form-control-custom" placeholder="Enter requirement">
+                            <div class="input-group-append">
+                                <button type="button" class="btn remove-btn removeRequirement" style="visibility: hidden;">
+                                    <i class='bx bx-x'></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-outline-custom btn-sm-custom addRequirement" data-service-index="${serviceIndex}">
+                        <i class='bx bx-plus'></i>
+                        Add Another Requirement
+                    </button>
+                </div>
             </div>`;
+        
         $('#serviceFields').append(group);
+        updateServiceNumbers();
     });
 
-    // Add Service (Edit Modal)
-    $(document).on('click', '[id^="addNewServiceBtn"]', function() {
+    $(document).on('click.' + NAMESPACE, '.removeService', function() {
+        if ($('.service-group').length > 1) {
+            $(this).closest('.service-group').remove();
+            updateServiceNumbers();
+        }
+    });
+
+    $(document).on('click.' + NAMESPACE, '.addRequirement', function() {
+        const serviceIdx = $(this).data('service-index');
+        const container = $(this).siblings('.requirement-input-group');
+        
+        const reqField = `
+            <div class="input-group mb-2">
+                <input type="text" name="requirements[${serviceIdx}][]" class="form-control form-control-custom" placeholder="Enter requirement">
+                <div class="input-group-append">
+                    <button type="button" class="btn remove-btn removeRequirement">
+                        <i class='bx bx-x'></i>
+                    </button>
+                </div>
+            </div>`;
+        
+        container.append(reqField);
+        updateRequirementButtons(container);
+    });
+
+    $(document).on('click.' + NAMESPACE, '.removeRequirement', function() {
+        const container = $(this).closest('.requirement-input-group');
+        
+        if (container.find('.input-group').length > 1) {
+            $(this).closest('.input-group').remove();
+            updateRequirementButtons(container);
+        }
+    });
+
+    $(document).on('click.' + NAMESPACE, '[id^="addNewServiceBtn"]', function() {
         const timestamp = Date.now();
         const uniqueId = 'new_' + timestamp;
         const block = `
@@ -1858,8 +2337,7 @@ $(document).ready(function() {
         $(this).siblings('.service-edit-area').append(block);
     });
 
-    // Add Requirement (Edit Modal)
-    $(document).on('click', '.add-req', function() {
+    $(document).on('click.' + NAMESPACE, '.add-req', function() {
         const reqGroup = $(this).siblings('.requirement-group');
         const serviceId = $(this).closest('.service-edit-block').find('input[name="service_ids[]"]').val();
         
@@ -1873,39 +2351,33 @@ $(document).ready(function() {
         reqGroup.append(reqField);
     });
 
-    // Remove buttons
-    $(document).on('click', '.removeService', function() {
-        if ($('.service-group').length > 1) $(this).closest('.service-group').remove();
-    });
-    
-    $(document).on('click', '.remove-req', function() {
+    $(document).on('click.' + NAMESPACE, '.remove-req', function() {
         $(this).closest('.input-group').remove();
     });
 
-    // --- 3. FORM SUBMISSIONS ---
-
-    // ADD DEPARTMENT
-    $('#addForm').on('submit', function(e) {
+    $('#addForm').on('submit.' + NAMESPACE, function(e) {
         e.preventDefault();
         submitAjaxForm($(this), 'ajax/ajax_add_department_with_services.php', '#addModal', true);
     });
 
-    // UPDATE DEPARTMENT (Delegated)
-    $(document).on('submit', '.edit-dept-form', function(e) {
+    $(document).on('submit.' + NAMESPACE, '.edit-dept-form', function(e) {
         e.preventDefault();
         const modalId = $(this).closest('.modal').attr('id');
         submitAjaxForm($(this), $(this).attr('action'), '#' + modalId, false);
     });
 
-    // DELETE DEPARTMENT (Delegated)
-    $(document).on('click', '.delete-dept-btn', function() {
+
+    $(document).on('click.' + NAMESPACE, '.delete-dept-btn', function() {
         const deptId = $(this).data('id');
         const modalId = $(this).closest('.modal').attr('id');
         
         if (confirm('Are you sure you want to delete this department? This action cannot be undone.')) {
-            const btn = $(this);
-            const originalText = btn.html();
-            btn.prop('disabled', true).html('<i class="bx bx-loader-alt bx-spin"></i> Deleting...');
+            if (isSubmitting) return;
+            isSubmitting = true;
+            
+            const $btn = $(this);
+            const originalText = $btn.html();
+            $btn.prop('disabled', true).html('<i class="bx bx-loader-alt bx-spin"></i> Deleting...');
 
             $.ajax({
                 url: 'ajax/ajax_delete_department.php',
@@ -1913,12 +2385,13 @@ $(document).ready(function() {
                 data: { id: deptId },
                 dataType: 'json',
                 success: function(response) {
-                    closeModalSafely('#' + modalId);
+                    hideModal(modalId);
                     showNotification(response.message || 'Department deleted successfully', 'success');
-                    loadDepartmentData();
+                    setTimeout(() => {
+                        loadDepartmentData();
+                    }, 300);
                 },
                 error: function(xhr) {
-                    btn.prop('disabled', false).html(originalText);
                     let errorMsg = "Failed to delete department";
                     try {
                         const response = JSON.parse(xhr.responseText);
@@ -1927,20 +2400,26 @@ $(document).ready(function() {
                         errorMsg = xhr.responseText || errorMsg;
                     }
                     showNotification(errorMsg, 'error');
+                },
+                complete: function() {
+                    $btn.prop('disabled', false).html(originalText);
+                    isSubmitting = false;
                 }
             });
         }
     });
 
-    // DELETE SERVICE (Delegated)
-    $(document).on('click', '.delete-service-btn', function() {
+    $(document).on('click.' + NAMESPACE, '.delete-service-btn', function() {
         const serviceId = $(this).data('service-id');
         const serviceName = $(this).data('service-name');
         
         if (confirm(`Are you sure you want to delete the service "${serviceName}"? This will also delete all its requirements.`)) {
-            const btn = $(this);
-            const originalText = btn.html();
-            btn.prop('disabled', true).html('<i class="bx bx-loader-alt bx-spin"></i>');
+            if (isSubmitting) return;
+            isSubmitting = true;
+            
+            const $btn = $(this);
+            const originalText = $btn.html();
+            $btn.prop('disabled', true).html('<i class="bx bx-loader-alt bx-spin"></i>');
 
             $.ajax({
                 url: 'ajax/ajax_delete_service.php',
@@ -1950,14 +2429,12 @@ $(document).ready(function() {
                 success: function(response) {
                     showNotification(response.message || 'Service deleted successfully', 'success');
                     
-                    // Remove the service item from view modal
-                    btn.closest('.service-item').fadeOut(300, function() {
+                    $btn.closest('.service-item').fadeOut(300, function() {
                         $(this).remove();
                         
-                        // Check if no services left
-                        const modal = btn.closest('.modal');
-                        if (modal.find('.service-item').length === 0) {
-                            modal.find('.service-item').parent().html(`
+                        const $modal = $btn.closest('.modal');
+                        if ($modal.find('.service-item').length === 0) {
+                            $modal.find('.service-item').parent().html(`
                                 <div class="empty-state">
                                     <i class='bx bx-package'></i>
                                     <h4>No Services Available</h4>
@@ -1967,11 +2444,11 @@ $(document).ready(function() {
                         }
                     });
                     
-                    // Reload data to update everything
-                    setTimeout(loadDepartmentData, 400);
+                    setTimeout(() => {
+                        loadDepartmentData();
+                    }, 400);
                 },
                 error: function(xhr) {
-                    btn.prop('disabled', false).html(originalText);
                     let errorMsg = "Failed to delete service";
                     try {
                         const response = JSON.parse(xhr.responseText);
@@ -1980,13 +2457,16 @@ $(document).ready(function() {
                         errorMsg = xhr.responseText || errorMsg;
                     }
                     showNotification(errorMsg, 'error');
+                },
+                complete: function() {
+                    $btn.prop('disabled', false).html(originalText);
+                    isSubmitting = false;
                 }
             });
         }
     });
 
-    // --- 4. VIEW -> EDIT TRANSITION FIX ---
-    $(document).on('click', '.edit-dept-btn', function() {
+    $(document).on('click.' + NAMESPACE, '.edit-dept-btn', function() {
         if (isModalTransitioning) return;
         isModalTransitioning = true;
 
@@ -1994,10 +2474,8 @@ $(document).ready(function() {
         const viewModal = $('#viewModal' + deptId);
         const editModal = $('#editModal' + deptId);
 
-        // Close view modal
         viewModal.modal('hide');
         
-        // Wait for complete closure before opening edit
         viewModal.one('hidden.bs.modal', function() {
             cleanupModals();
             setTimeout(function() {
@@ -2007,223 +2485,48 @@ $(document).ready(function() {
         });
     });
 
-    // --- HELPER FUNCTIONS ---
 
-    // Generic AJAX Form Submitter
-    function submitAjaxForm(form, url, modalSelector, shouldReset) {
-        if (!confirm("Are you sure you want to proceed with this action?")) return;
-
-        const btn = form.find('button[type="submit"]');
-        const originalText = btn.html();
-        btn.prop('disabled', true).html('<i class="bx bx-loader-alt bx-spin"></i> Processing...');
-
-        $.ajax({
-            url: url,
-            method: 'POST',
-            data: form.serialize(),
-            dataType: 'json',
-            success: function(response) {
-                closeModalSafely(modalSelector);
-                
-                if (shouldReset) {
-                    form[0].reset();
-                    // Remove all service groups except the first
-                    form.find('.service-group').not(':first').remove();
-                }
-
-                showNotification(response.message || 'Operation completed successfully', 'success');
-                loadDepartmentData();
-            },
-            error: function(xhr) {
-                // Handle plain text "success" response
-                if (xhr.responseText && xhr.responseText.trim() === 'success') {
-                    closeModalSafely(modalSelector);
-                    showNotification('Operation completed successfully', 'success');
-                    loadDepartmentData();
-                    return;
-                }
-                
-                // Handle other errors
-                btn.prop('disabled', false).html(originalText);
-                
-                let errorMsg = "An error occurred";
-                try {
-                    const response = JSON.parse(xhr.responseText);
-                    errorMsg = response.message || errorMsg;
-                } catch(e) {
-                    errorMsg = xhr.responseText || errorMsg;
-                }
-                
-                showNotification(errorMsg, 'error');
-            }
-        });
-    }
-
-    // Enhanced modal cleanup
-    function cleanupModals() {
-        // Remove all modal backdrops
-        $('.modal-backdrop').remove();
-        
-        // Remove modal-open class from body
-        $('body').removeClass('modal-open');
-        
-        // Reset body padding
-        $('body').css('padding-right', '');
-        
-        // Reset body overflow
-        $('body').css('overflow', '');
-    }
-
-    // Safe modal closer
-    function closeModalSafely(modalSelector) {
-        const modal = $(modalSelector);
-        
-        // Hide the modal
-        modal.modal('hide');
-        
-        // Force cleanup after a short delay
-        setTimeout(cleanupModals, 300);
-    }
-
-    // Dynamic Data Reloader - Works with AJAX-loaded pages
-    function loadDepartmentData() {
-        // Get the current page URL from the browser or use relative path
-        const currentPage = window.location.pathname.split('/').pop() || 'departments.php';
-        
-        $.ajax({
-            url: currentPage,
-            method: 'GET',
-            cache: false,
-            success: function(html) {
-                try {
-                    // Create a temporary container
-                    const $temp = $('<div>').html(html);
-                    
-                    // 1. Update Department Grid
-                    const newGridHtml = $temp.find('#departmentGrid').html();
-                    if (newGridHtml) {
-                        $('#departmentGrid').fadeOut(150, function() {
-                            $(this).html(newGridHtml).fadeIn(150);
-                        });
-                    }
-                    
-                    // 2. Update Stats with animation
-                    const $newStats = $temp.find('.stat-number');
-                    if ($newStats.length > 0) {
-                        $('.stat-number').each(function(index) {
-                            const $this = $(this);
-                            const newVal = $($newStats[index]).text();
-                            $this.fadeOut(100, function() {
-                                $(this).text(newVal).fadeIn(100);
-                            });
-                        });
-                    }
-                    
-                    // 3. Clear search
-                    $('#searchInput').val('');
-                    $('#noResultsMessage').remove();
-                    
-                    // 4. Success notification
-                    //showNotification('Data refreshed successfully', 'success');
-                    
-                } catch(e) {
-                    console.error('Parse error:', e);
-                    showNotification('Data updated', 'success');
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error('AJAX Refresh Error:', {
-                    status: status,
-                    error: error,
-                    response: xhr.responseText
-                });
-                showNotification('Unable to refresh. Please reload manually.', 'error');
-            }
-        });
-    }
-
-    // Notification system
-    function showNotification(message, type) {
-        // Remove existing notifications
-        $('.custom-notification').remove();
-        
-        const bgColor = type === 'success' ? 'var(--success-gradient)' : 
-                       type === 'error' ? 'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)' : 
-                       'var(--primary-gradient)';
-        
-        const icon = type === 'success' ? 'bx-check-circle' : 
-                    type === 'error' ? 'bx-error-circle' : 
-                    'bx-info-circle';
-        
-        const notification = $(`
-            <div class="custom-notification" style="
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                background: ${bgColor};
-                color: white;
-                padding: 1rem 1.5rem;
-                border-radius: 12px;
-                box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-                z-index: 9999;
-                display: flex;
-                align-items: center;
-                gap: 0.75rem;
-                max-width: 400px;
-                animation: slideInRight 0.3s ease-out;
-            ">
-                <i class='bx ${icon}' style='font-size: 1.5rem;'></i>
-                <span style='font-weight: 500;'>${message}</span>
-            </div>
-        `);
-        
-        $('body').append(notification);
-        
-        // Auto remove after 3 seconds
-        setTimeout(function() {
-            notification.fadeOut(300, function() {
-                $(this).remove();
-            });
-        }, 3000);
-    }
-
-    // Add animation keyframes
-    if (!$('#notificationStyles').length) {
-        $('head').append(`
-            <style id="notificationStyles">
-                @keyframes slideInRight {
-                    from {
-                        transform: translateX(100%);
-                        opacity: 0;
-                    }
-                    to {
-                        transform: translateX(0);
-                        opacity: 1;
-                    }
-                }
-            </style>
-        `);
-    }
-
-    // Emergency cleanup on page click (fallback)
-    $(document).on('click', function(e) {
-        if (!$(e.target).closest('.modal').length && !$(e.target).closest('[data-toggle="modal"]').length) {
-            if ($('.modal-backdrop').length > 1) {
-                cleanupModals();
-            }
-        }
+    $('#addModal').on('hidden.bs.modal.' + NAMESPACE, function() {
+        $('#addForm')[0].reset();
+        resetAddModalForm();
     });
 
-    // Handle browser back button
-    $(window).on('popstate', function() {
+    $('.modal').on('hidden.bs.modal.' + NAMESPACE, function() {
+        cleanupModals();
+        isModalTransitioning = false;
+    });
+
+    $(window).on('popstate.' + NAMESPACE, function() {
         cleanupModals();
     });
-    
-    // Cleanup on page unload
-    $(window).on('beforeunload', function() {
+
+    $(window).on('beforeunload.' + NAMESPACE, function() {
         cleanupModals();
     });
-});
+
+    window.deptMgmtCleanup = function() {
+        console.log('Running cleanup for namespace:', NAMESPACE);
+        
+        $(document).off('.' + NAMESPACE);
+        $('#searchInput').off('.' + NAMESPACE);
+        $('#clearFilters').off('.' + NAMESPACE);
+        $('#addForm').off('.' + NAMESPACE);
+        $('#addModal').off('.' + NAMESPACE);
+        $('.modal').off('.' + NAMESPACE);
+        $(window).off('.' + NAMESPACE);
+        
+        cleanupModals();
+        
+        isModalTransitioning = false;
+        isSubmitting = false;
+        serviceIndex = 0;
+        
+        console.log('Cleanup completed');
+    };
+
+    console.log('Department management initialization complete');
+
+})();
 </script>
 </body>
 </html>

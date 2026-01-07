@@ -1,16 +1,14 @@
 <?php
 include '../conn.php';
-// Add session configuration BEFORE session_start()
-ini_set('session.gc_maxlifetime', 86400); // 24 hours
-ini_set('session.cookie_lifetime', 86400); // 24 hours
-session_set_cookie_params(86400); // 24 hours
+ini_set('session.gc_maxlifetime', 86400);
+ini_set('session.cookie_lifetime', 86400);
+session_set_cookie_params(86400);
 
 session_start();
 
-// Regenerate session periodically to prevent fixation
 if (!isset($_SESSION['last_regenerate'])) {
     $_SESSION['last_regenerate'] = time();
-} elseif (time() - $_SESSION['last_regenerate'] > 1800) { // 30 minutes
+} elseif (time() - $_SESSION['last_regenerate'] > 1800) {
     session_regenerate_id(true);
     $_SESSION['last_regenerate'] = time();
 }
@@ -20,22 +18,18 @@ if (!isset($_SESSION['auth_id']) || $_SESSION['role'] !== 'LGU Personnel') {
     exit();
 }
 
-// Get user name from session (set during ../login.php)
 $user_name = $_SESSION['user_name'] ?? 'LGU Personnel';
 
-// Get personnel's department_id for tasks
 $dept_stmt = $pdo->prepare("SELECT department_id FROM lgu_personnel WHERE auth_id = ?");
 $dept_stmt->execute([$_SESSION['auth_id']]);
 $user_department_id = $dept_stmt->fetchColumn();
 
-// Get today's appointments
 $today = date('Y-m-d');
 $today_tasks = [];
 $pending_count = 0;
 $completed_today = 0;
 
 if ($user_department_id) {
-    // Get today's scheduled appointments
     $tasks_query = $pdo->prepare("
         SELECT 
             a.id, 
@@ -57,7 +51,6 @@ if ($user_department_id) {
     $tasks_query->execute([$user_department_id, $today]);
     $today_tasks = $tasks_query->fetchAll(PDO::FETCH_ASSOC);
     
-    // Get pending appointments count
     $pending_query = $pdo->prepare("
         SELECT COUNT(*) 
         FROM appointments 
@@ -66,7 +59,6 @@ if ($user_department_id) {
     $pending_query->execute([$user_department_id]);
     $pending_count = $pending_query->fetchColumn();
     
-    // Get completed today count
     $completed_query = $pdo->prepare("
         SELECT COUNT(*) 
         FROM appointments 
@@ -110,7 +102,6 @@ if ($user_department_id) {
             margin-top: -3rem;
         }
 
-        /* Header Improvements */
         .header {
             background: linear-gradient(to right, #0D92F4, #27548A);
             backdrop-filter: blur(10px);
@@ -168,7 +159,6 @@ if ($user_department_id) {
             }
         }
 
-        /* Content Area */
         .content-area {
             margin-top: -7px;
             padding: 1rem 1rem;
@@ -182,7 +172,6 @@ if ($user_department_id) {
             }
         }
 
-        /* Welcome Card */
         .welcome-card {
             background: linear-gradient(to right, #0D92F4, #27548A);
             border-radius: 20px;
@@ -237,7 +226,6 @@ if ($user_department_id) {
             }
         }
 
-        /* Feature Cards */
         .feature-card {
             background: white;
             border-radius: 16px;
@@ -327,7 +315,6 @@ if ($user_department_id) {
             line-height: 1.5;
         }
 
-        /* Stats Badge */
         .stats-badge {
             position: absolute;
             top: 1rem;
@@ -340,7 +327,6 @@ if ($user_department_id) {
             font-weight: 600;
         }
 
-        /* Responsive Grid */
         @media (max-width: 767px) {
             .feature-card {
                 margin-bottom: 1rem;
@@ -354,7 +340,6 @@ if ($user_department_id) {
             }
         }
 
-        /* Animation for cards on load */
         .feature-card {
             animation: fadeInUp 0.6s ease forwards;
             opacity: 0;
@@ -377,7 +362,6 @@ if ($user_department_id) {
             }
         }
 
-        /* Section Title */
         .section-title {
             color: #333;
             font-size: 1.5rem;
@@ -386,7 +370,6 @@ if ($user_department_id) {
             text-align: center;
         }
 
-        /* Logout Modal Improvements */
         .modal-content {
             border-radius: 16px;
             border: none;
@@ -453,7 +436,6 @@ if ($user_department_id) {
                 box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
             }
         }
-        /* My Tasks Today Section */
 .tasks-section {
     background: white;
     border-radius: 16px;
@@ -705,7 +687,6 @@ if ($user_department_id) {
     </style>
 
 <script>
-        // Global cleanup registry
         window.pageCleanupRegistry = {
             intervals: [],
             timeouts: [],
@@ -713,7 +694,6 @@ if ($user_department_id) {
             ajaxRequests: []
         };
 
-        // Override setInterval to track all intervals
         const originalSetInterval = window.setInterval;
         window.setInterval = function(fn, delay) {
             const id = originalSetInterval(fn, delay);
@@ -721,7 +701,6 @@ if ($user_department_id) {
             return id;
         };
 
-        // Override setTimeout to track all timeouts
         const originalSetTimeout = window.setTimeout;
         window.setTimeout = function(fn, delay) {
             const id = originalSetTimeout(fn, delay);
@@ -729,32 +708,27 @@ if ($user_department_id) {
             return id;
         };
 
-        // Track jQuery AJAX requests
         if (typeof jQuery !== 'undefined') {
             $(document).ajaxSend(function(event, jqXHR, settings) {
                 window.pageCleanupRegistry.ajaxRequests.push(jqXHR);
             });
         }
 
-        // Universal cleanup function
 window.cleanupAllPages = function() {
     console.log('=== STARTING UNIVERSAL CLEANUP ===');
     
-    // Clear all intervals
     console.log('Clearing', window.pageCleanupRegistry.intervals.length, 'intervals');
     window.pageCleanupRegistry.intervals.forEach(function(id) {
         clearInterval(id);
     });
     window.pageCleanupRegistry.intervals = [];
     
-    // Clear all timeouts
     console.log('Clearing', window.pageCleanupRegistry.timeouts.length, 'timeouts');
     window.pageCleanupRegistry.timeouts.forEach(function(id) {
         clearTimeout(id);
     });
     window.pageCleanupRegistry.timeouts = [];
     
-    // Abort all pending AJAX requests
     console.log('Aborting', window.pageCleanupRegistry.ajaxRequests.length, 'AJAX requests');
     window.pageCleanupRegistry.ajaxRequests.forEach(function(jqXHR) {
         if (jqXHR && jqXHR.abort) {
@@ -767,7 +741,6 @@ window.cleanupAllPages = function() {
     });
     window.pageCleanupRegistry.ajaxRequests = [];
     
-    // Clean up specific page cleanup functions
     if (window.availableDatesCleanup && typeof window.availableDatesCleanup === 'function') {
         console.log('Running availableDatesCleanup...');
         try {
@@ -795,8 +768,6 @@ window.cleanupAllPages = function() {
         }
     }
     
-    // Clean up all document event handlers with namespaces
-    // Only if jQuery is available
     if (typeof jQuery !== 'undefined' && jQuery) {
         const namespaces = ['availDates', 'appointmentStatus', 'manageAppt', 'analytics'];
         namespaces.forEach(function(ns) {
@@ -807,12 +778,10 @@ window.cleanupAllPages = function() {
             $(document).off('.removeBtn_' + ns);
         });
         
-        // Clean up any lingering modals - with safety check
         try {
             $('.modal-backdrop').remove();
             $('body').removeClass('modal-open');
             
-            // Only try to hide modals if Bootstrap modal is available
             if (typeof $.fn.modal !== 'undefined') {
                 $('.modal').modal('hide');
             } else {
@@ -824,12 +793,10 @@ window.cleanupAllPages = function() {
             console.warn('Error cleaning up modals:', e);
         }
         
-        // Remove inline styles that might have been added
         $('body').css('overflow', '');
         $('body').css('padding-right', '');
     } else {
         console.warn('jQuery not available during cleanup');
-        // Fallback: use vanilla JavaScript
         const modals = document.querySelectorAll('.modal');
         modals.forEach(function(modal) {
             modal.style.display = 'none';
@@ -849,7 +816,6 @@ window.cleanupAllPages = function() {
     console.log('=== CLEANUP COMPLETE ===');
 };
 
-        // Store the currently loaded page
         let currentPage = null;
         let isLoading = false;
         let loadAbortController = null;
@@ -859,7 +825,6 @@ window.cleanupAllPages = function() {
             const nav = document.getElementById('nav-bar');
             const overlay = document.getElementById('overlay');
 
-            // Toggle sidebar
             if (toggle) {
                 toggle.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -868,7 +833,6 @@ window.cleanupAllPages = function() {
                 });
             }
 
-            // Close sidebar if clicking outside or on overlay
             if (overlay) {
                 overlay.addEventListener('click', () => {
                     nav.classList.remove('show');
@@ -876,7 +840,6 @@ window.cleanupAllPages = function() {
                 });
             }
 
-            // Extra safety: clicking anywhere outside
             document.addEventListener('click', (e) => {
                 if (nav && nav.classList.contains('show') && !nav.contains(e.target) && !toggle.contains(e.target)) {
                     nav.classList.remove('show');
@@ -884,7 +847,6 @@ window.cleanupAllPages = function() {
                 }
             });
 
-            // Keep session alive with periodic pings
             const keepAliveInterval = setInterval(function() {
                 $.ajax({
                     url: 'keep_alive.php',
@@ -898,19 +860,17 @@ window.cleanupAllPages = function() {
                         }
                     }
                 });
-            }, 300000); // Ping every 5 minutes
+            }, 300000);
         });
 
         function loadContent(page) {
             console.log('\n>>> NAVIGATION REQUEST: ' + page + ' <<<');
             
-            // Prevent loading if already loading
             if (isLoading) {
                 console.warn('⚠️ Already loading content, please wait...');
                 return false;
             }
 
-            // Prevent reloading the same page
             if (currentPage === page) {
                 console.log('ℹ️ Already on page:', page);
                 return false;
@@ -919,7 +879,6 @@ window.cleanupAllPages = function() {
             console.log('✓ Navigation approved from', currentPage || 'homepage', 'to', page);
             isLoading = true;
             
-            // Close sidebar on mobile after clicking
             const nav = document.getElementById('nav-bar');
             const overlay = document.getElementById('overlay');
             if (nav && nav.classList.contains('show')) {
@@ -927,14 +886,11 @@ window.cleanupAllPages = function() {
                 if (overlay) overlay.classList.remove('show');
             }
             
-            // *** CRITICAL: CLEANUP EVERYTHING ***
             console.log('🧹 Initiating comprehensive cleanup...');
             window.cleanupAllPages();
             
-            // Add cache buster to prevent cached content
             const cacheBuster = '?_=' + new Date().getTime();
             
-            // Clear content area immediately
             const contentArea = $("#content-area");
             contentArea.html(
                 '<div class="text-center p-5">' +
@@ -945,7 +901,6 @@ window.cleanupAllPages = function() {
                 '</div>'
             );
             
-            // Force a small delay to ensure cleanup is complete
             setTimeout(function() {
                 console.log('📥 Loading content from:', page + cacheBuster);
                 
@@ -955,7 +910,6 @@ window.cleanupAllPages = function() {
                     if (status === "error") {
                         console.error("❌ Error loading content:", xhr.status, xhr.statusText);
                         
-                        // Check if it's a session error
                         if (xhr.status === 403 || response.includes('Unauthorized') || response.includes('Session expired')) {
                             contentArea.html(
                                 '<div class="alert alert-danger m-4">' +
@@ -990,14 +944,11 @@ window.cleanupAllPages = function() {
                         console.log('✅ Content loaded successfully:', page);
                         currentPage = page;
                         
-                        // Scroll to top of content area smoothly
                         $('html, body').animate({ scrollTop: 0 }, 300);
                         
-                        // Give scripts time to initialize
                         setTimeout(function() {
                             console.log('⚙️ Content initialization phase complete for:', page);
                             
-                            // Special handling for create_available_dates page
                             if (page.includes('create_available_dates.php')) {
                                 console.log('📅 Verifying calendar initialization...');
                                 
@@ -1021,9 +972,9 @@ window.cleanupAllPages = function() {
                         }, 200);
                     }
                 });
-            }, 150); // 150ms delay to ensure cleanup completes
+            }, 150);
             
-            return false; // Prevent default link behavior
+            return false;
         }
 
         function toggleDropdown(id) {
@@ -1037,7 +988,6 @@ window.cleanupAllPages = function() {
             }
         }
 
-        // Close profile menu when clicking outside
         window.addEventListener('click', function(e) {
             const trigger = document.querySelector('.profile-trigger');
             const menu = document.getElementById("profileMenu");
@@ -1046,28 +996,24 @@ window.cleanupAllPages = function() {
             }
         });
 
-        // Handle browser back/forward buttons
         window.addEventListener('popstate', function(event) {
             if (currentPage) {
                 console.log('⏮️ Browser navigation detected');
                 const pageToLoad = currentPage;
-                currentPage = null; // Reset to allow reload
+                currentPage = null;
                 loadContent(pageToLoad);
             }
         });
 
-        // Cleanup on page unload
         window.addEventListener('beforeunload', function() {
             console.log('🚪 Page unloading, running final cleanup...');
             window.cleanupAllPages();
         });
 
-        // Global error handler for debugging
         window.addEventListener('error', function(e) {
             console.error('💥 Global error:', e.message, 'at', e.filename + ':' + e.lineno);
         });
 
-        // Expose debug function
         window.debugLoadContent = function() {
             console.log('=== DEBUG INFO ===');
             console.log('Current page:', currentPage);
@@ -1095,7 +1041,6 @@ window.cleanupAllPages = function() {
             });
         }
 
-        // Check for notifications on page load
         $(document).ready(function() {
             checkNewNotifications();
             setInterval(checkNewNotifications, 30000);
@@ -1106,7 +1051,6 @@ window.cleanupAllPages = function() {
             const icon = $('#tasks-toggle-icon');
             
             content.slideToggle(300, function() {
-                // Rotate icon based on visibility
                 if (content.is(':visible')) {
                     icon.css('transform', 'rotate(0deg)');
                 } else {
@@ -1117,7 +1061,6 @@ window.cleanupAllPages = function() {
         $(document).ready(function() {
             console.log('✓ Dashboard content loaded and initialized');
             
-            // Handle task card clicks using event delegation
             $(document).on('click', '.task-item', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -1126,11 +1069,9 @@ window.cleanupAllPages = function() {
                 console.log('✓ Task card clicked, Transaction ID:', transactionId);
                 
                 if (transactionId) {
-                    // Store the transaction ID in sessionStorage
                     sessionStorage.setItem('highlightAppointment', transactionId);
                     console.log('✓ Stored in sessionStorage:', transactionId);
                     
-                    // Load the appointments page
                     if (typeof loadContent === 'function') {
                         loadContent('personnel_manage_appointments.php');
                     } else {
@@ -1142,7 +1083,6 @@ window.cleanupAllPages = function() {
                 }
             });
             
-            // Check for notifications
             if (typeof checkNewNotifications === 'function') {
                 checkNewNotifications();
                 setInterval(checkNewNotifications, 30000);
@@ -1154,16 +1094,13 @@ window.cleanupAllPages = function() {
 <body id="body-pd">
     
 
-    <!-- Content Area -->
     <div class="content-area" id="content-area">
         <div class="container-fluid">
-            <!-- Welcome Card -->
             <div class="welcome-card">
                 <h2><i class='bx bx-wave'></i> Welcome Back, <?php echo htmlspecialchars($user_name); ?>!</h2>
                 <p>You're logged in as LGU Personnel. Manage your appointments and availability from your dashboard.</p>
             </div>
 
-            <!-- My Tasks Today Section -->
             <div class="tasks-section">
             <div class="tasks-header" style="cursor: pointer;" onclick="toggleTasksSection()">
                 <h3>
@@ -1177,7 +1114,6 @@ window.cleanupAllPages = function() {
                     </span>
                 </div>
                 
-                <!-- Quick Stats -->
                 <div id="tasks-collapsible-content" style="display: none;">
                     <div class="task-stats">
                         <div class="stat-card">
@@ -1190,8 +1126,6 @@ window.cleanupAllPages = function() {
                         </div>
                     </div>
                 
-                
-                <!-- Today's Appointments -->
                 <div class="tasks-list">
                     <?php if (!empty($today_tasks)): ?>
                         <?php foreach ($today_tasks as $task): ?>
@@ -1236,12 +1170,9 @@ window.cleanupAllPages = function() {
             </div>
             </div>
 
-            <!-- Section Title -->
             <h3 class="section-title">Quick Actions</h3>
 
-    <!-- Feature Cards -->
     <div class="row">
-        <!-- Dashboard Analytics -->
         <div class="col-lg-4 col-md-6 mb-4 feature-col">
             <div class="feature-card" onclick="loadContent('personnel_analytics.php');">
                 <div class="feature-icon icon-success">
@@ -1252,7 +1183,6 @@ window.cleanupAllPages = function() {
             </div>
         </div>
 
-            <!-- View Appointments -->
             <div class="col-lg-4 col-md-6 mb-4 feature-col">
                 <div class="feature-card" onclick="loadContent('personnel_manage_appointments.php');">
                     <div class="feature-icon icon-danger">
@@ -1263,7 +1193,6 @@ window.cleanupAllPages = function() {
                 </div>
             </div>
 
-            <!-- Appointments Status -->
             <div class="col-lg-4 col-md-6 mb-4 feature-col">
                 <div class="feature-card" onclick="loadContent('personnel_view_appointments_status.php');">
                     <div class="feature-icon icon-primary">
@@ -1274,7 +1203,6 @@ window.cleanupAllPages = function() {
                 </div>
             </div>
 
-            <!-- Create Available Dates -->
             <div class="col-lg-4 col-md-6 mb-4 feature-col">
                 <div class="feature-card" onclick="loadContent('create_available_dates.php');">
                     <div class="feature-icon icon-success">
@@ -1285,7 +1213,6 @@ window.cleanupAllPages = function() {
                 </div>
             </div>
 
-            <!-- View Feedback -->
             <div class="col-lg-4 col-md-6 mb-4 feature-col">
                 <div class="feature-card" onclick="loadContent('personnel_view_feedbacks.php');">
                     <div class="feature-icon icon-warning">
@@ -1296,7 +1223,6 @@ window.cleanupAllPages = function() {
                 </div>
             </div>
 
-            <!-- Logout -->
             <div class="col-lg-4 col-md-6 mb-4 feature-col">
                 <div class="feature-card" data-toggle="modal" data-target="#logoutModal">
                     <div class="feature-icon icon-secondary">
@@ -1310,7 +1236,6 @@ window.cleanupAllPages = function() {
         </div>
     </div>
 
-    <!-- Logout Modal -->
     <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="logoutModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">

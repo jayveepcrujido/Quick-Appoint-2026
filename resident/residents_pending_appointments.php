@@ -8,7 +8,6 @@ if (!isset($_SESSION['auth_id']) || $_SESSION['role'] !== 'Resident') {
 include '../conn.php';
 $authId = $_SESSION['auth_id'];
 
-// ✅ Resolve resident_id from auth_id
 $stmt = $pdo->prepare("SELECT id FROM residents WHERE auth_id = ? LIMIT 1");
 $stmt->execute([$authId]);
 $resident = $stmt->fetch(PDO::FETCH_ASSOC);
