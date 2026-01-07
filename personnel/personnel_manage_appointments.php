@@ -20,7 +20,7 @@ $query = "
     SELECT 
         a.id, a.transaction_id, a.status, a.reason, a.scheduled_for, a.requested_at, a.available_date_id,
         r.first_name, r.middle_name, r.last_name, r.address, r.birthday, r.age, r.sex, r.civil_status,
-        r.id_front_image, r.selfie_with_id_image,
+        r.id_front_image, r.selfie_with_id_image, r.phone_number,
         au.email,
         ds.service_name
     FROM appointments a
@@ -294,13 +294,13 @@ $(document).ready(function () {
                 
                 $('html, body').animate({
                     scrollTop: targetRow.offset().top - 150
+                    scrollTop: targetRow.offset().top - 150
                 }, 800, function() {
                     targetRow.addClass('table-success');
                     setTimeout(function() {
                         targetRow.removeClass('table-warning table-success');
                     }, 3000);
                 });
-                
             } else {
                 console.log('Appointment not found in current table');
             }
@@ -449,6 +449,7 @@ $(document).ready(function () {
                     const apptId = $('#reschApptId').val();
                     const row = $('#row_' + apptId);
                     const newTime = $('#reschSummaryText').text();
+                    const newTime = $('#reschSummaryText').text();
                     
                     const parts = newTime.split(' at ');
                     const datePart = parts[0];
@@ -475,7 +476,10 @@ $(document).ready(function () {
         const id = $(this).data('id');
         const isDelete = $(this).hasClass('btn-delete-action');
         const url = isDelete ? 'delete_appointment.php' : 'complete_appointment.php';
-        const msg = isDelete ? 'Delete this appointment?' : 'Mark as completed?';
+        const actionName = isDelete ? 'Delete' : 'Complete';
+        const msg = isDelete ? 'Delete this appointment?' : 'Mark this appointment as completed?';
+        const btn = $(this);
+        const originalHtml = btn.html();
         
         if(confirm(msg)) {
             $.post(url, { appointment_id: id }, function(res) {

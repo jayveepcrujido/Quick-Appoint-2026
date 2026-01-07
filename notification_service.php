@@ -14,6 +14,72 @@ class NotificationService {
     }
     
     /**
+     * Send Appointment COMPLETION Notification (Email + SMS) - NEW METHOD!
+     * 
+     * @param array $data Completion data
+     * @return array Results
+     */
+    public function sendAppointmentCompletion($data) {
+        $results = [
+            'email' => false,
+            'sms' => false,
+            'errors' => []
+        ];
+        
+        // Prepare completion details for email
+        $emailDetails = [
+            'service_name' => $data['service_name'] ?? 'Service',
+            'transaction_id' => $data['transaction_id'] ?? 'N/A',
+            'department_name' => $data['department_name'] ?? 'LGU Office',
+            'completed_date' => $data['completed_date'] ?? date('M j, Y'),
+            'completed_time' => $data['completed_time'] ?? date('h:i A')
+        ];
+        
+        // Send Email (using the new function we'll add below)
+        if ($this->emailEnabled && !empty($data['email'])) {
+            try {
+                $results['email'] = sendAppointmentCompletionEmail(
+                    $data['email'],
+                    $data['name'],
+                    $emailDetails
+                );
+                
+                if (!$results['email']) {
+                    $results['errors'][] = "Email: Failed to send completion notification";
+                }
+            } catch (Exception $e) {
+                $results['errors'][] = "Email Error: " . $e->getMessage();
+                error_log("Completion email failed: " . $e->getMessage());
+            }
+        }
+        
+        // Send SMS
+        if ($this->smsEnabled && !empty($data['phone'])) {
+            try {
+                $smsDetails = [
+                    'service_name' => $emailDetails['service_name'],
+                    'transaction_id' => $emailDetails['transaction_id']
+                ];
+                
+                $results['sms'] = $this->smsService->sendAppointmentCompletion(
+                    $data['phone'],
+                    $data['name'],
+                    $smsDetails
+                );
+                
+                if (!$results['sms']) {
+                    $results['errors'][] = "SMS: Failed to send completion notification";
+                }
+            } catch (Exception $e) {
+                $results['errors'][] = "SMS Error: " . $e->getMessage();
+                error_log("Completion SMS failed: " . $e->getMessage());
+            }
+        }
+        
+        return $results;
+    }
+    
+    /**
      * Send Password Reset (Email + SMS with OTP)
      * 
      * @param string $email Recipient email
@@ -426,27 +492,6 @@ class NotificationService {
         }
         
         return $results;
-    }
-    
-    /**
-     * Send custom SMS message
-     * 
-     * @param string $phone Phone number
-     * @param string $message Message content
-     * @return bool Success status
-     */
-    private function sendCustomSMS($phone, $message) {
-        // Access the private sendSMS method through reflection
-        // Or use testConnection as a workaround
-        try {
-            $reflection = new ReflectionClass($this->smsService);
-            $method = $reflection->getMethod('sendSMS');
-            $method->setAccessible(true);
-            return $method->invoke($this->smsService, $phone, $message);
-        } catch (Exception $e) {
-            error_log("Custom SMS Error: " . $e->getMessage());
-            return false;
-        }
     }
     
     /**
