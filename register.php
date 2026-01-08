@@ -1,8 +1,6 @@
 <?php
 session_start();
 include 'conn.php';
-require_once __DIR__ . '/vendor/autoload.php';
-use thiagoalessio\TesseractOCR\TesseractOCR;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['validate_only'])) {
   if (!isset($_SESSION['otp_verified']) || $_SESSION['otp_verified'] !== true) {

@@ -1,7 +1,8 @@
 <?php
 
 class IDValidator {
-    private $tesseractPath = 'C:\\Program Files\\Tesseract-OCR\\tesseract.exe';
+    private $ocrApiKey = 'K89335427588957';
+    private $ocrApiUrl = 'https://api.ocr.space/parse/image';
     
     private $idKeywords = [
         'Integrated Bar of the Philippines' => [
@@ -76,31 +77,69 @@ class IDValidator {
     
     public function extractTextFromImage($imagePath) {
         try {
-            if (!file_exists($this->tesseractPath)) {
-                throw new Exception('Tesseract OCR not found at: ' . $this->tesseractPath);
-            }
-            
             if (!file_exists($imagePath)) {
                 throw new Exception('Image file not found: ' . $imagePath);
             }
             
-            $outputFile = sys_get_temp_dir() . '/' . uniqid('ocr_');
-            
-            $escapedImagePath = escapeshellarg($imagePath);
-            $escapedOutputFile = escapeshellarg($outputFile);
-            $escapedTesseract = escapeshellarg($this->tesseractPath);
-            
-            $command = "$escapedTesseract $escapedImagePath $escapedOutputFile";
-            exec($command . ' 2>&1', $output, $returnCode);
-            
-            $textFile = $outputFile . '.txt';
-            if (file_exists($textFile)) {
-                $extractedText = file_get_contents($textFile);
-                unlink($textFile);
-                return $extractedText;
+            // Check if cURL is available
+            if (!function_exists('curl_init')) {
+                throw new Exception('cURL is not available. Please enable cURL in your PHP configuration.');
             }
             
-            throw new Exception('Failed to extract text from image. Tesseract output: ' . implode("\n", $output));
+            $ch = curl_init();
+            
+            curl_setopt($ch, CURLOPT_URL, $this->ocrApiUrl);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            
+            // Prepare the file for upload - FIX: Use string values for boolean parameters
+            $postFields = array(
+                'apikey' => $this->ocrApiKey,
+                'file' => new CURLFile($imagePath),
+                'language' => 'eng',
+                'isOverlayRequired' => 'false',  // Changed from false to 'false'
+                'detectOrientation' => 'true',   // Changed from true to 'true'
+                'scale' => 'true',               // Changed from true to 'true'
+                'OCREngine' => '2'
+            );
+            
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
+            
+            $response = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            
+            if (curl_errno($ch)) {
+                $error = curl_error($ch);
+                curl_close($ch);
+                throw new Exception('cURL Error: ' . $error);
+            }
+            
+            curl_close($ch);
+            
+            if ($httpCode !== 200) {
+                throw new Exception('OCR API returned HTTP code: ' . $httpCode);
+            }
+            
+            $result = json_decode($response, true);
+            
+            if (!$result) {
+                throw new Exception('Failed to parse OCR API response');
+            }
+            
+            if (isset($result['IsErroredOnProcessing']) && $result['IsErroredOnProcessing'] === true) {
+                $errorMessage = isset($result['ErrorMessage']) ? $result['ErrorMessage'][0] : 'Unknown error';
+                throw new Exception('OCR Processing Error: ' . $errorMessage);
+            }
+            
+            if (!isset($result['ParsedResults']) || empty($result['ParsedResults'])) {
+                throw new Exception('No text could be extracted from the image');
+            }
+            
+            $extractedText = $result['ParsedResults'][0]['ParsedText'];
+            
+            return $extractedText;
+            
         } catch (Exception $e) {
             throw new Exception('OCR Error: ' . $e->getMessage());
         }
@@ -236,6 +275,7 @@ if (basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME'])) {
         $validator = new IDValidator();
         $validationResult = $validator->validateID($temp_id_path, $id_type);
         
+        // Clean up temporary files
         if (file_exists($temp_id_path)) unlink($temp_id_path);
         if (file_exists($temp_selfie_path)) unlink($temp_selfie_path);
         
