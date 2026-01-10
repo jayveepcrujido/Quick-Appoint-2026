@@ -22,7 +22,11 @@ class IDValidator {
             'optional' => ['land transportation', 'restriction', 'dl no', 'non-professional','professional']
         ],
         'PH National ID' => [
+<<<<<<< Updated upstream
             'required' => ['republika ng pilipinas','pambansang pagkakakilanlan','philippine identification', 'philsys', 'national id'],
+=======
+            'required' => ['philippine identification', 'philsys', 'national id', 'pambansang pagkakakilanlan'],
+>>>>>>> Stashed changes
             'optional' => ['psa', 'republic', 'philippines']
         ],
         'PhilHealth' => [
@@ -81,7 +85,6 @@ class IDValidator {
                 throw new Exception('Image file not found: ' . $imagePath);
             }
             
-            // Check if cURL is available
             if (!function_exists('curl_init')) {
                 throw new Exception('cURL is not available. Please enable cURL in your PHP configuration.');
             }
@@ -93,14 +96,13 @@ class IDValidator {
             curl_setopt($ch, CURLOPT_POST, true);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
             
-            // Prepare the file for upload - FIX: Use string values for boolean parameters
             $postFields = array(
                 'apikey' => $this->ocrApiKey,
                 'file' => new CURLFile($imagePath),
                 'language' => 'eng',
-                'isOverlayRequired' => 'false',  // Changed from false to 'false'
-                'detectOrientation' => 'true',   // Changed from true to 'true'
-                'scale' => 'true',               // Changed from true to 'true'
+                'isOverlayRequired' => 'false',
+                'detectOrientation' => 'true',
+                'scale' => 'true',
                 'OCREngine' => '2'
             );
             
@@ -145,6 +147,423 @@ class IDValidator {
         }
     }
     
+    public function extractStructuredData($extractedText, $idType) {
+        $data = [
+            'first_name' => '',
+            'middle_name' => '',
+            'last_name' => '',
+            'birthday' => '',
+            'address' => '',
+            'sex' => ''
+        ];
+        
+        $lines = explode("\n", $extractedText);
+        
+        switch ($idType) {
+            case "PH Driver's License":
+                $data = $this->extractDriversLicenseData($lines, $extractedText);
+                break;
+            case 'PH National ID':
+                $data = $this->extractNationalIDData($lines, $extractedText);
+                break;
+            case 'Philippine Passport':
+                $data = $this->extractPassportData($lines, $extractedText);
+                break;
+            case "Voter's ID":
+                $data = $this->extractVotersIDData($lines, $extractedText);
+                break;
+            case 'Social Security System':
+                $data = $this->extractSSSData($lines, $extractedText);
+                break;
+            case 'PhilHealth':
+                $data = $this->extractPhilHealthData($lines, $extractedText);
+                break;
+            case 'Postal ID':
+                $data = $this->extractPostalIDData($lines, $extractedText);
+                break;
+            case 'Unified Multi-purpose ID':
+                $data = $this->extractUMIDData($lines, $extractedText);
+                break;
+            default:
+                $data = $this->extractGenericData($lines, $extractedText);
+                break;
+        }
+        
+        return $data;
+    }
+    
+    private function extractDriversLicenseData($lines, $text) {
+        $data = [
+            'first_name' => '',
+            'middle_name' => '',
+            'last_name' => '',
+            'birthday' => '',
+            'address' => '',
+            'sex' => ''
+        ];
+        
+        // Extract name (format: LASTNAME, FIRSTNAME MIDDLENAME)
+        foreach ($lines as $line) {
+            $line = trim($line);
+            if (preg_match('/^([A-Z\s]+),\s*([A-Z\s]+?)(?:\s+([A-Z\s]+))?$/i', $line, $matches)) {
+                $data['last_name'] = ucwords(strtolower(trim($matches[1])));
+                $data['first_name'] = ucwords(strtolower(trim($matches[2])));
+                if (isset($matches[3]) && !empty(trim($matches[3]))) {
+                    $data['middle_name'] = ucwords(strtolower(trim($matches[3])));
+                }
+                break;
+            }
+        }
+        
+        // If not found, try alternative pattern
+        if (empty($data['first_name'])) {
+            if (preg_match('/LAST\s*NAME[:\s]*([A-Z\s]+)/i', $text, $matches)) {
+                $data['last_name'] = ucwords(strtolower(trim($matches[1])));
+            }
+            if (preg_match('/FIRST\s*NAME[:\s]*([A-Z\s]+)/i', $text, $matches)) {
+                $data['first_name'] = ucwords(strtolower(trim($matches[1])));
+            }
+            if (preg_match('/MIDDLE\s*NAME[:\s]*([A-Z\s]+)/i', $text, $matches)) {
+                $data['middle_name'] = ucwords(strtolower(trim($matches[1])));
+            }
+        }
+        
+        // Extract birthday
+        if (preg_match('/\b(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})\b/', $text, $matches)) {
+            $data['birthday'] = $matches[3] . '-' . str_pad($matches[1], 2, '0', STR_PAD_LEFT) . '-' . str_pad($matches[2], 2, '0', STR_PAD_LEFT);
+        } elseif (preg_match('/\b(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})\b/', $text, $matches)) {
+            $data['birthday'] = $matches[1] . '-' . str_pad($matches[2], 2, '0', STR_PAD_LEFT) . '-' . str_pad($matches[3], 2, '0', STR_PAD_LEFT);
+        }
+        
+        // Extract sex
+        if (preg_match('/\b(SEX|GENDER)[:\s]*(M|F|MALE|FEMALE)\b/i', $text, $matches)) {
+            $sex = strtoupper($matches[2]);
+            $data['sex'] = ($sex == 'M' || $sex == 'MALE') ? 'Male' : 'Female';
+        }
+        
+        // Extract address
+        if (preg_match('/ADDRESS[:\s]*(.+?)(?=\n|NATIONALITY|SEX|$)/i', $text, $matches)) {
+            $data['address'] = trim($matches[1]);
+        }
+        
+        return $data;
+    }
+    
+    private function extractNationalIDData($lines, $text) {
+        $data = [
+            'first_name' => '',
+            'middle_name' => '',
+            'last_name' => '',
+            'birthday' => '',
+            'address' => '',
+            'sex' => ''
+        ];
+        
+        // Extract name fields
+        if (preg_match('/(SURNAME|LAST\s*NAME|APELYIDO)[:\s]*([A-Z\s]+?)(?=\n|GIVEN|FIRST)/i', $text, $matches)) {
+            $data['last_name'] = ucwords(strtolower(trim($matches[2])));
+        }
+        if (preg_match('/(GIVEN\s*NAME|FIRST\s*NAME|PANGALAN)[:\s]*([A-Z\s]+?)(?=\n|MIDDLE|DATE)/i', $text, $matches)) {
+            $data['first_name'] = ucwords(strtolower(trim($matches[2])));
+        }
+        if (preg_match('/(MIDDLE\s*NAME|GITNANG\s*PANGALAN)[:\s]*([A-Z\s]+?)(?=\n|DATE|SEX)/i', $text, $matches)) {
+            $data['middle_name'] = ucwords(strtolower(trim($matches[2])));
+        }
+        
+        // Extract birthday
+        if (preg_match('/(DATE\s*OF\s*BIRTH|BIRTH\s*DATE|PETSA\s*NG\s*KAPANGANAKAN)[:\s]*(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/i', $text, $matches)) {
+            $data['birthday'] = $matches[4] . '-' . str_pad($matches[2], 2, '0', STR_PAD_LEFT) . '-' . str_pad($matches[3], 2, '0', STR_PAD_LEFT);
+        } elseif (preg_match('/\b(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})\b/', $text, $matches)) {
+            $data['birthday'] = $matches[3] . '-' . str_pad($matches[1], 2, '0', STR_PAD_LEFT) . '-' . str_pad($matches[2], 2, '0', STR_PAD_LEFT);
+        }
+        
+        // Extract sex
+        if (preg_match('/(SEX|GENDER|KASARIAN)[:\s]*(M|F|MALE|FEMALE|LALAKI|BABAE)/i', $text, $matches)) {
+            $sex = strtoupper($matches[2]);
+            $data['sex'] = ($sex == 'M' || $sex == 'MALE' || $sex == 'LALAKI') ? 'Male' : 'Female';
+        }
+        
+        // Extract address
+        if (preg_match('/(PERMANENT\s*ADDRESS|ADDRESS|TIRAHAN)[:\s]*(.+?)(?=\n|PCN|$)/i', $text, $matches)) {
+            $data['address'] = trim($matches[2]);
+        }
+        
+        return $data;
+    }
+    
+    private function extractPassportData($lines, $text) {
+        $data = [
+            'first_name' => '',
+            'middle_name' => '',
+            'last_name' => '',
+            'birthday' => '',
+            'address' => '',
+            'sex' => ''
+        ];
+        
+        // Extract name fields
+        if (preg_match('/(SURNAME|LAST\s*NAME)[:\s]*([A-Z\s]+?)(?=\n|GIVEN)/i', $text, $matches)) {
+            $data['last_name'] = ucwords(strtolower(trim($matches[2])));
+        }
+        if (preg_match('/(GIVEN\s*NAME|FIRST\s*NAME)[:\s]*([A-Z\s]+?)(?=\n|MIDDLE|DATE)/i', $text, $matches)) {
+            $data['first_name'] = ucwords(strtolower(trim($matches[2])));
+        }
+        if (preg_match('/(MIDDLE\s*NAME)[:\s]*([A-Z\s]+?)(?=\n|DATE|SEX)/i', $text, $matches)) {
+            $data['middle_name'] = ucwords(strtolower(trim($matches[2])));
+        }
+        
+        // Extract birthday
+        if (preg_match('/(DATE\s*OF\s*BIRTH)[:\s]*(\d{1,2})\s*(JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)[A-Z]*\s*(\d{4})/i', $text, $matches)) {
+            $months = ['JAN'=>'01','FEB'=>'02','MAR'=>'03','APR'=>'04','MAY'=>'05','JUN'=>'06','JUL'=>'07','AUG'=>'08','SEP'=>'09','OCT'=>'10','NOV'=>'11','DEC'=>'12'];
+            $month = $months[strtoupper(substr($matches[3], 0, 3))];
+            $data['birthday'] = $matches[4] . '-' . $month . '-' . str_pad($matches[2], 2, '0', STR_PAD_LEFT);
+        } elseif (preg_match('/\b(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})\b/', $text, $matches)) {
+            $data['birthday'] = $matches[3] . '-' . str_pad($matches[1], 2, '0', STR_PAD_LEFT) . '-' . str_pad($matches[2], 2, '0', STR_PAD_LEFT);
+        }
+        
+        // Extract sex
+        if (preg_match('/(SEX|GENDER)[:\s]*(M|F|MALE|FEMALE)/i', $text, $matches)) {
+            $sex = strtoupper($matches[2]);
+            $data['sex'] = ($sex == 'M' || $sex == 'MALE') ? 'Male' : 'Female';
+        }
+        
+        return $data;
+    }
+    
+    private function extractVotersIDData($lines, $text) {
+        $data = [
+            'first_name' => '',
+            'middle_name' => '',
+            'last_name' => '',
+            'birthday' => '',
+            'address' => '',
+            'sex' => ''
+        ];
+        
+        // Voter's ID format: LASTNAME, FIRSTNAME MIDDLENAME
+        foreach ($lines as $line) {
+            if (preg_match('/^([A-Z\s]+),\s*([A-Z\s]+?)(?:\s+([A-Z\s]+))?$/i', $line, $matches)) {
+                $data['last_name'] = ucwords(strtolower(trim($matches[1])));
+                $data['first_name'] = ucwords(strtolower(trim($matches[2])));
+                if (isset($matches[3]) && !empty(trim($matches[3]))) {
+                    $data['middle_name'] = ucwords(strtolower(trim($matches[3])));
+                }
+                break;
+            }
+        }
+        
+        // Extract birthday
+        if (preg_match('/\b(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})\b/', $text, $matches)) {
+            $data['birthday'] = $matches[3] . '-' . str_pad($matches[1], 2, '0', STR_PAD_LEFT) . '-' . str_pad($matches[2], 2, '0', STR_PAD_LEFT);
+        }
+        
+        // Extract sex
+        if (preg_match('/\b(M|F|MALE|FEMALE)\b/i', $text, $matches)) {
+            $sex = strtoupper($matches[1]);
+            $data['sex'] = ($sex == 'M' || $sex == 'MALE') ? 'Male' : 'Female';
+        }
+        
+        // Extract address
+        if (preg_match('/ADDRESS[:\s]*(.+?)(?=\n|PRECINCT|$)/i', $text, $matches)) {
+            $data['address'] = trim($matches[1]);
+        }
+        
+        return $data;
+    }
+    
+    private function extractSSSData($lines, $text) {
+        $data = [
+            'first_name' => '',
+            'middle_name' => '',
+            'last_name' => '',
+            'birthday' => '',
+            'address' => '',
+            'sex' => ''
+        ];
+        
+        // Extract name
+        foreach ($lines as $line) {
+            if (preg_match('/^([A-Z\s]+),\s*([A-Z\s]+?)(?:\s+([A-Z\s]+))?$/i', $line, $matches)) {
+                $data['last_name'] = ucwords(strtolower(trim($matches[1])));
+                $data['first_name'] = ucwords(strtolower(trim($matches[2])));
+                if (isset($matches[3]) && !empty(trim($matches[3]))) {
+                    $data['middle_name'] = ucwords(strtolower(trim($matches[3])));
+                }
+                break;
+            }
+        }
+        
+        // Extract birthday
+        if (preg_match('/\b(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})\b/', $text, $matches)) {
+            $data['birthday'] = $matches[3] . '-' . str_pad($matches[1], 2, '0', STR_PAD_LEFT) . '-' . str_pad($matches[2], 2, '0', STR_PAD_LEFT);
+        }
+        
+        // Extract sex
+        if (preg_match('/\b(SEX|GENDER)[:\s]*(M|F|MALE|FEMALE)\b/i', $text, $matches)) {
+            $sex = strtoupper($matches[2]);
+            $data['sex'] = ($sex == 'M' || $sex == 'MALE') ? 'Male' : 'Female';
+        }
+        
+        return $data;
+    }
+    
+    private function extractPhilHealthData($lines, $text) {
+        $data = [
+            'first_name' => '',
+            'middle_name' => '',
+            'last_name' => '',
+            'birthday' => '',
+            'address' => '',
+            'sex' => ''
+        ];
+        
+        // Extract name
+        foreach ($lines as $line) {
+            if (preg_match('/^([A-Z\s]+),\s*([A-Z\s]+?)(?:\s+([A-Z\s]+))?$/i', $line, $matches)) {
+                $data['last_name'] = ucwords(strtolower(trim($matches[1])));
+                $data['first_name'] = ucwords(strtolower(trim($matches[2])));
+                if (isset($matches[3]) && !empty(trim($matches[3]))) {
+                    $data['middle_name'] = ucwords(strtolower(trim($matches[3])));
+                }
+                break;
+            }
+        }
+        
+        // Extract birthday
+        if (preg_match('/\b(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})\b/', $text, $matches)) {
+            $data['birthday'] = $matches[3] . '-' . str_pad($matches[1], 2, '0', STR_PAD_LEFT) . '-' . str_pad($matches[2], 2, '0', STR_PAD_LEFT);
+        }
+        
+        // Extract sex
+        if (preg_match('/\b(SEX|GENDER)[:\s]*(M|F|MALE|FEMALE)\b/i', $text, $matches)) {
+            $sex = strtoupper($matches[2]);
+            $data['sex'] = ($sex == 'M' || $sex == 'MALE') ? 'Male' : 'Female';
+        }
+        
+        return $data;
+    }
+    
+    private function extractPostalIDData($lines, $text) {
+        $data = [
+            'first_name' => '',
+            'middle_name' => '',
+            'last_name' => '',
+            'birthday' => '',
+            'address' => '',
+            'sex' => ''
+        ];
+        
+        // Extract name
+        if (preg_match('/NAME[:\s]*([A-Z\s]+?)(?=\n|ADDRESS)/i', $text, $matches)) {
+            $fullName = trim($matches[1]);
+            $nameParts = explode(' ', $fullName);
+            if (count($nameParts) >= 2) {
+                $data['first_name'] = ucwords(strtolower($nameParts[0]));
+                $data['last_name'] = ucwords(strtolower($nameParts[count($nameParts) - 1]));
+                if (count($nameParts) > 2) {
+                    $data['middle_name'] = ucwords(strtolower($nameParts[1]));
+                }
+            }
+        }
+        
+        // Extract birthday
+        if (preg_match('/\b(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})\b/', $text, $matches)) {
+            $data['birthday'] = $matches[3] . '-' . str_pad($matches[1], 2, '0', STR_PAD_LEFT) . '-' . str_pad($matches[2], 2, '0', STR_PAD_LEFT);
+        }
+        
+        // Extract sex
+        if (preg_match('/\b(SEX|GENDER)[:\s]*(M|F|MALE|FEMALE)\b/i', $text, $matches)) {
+            $sex = strtoupper($matches[2]);
+            $data['sex'] = ($sex == 'M' || $sex == 'MALE') ? 'Male' : 'Female';
+        }
+        
+        // Extract address
+        if (preg_match('/ADDRESS[:\s]*(.+?)(?=\n|$)/i', $text, $matches)) {
+            $data['address'] = trim($matches[1]);
+        }
+        
+        return $data;
+    }
+    
+    private function extractUMIDData($lines, $text) {
+        $data = [
+            'first_name' => '',
+            'middle_name' => '',
+            'last_name' => '',
+            'birthday' => '',
+            'address' => '',
+            'sex' => ''
+        ];
+        
+        // Extract name
+        foreach ($lines as $line) {
+            if (preg_match('/^([A-Z\s]+),\s*([A-Z\s]+?)(?:\s+([A-Z\s]+))?$/i', $line, $matches)) {
+                $data['last_name'] = ucwords(strtolower(trim($matches[1])));
+                $data['first_name'] = ucwords(strtolower(trim($matches[2])));
+                if (isset($matches[3]) && !empty(trim($matches[3]))) {
+                    $data['middle_name'] = ucwords(strtolower(trim($matches[3])));
+                }
+                break;
+            }
+        }
+        
+        // Extract birthday
+        if (preg_match('/\b(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})\b/', $text, $matches)) {
+            $data['birthday'] = $matches[3] . '-' . str_pad($matches[1], 2, '0', STR_PAD_LEFT) . '-' . str_pad($matches[2], 2, '0', STR_PAD_LEFT);
+        }
+        
+        // Extract sex
+        if (preg_match('/\b(SEX|GENDER)[:\s]*(M|F|MALE|FEMALE)\b/i', $text, $matches)) {
+            $sex = strtoupper($matches[2]);
+            $data['sex'] = ($sex == 'M' || $sex == 'MALE') ? 'Male' : 'Female';
+        }
+        
+        return $data;
+    }
+    
+    private function extractGenericData($lines, $text) {
+        $data = [
+            'first_name' => '',
+            'middle_name' => '',
+            'last_name' => '',
+            'birthday' => '',
+            'address' => '',
+            'sex' => ''
+        ];
+        
+        // Try to extract name in LASTNAME, FIRSTNAME MIDDLENAME format
+        foreach ($lines as $line) {
+            if (preg_match('/^([A-Z\s]{2,}),\s*([A-Z\s]{2,})(?:\s+([A-Z\s]+))?$/i', $line, $matches)) {
+                $data['last_name'] = ucwords(strtolower(trim($matches[1])));
+                $data['first_name'] = ucwords(strtolower(trim($matches[2])));
+                if (isset($matches[3]) && !empty(trim($matches[3]))) {
+                    $data['middle_name'] = ucwords(strtolower(trim($matches[3])));
+                }
+                break;
+            }
+        }
+        
+        // Try to extract birthday
+        if (preg_match('/\b(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})\b/', $text, $matches)) {
+            $data['birthday'] = $matches[3] . '-' . str_pad($matches[1], 2, '0', STR_PAD_LEFT) . '-' . str_pad($matches[2], 2, '0', STR_PAD_LEFT);
+        } elseif (preg_match('/\b(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})\b/', $text, $matches)) {
+            $data['birthday'] = $matches[1] . '-' . str_pad($matches[2], 2, '0', STR_PAD_LEFT) . '-' . str_pad($matches[3], 2, '0', STR_PAD_LEFT);
+        }
+        
+        // Try to extract sex
+        if (preg_match('/\b(M|F|MALE|FEMALE)\b/i', $text, $matches)) {
+            $sex = strtoupper($matches[1]);
+            $data['sex'] = ($sex == 'M' || $sex == 'MALE') ? 'Male' : 'Female';
+        }
+        
+        // Try to extract address
+        if (preg_match('/ADDRESS[:\s]*(.+?)(?=\n|$)/i', $text, $matches)) {
+            $data['address'] = trim($matches[1]);
+        }
+        
+        return $data;
+    }
+    
     public function validateID($imagePath, $selectedIDType) {
         try {
             $extractedText = $this->extractTextFromImage($imagePath);
@@ -154,10 +573,12 @@ class IDValidator {
                     'valid' => false,
                     'score' => 0,
                     'message' => 'No text could be extracted from the image. Please ensure the image is clear and readable.',
-                    'extracted_text' => ''
+                    'extracted_text' => '',
+                    'extracted_data' => []
                 ];
             }
             
+            $originalText = $extractedText;
             $extractedText = strtolower($extractedText);
             
             if (!isset($this->idKeywords[$selectedIDType])) {
@@ -165,7 +586,8 @@ class IDValidator {
                     'valid' => false,
                     'score' => 0,
                     'message' => 'Invalid ID type selected.',
-                    'extracted_text' => $extractedText
+                    'extracted_text' => $extractedText,
+                    'extracted_data' => []
                 ];
             }
             
@@ -198,6 +620,9 @@ class IDValidator {
             
             $isValid = $totalScore >= 50;
             
+            // Extract structured data
+            $structuredData = $this->extractStructuredData($originalText, $selectedIDType);
+            
             $message = $isValid 
                 ? "ID validation successful! Match score: " . round($totalScore, 2) . "%"
                 : "The uploaded ID doesn't match the selected ID type. Please upload the correct ID. Match score: " . round($totalScore, 2) . "%";
@@ -207,6 +632,7 @@ class IDValidator {
                 'score' => round($totalScore, 2),
                 'message' => $message,
                 'extracted_text' => $extractedText,
+                'extracted_data' => $structuredData,
                 'matched_keywords' => $matchedKeywords,
                 'required_matches' => $requiredMatches,
                 'total_required' => $totalRequired
@@ -216,7 +642,8 @@ class IDValidator {
                 'valid' => false,
                 'score' => 0,
                 'message' => $e->getMessage(),
-                'extracted_text' => ''
+                'extracted_text' => '',
+                'extracted_data' => []
             ];
         }
     }
@@ -246,7 +673,6 @@ if (basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME'])) {
         $id_front_file = $_FILES['id_front'];
         $selfie_file = $_FILES['selfie_with_id'];
         
-        // Validate file uploads
         if ($id_front_file['error'] !== UPLOAD_ERR_OK) {
             throw new Exception('Error uploading ID front image');
         }
@@ -275,7 +701,6 @@ if (basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME'])) {
         $validator = new IDValidator();
         $validationResult = $validator->validateID($temp_id_path, $id_type);
         
-        // Clean up temporary files
         if (file_exists($temp_id_path)) unlink($temp_id_path);
         if (file_exists($temp_selfie_path)) unlink($temp_selfie_path);
         
@@ -284,14 +709,16 @@ if (basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME'])) {
                 'success' => true,
                 'message' => $validationResult['message'],
                 'score' => $validationResult['score'],
-                'id_type' => $id_type
+                'id_type' => $id_type,
+                'extracted_data' => $validationResult['extracted_data']
             ]);
         } else {
             echo json_encode([
                 'success' => false,
                 'message' => $validationResult['message'],
                 'score' => $validationResult['score'],
-                'id_type' => $id_type
+                'id_type' => $id_type,
+                'extracted_data' => $validationResult['extracted_data']
             ]);
         }
         

@@ -1346,6 +1346,46 @@ let uploadedIDFront = null;
 let uploadedSelfie = null;
 let selectedIDType = null;
 
+// AUTO-FILL FUNCTION - UPDATED (Names Only)
+function autoFillFormFromIDData(extractedData) {
+  if (!extractedData) return;
+  
+  let filledFields = [];
+  
+  // Fill ONLY name fields
+  if (extractedData.first_name && extractedData.first_name.trim()) {
+    document.getElementById('first_name').value = extractedData.first_name.trim();
+    filledFields.push('First Name');
+  }
+  
+  if (extractedData.middle_name && extractedData.middle_name.trim()) {
+    document.getElementById('middle_name').value = extractedData.middle_name.trim();
+    filledFields.push('Middle Name');
+  }
+  
+  if (extractedData.last_name && extractedData.last_name.trim()) {
+    document.getElementById('last_name').value = extractedData.last_name.trim();
+    filledFields.push('Last Name');
+  }
+  
+  // Trigger validation
+  validateStep1();
+  
+  // Show a notification with filled fields
+  if (filledFields.length > 0) {
+    const message = '✅ Auto-filled fields from ID:\n\n' + 
+                   filledFields.join('\n') + 
+                   '\n\nPlease complete the remaining fields.';
+    setTimeout(() => {
+      alert(message);
+    }, 500);
+  } else {
+    setTimeout(() => {
+      alert('⚠️ Unable to extract name information from ID.\n\nPlease fill in the form manually.');
+    }, 500);
+  }
+}
+
 function updateProgressBar() {
   const steps = document.querySelectorAll('.step');
   const progressFill = document.getElementById('progressFill');
@@ -1957,7 +1997,7 @@ async function validateScannedID() {
   const validationResult = document.getElementById('scanValidationResult');
   validationResult.style.display = 'block';
   validationResult.className = 'validation-result loading';
-  validationResult.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Validating ID...';
+  validationResult.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Validating ID and extracting data...';
   
   const formData = new FormData();
   formData.append('id_front', capturedIDBlob, 'id_front.jpg');
@@ -1965,26 +2005,29 @@ async function validateScannedID() {
   formData.append('id_type', selectedIDType);
   
   try {
-  const response = await fetch('validate_id.php', {
-    method: 'POST',
-    body: formData
-  });
-  
-  const result = await response.json();
-  
-  if (result.success) {
-    validationResult.className = 'validation-result success';
-    validationResult.innerHTML = '<i class="fas fa-check-circle"></i> ' + result.message;
-    document.getElementById('submitScannedBtn').style.display = 'block';
-  } else {
-    validationResult.className = 'validation-result error';
-    validationResult.innerHTML = '<i class="fas fa-times-circle"></i> ' + result.message;
-    document.getElementById('retakeBtn').style.display = 'inline-flex';
-  }
+    const response = await fetch('validate_id.php', {
+      method: 'POST',
+      body: formData
+    });
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      validationResult.className = 'validation-result success';
+      validationResult.innerHTML = '<i class="fas fa-check-circle"></i> ' + result.message;
+      document.getElementById('submitScannedBtn').style.display = 'block';
+      
+      // Store extracted data
+      window.extractedIDData = result.extracted_data;
+    } else {
+      validationResult.className = 'validation-result error';
+      validationResult.innerHTML = '<i class="fas fa-times-circle"></i> ' + result.message;
+      document.getElementById('retakeBtn').style.display = 'inline-flex';
+    }
   } catch (error) {
-  console.error('Validation error:', error);
-  validationResult.className = 'validation-result error';
-  validationResult.innerHTML = '<i class="fas fa-times-circle"></i> Validation failed. Please try again.';
+    console.error('Validation error:', error);
+    validationResult.className = 'validation-result error';
+    validationResult.innerHTML = '<i class="fas fa-times-circle"></i> Validation failed. Please try again.';
   }
 }
 
@@ -2017,11 +2060,14 @@ document.getElementById('submitScannedBtn').addEventListener('click', function()
   
   validateStep1();
   
-  alert('✅ ID Successfully Validated!\n\nYou can now proceed with your registration.');
-});
-
-$('#scanIDModal').on('hidden.bs.modal', function() {
-  stopCamera();
+  // AUTO-FILL FORM DATA
+  setTimeout(() => {
+    if (window.extractedIDData) {
+      autoFillFormFromIDData(window.extractedIDData);
+    } else {
+      alert('✅ ID Successfully Validated!\n\nPlease fill in your personal information.');
+    }
+  }, 500);
 });
 
 function resetUploadSection() {
@@ -2077,14 +2123,14 @@ async function validateUploadedID() {
   const selfie = document.getElementById('modal_selfie_with_id').files[0];
   
   if (!idFront || !selfie) {
-  alert('Please upload both ID and selfie images!');
-  return;
+    alert('Please upload both ID and selfie images!');
+    return;
   }
   
   const validationResult = document.getElementById('uploadValidationResult');
   validationResult.style.display = 'block';
   validationResult.className = 'validation-result loading';
-  validationResult.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Validating ID...';
+  validationResult.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Validating ID and extracting data...';
   
   const validateBtn = document.getElementById('validateBtn');
   validateBtn.disabled = true;
@@ -2096,52 +2142,63 @@ async function validateUploadedID() {
   formData.append('id_type', selectedIDType);
   
   try {
-  const response = await fetch('validate_id.php', {
-    method: 'POST',
-    body: formData
-  });
-  
-  const result = await response.json();
-  
-  if (result.success) {
-    validationResult.className = 'validation-result success';
-    validationResult.innerHTML = '<i class="fas fa-check-circle"></i> ' + result.message;
+    const response = await fetch('validate_id.php', {
+      method: 'POST',
+      body: formData
+    });
     
-    uploadedIDFront = idFront;
-    uploadedSelfie = selfie;
-    isIDValidated = true;
+    const result = await response.json();
     
-    document.getElementById('hidden_valid_id_type').value = selectedIDType;
-    
-    const dataTransfer1 = new DataTransfer();
-    dataTransfer1.items.add(idFront);
-    document.getElementById('hidden_id_front').files = dataTransfer1.files;
-    
-    const dataTransfer2 = new DataTransfer();
-    dataTransfer2.items.add(selfie);
-    document.getElementById('hidden_selfie_with_id').files = dataTransfer2.files;
-    
-    document.getElementById('idStatus').className = 'id-status verified';
-    document.getElementById('idStatus').innerHTML = '<i class="fas fa-check-circle"></i> Valid ID Verified (' + selectedIDType + ')';
-    
-    setTimeout(function() {
-    $('#uploadPhotoModal').modal('hide');
-    validateStep1();
-    alert('✅ ID Successfully Validated!\n\nYou can now proceed with your registration.');
-    }, 1500);
-    
-  } else {
+    if (result.success) {
+      validationResult.className = 'validation-result success';
+      validationResult.innerHTML = '<i class="fas fa-check-circle"></i> ' + result.message;
+      
+      uploadedIDFront = idFront;
+      uploadedSelfie = selfie;
+      isIDValidated = true;
+      
+      document.getElementById('hidden_valid_id_type').value = selectedIDType;
+      
+      const dataTransfer1 = new DataTransfer();
+      dataTransfer1.items.add(idFront);
+      document.getElementById('hidden_id_front').files = dataTransfer1.files;
+      
+      const dataTransfer2 = new DataTransfer();
+      dataTransfer2.items.add(selfie);
+      document.getElementById('hidden_selfie_with_id').files = dataTransfer2.files;
+      
+      document.getElementById('idStatus').className = 'id-status verified';
+      document.getElementById('idStatus').innerHTML = '<i class="fas fa-check-circle"></i> Valid ID Verified (' + selectedIDType + ')';
+      
+      // Store extracted data
+      window.extractedIDData = result.extracted_data;
+      
+      setTimeout(function() {
+        $('#uploadPhotoModal').modal('hide');
+        validateStep1();
+        
+        // AUTO-FILL FORM DATA
+        setTimeout(() => {
+          if (window.extractedIDData) {
+            autoFillFormFromIDData(window.extractedIDData);
+          } else {
+            alert('✅ ID Successfully Validated!\n\nPlease fill in your personal information.');
+          }
+        }, 500);
+      }, 1500);
+      
+    } else {
+      validationResult.className = 'validation-result error';
+      validationResult.innerHTML = '<i class="fas fa-times-circle"></i> ' + result.message;
+      validateBtn.disabled = false;
+      validateBtn.innerHTML = '<i class="fas fa-check-circle"></i> Validate ID';
+    }
+  } catch (error) {
+    console.error('Validation error:', error);
     validationResult.className = 'validation-result error';
-    validationResult.innerHTML = '<i class="fas fa-times-circle"></i> ' + result.message;
+    validationResult.innerHTML = '<i class="fas fa-times-circle"></i> Validation failed. Please try again.';
     validateBtn.disabled = false;
     validateBtn.innerHTML = '<i class="fas fa-check-circle"></i> Validate ID';
-  }
-  } catch (error) {
-  console.error('Validation error:', error);
-  validationResult.className = 'validation-result error';
-  validationResult.innerHTML = '<i class="fas fa-times-circle"></i> Validation failed. Please try again.';
-  validateBtn.disabled = false;
-  validateBtn.innerHTML = '<i class="fas fa-check-circle"></i> Validate ID';
   }
 }
 
