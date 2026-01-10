@@ -879,6 +879,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['validate_only'])) {
     flex-direction: column;
     }
   }
+  .btn-switch-camera {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  width: 45px;
+  height: 45px;
+  background-color: rgba(39, 84, 138, 0.9);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  font-size: 18px;
+  cursor: pointer;
+  transition: 0.3s;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.btn-switch-camera:hover {
+  background-color: rgba(27, 59, 97, 0.9);
+  transform: rotate(180deg);
+}
+
+.btn-switch-camera:active {
+  transform: scale(0.95) rotate(180deg);
+}
   </style>
 </head>
 <body>
@@ -1219,9 +1244,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['validate_only'])) {
     </div>
     <div class="modal-body">
       <div id="cameraSection">
-      <div class="camera-container">
+      <div class="camera-container" style="position: relative;">
         <video id="cameraStream" autoplay playsinline></video>
         <canvas id="captureCanvas" style="display: none;"></canvas>
+        <button type="button" id="switchCameraBtn" class="btn-switch-camera" style="display: none;">
+          <i class="fas fa-sync-alt"></i>
+        </button>
       </div>
 
       <div class="capture-instructions" id="captureInstructions">
@@ -1789,35 +1817,88 @@ let capturedIDBlob = null;
 let capturedSelfieBlob = null;
 let currentCaptureStep = 'id';
 
+let currentFacingMode = 'environment'; // Track current camera
+
 async function startCamera() {
   try {
-  const stream = await navigator.mediaDevices.getUserMedia({ 
-    video: { facingMode: 'environment' },
-    audio: false 
-  });
-  const videoElement = document.getElementById('cameraStream');
-  videoElement.srcObject = stream;
-  cameraStream = stream;
-  
-  capturedIDBlob = null;
-  capturedSelfieBlob = null;
-  currentCaptureStep = 'id';
-  document.getElementById('captureInstructions').innerHTML = '<p><strong>Step 1:</strong> Take a photo of your Valid ID</p>';
-  document.getElementById('capturedIDPreview').style.display = 'none';
-  document.getElementById('capturedSelfiePreview').style.display = 'none';
-  document.getElementById('submitScannedBtn').style.display = 'none';
-  document.getElementById('scanValidationResult').style.display = 'none';
+    const stream = await navigator.mediaDevices.getUserMedia({ 
+      video: { facingMode: currentFacingMode },
+      audio: false 
+    });
+    const videoElement = document.getElementById('cameraStream');
+    videoElement.srcObject = stream;
+    cameraStream = stream;
+    
+    // Show switch button only on mobile/tablet devices
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const switchBtn = document.getElementById('switchCameraBtn');
+    
+    if (isMobile) {
+      // Check if device has multiple cameras
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoDevices = devices.filter(device => device.kind === 'videoinput');
+      
+      if (videoDevices.length > 1) {
+        switchBtn.style.display = 'block';
+      }
+    }
+    
+    capturedIDBlob = null;
+    capturedSelfieBlob = null;
+    currentCaptureStep = 'id';
+    document.getElementById('captureInstructions').innerHTML = '<p><strong>Step 1:</strong> Take a photo of your Valid ID</p>';
+    document.getElementById('capturedIDPreview').style.display = 'none';
+    document.getElementById('capturedSelfiePreview').style.display = 'none';
+    document.getElementById('submitScannedBtn').style.display = 'none';
+    document.getElementById('scanValidationResult').style.display = 'none';
   } catch (error) {
-  console.error('Error accessing camera:', error);
-  alert('Unable to access camera. Please ensure you have granted camera permissions.');
+    console.error('Error accessing camera:', error);
+    alert('Unable to access camera. Please ensure you have granted camera permissions.');
   }
 }
+
+// Switch camera button handler
+document.getElementById('switchCameraBtn').addEventListener('click', async function() {
+  // Toggle between front and back camera
+  currentFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
+  
+  // Stop current stream (but preserve captured images)
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(track => track.stop());
+    cameraStream = null;
+  }
+  
+  // Restart camera with new facing mode WITHOUT resetting captures
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ 
+      video: { facingMode: currentFacingMode },
+      audio: false 
+    });
+    const videoElement = document.getElementById('cameraStream');
+    videoElement.srcObject = stream;
+    cameraStream = stream;
+    
+    // Visual feedback
+    this.style.transform = 'rotate(360deg)';
+    setTimeout(() => {
+      this.style.transform = '';
+    }, 300);
+    
+  } catch (error) {
+    console.error('Error switching camera:', error);
+    alert('Unable to switch camera. Please try again.');
+    // If switching fails, try to restart with original facing mode
+    currentFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
+    await startCamera();
+  }
+});
 
 function stopCamera() {
   if (cameraStream) {
   cameraStream.getTracks().forEach(track => track.stop());
   cameraStream = null;
   }
+  document.getElementById('switchCameraBtn').style.display = 'none';
 }
 
 document.getElementById('captureBtn').addEventListener('click', function() {

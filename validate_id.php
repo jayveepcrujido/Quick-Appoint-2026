@@ -10,35 +10,35 @@ class IDValidator {
             'optional' => ['attorney', 'philippines', 'member']
         ],
         'Overseas Workers Welfare Administration' => [
-            'required' => ['owwa', 'overseas', 'worker'],
+            'required' => ['owwa', 'overseas', 'worker', 'ofw id card'],
             'optional' => ['welfare', 'administration', 'ofw']
         ],
         'Person with Disability' => [
             'required' => ['pwd', 'disability', 'person with disability'],
-            'optional' => ['ncda', 'republic', 'philippines']
+            'optional' => ['ncda', 'republic', 'philippines','type of disability']
         ],
         "PH Driver's License" => [
             'required' => ['driver', 'license', 'lto'],
-            'optional' => ['land transportation', 'restriction', 'dl no']
+            'optional' => ['land transportation', 'restriction', 'dl no', 'non-professional','professional']
         ],
         'PH National ID' => [
-            'required' => ['philippine identification', 'philsys', 'national id'],
+            'required' => ['republika ng pilipinas','pambansang pagkakakilanlan','philippine identification', 'philsys', 'national id'],
             'optional' => ['psa', 'republic', 'philippines']
         ],
         'PhilHealth' => [
             'required' => ['philhealth', 'philippine health'],
-            'optional' => ['insurance', 'member', 'phic']
+            'optional' => ['insurance', 'member', 'phic','republic of the philippines']
         ],
         'Philippine Passport' => [
             'required' => ['passport', 'republic of the philippines', 'dfa'],
-            'optional' => ['passport no', 'surname', 'given name']
+            'optional' => ['passport no', 'surname', 'given name','republika ng pilipinas']
         ],
         'Philippine Statistics Authority Live Birth' => [
-            'required' => ['psa', 'birth certificate', 'live birth'],
+            'required' => ['psa', 'birth certificate', 'live birth','certificate of live birth'],
             'optional' => ['philippine statistics', 'registry', 'certificate']
         ],
         'Postal ID' => [
-            'required' => ['postal', 'phlpost'],
+            'required' => ['postal', 'phlpost','postal identity card'],
             'optional' => ['philippine postal', 'corporation', 'identification']
         ],
         'Professional Regulation Commission' => [
@@ -51,22 +51,22 @@ class IDValidator {
         ],
         'Senior Citizen' => [
             'required' => ['senior citizen', 'senior'],
-            'optional' => ['osca', 'elderly', 'identification']
+            'optional' => ['osca', 'elderly', 'identification', 'office of the senior citizen affairs']
         ],
         'Social Security System' => [
             'required' => ['sss', 'social security'],
-            'optional' => ['system', 'member', 'ss no']
+            'optional' => ['system', 'member', 'ss no','unified multi-purpose']
         ],
         'Solo Parent' => [
             'required' => ['solo parent', 'single parent'],
             'optional' => ['dswd', 'identification', 'parent']
         ],
         'Tax Identification Number' => [
-            'required' => ['tin', 'bir', 'tax'],
+            'required' => ['tin', 'bir', 'tax', 'bureau of internal revenue'],
             'optional' => ['bureau', 'internal revenue', 'taxpayer']
         ],
         'Unified Multi-purpose ID' => [
-            'required' => ['umid', 'unified'],
+            'required' => ['umid', 'unified','unified multi-purpose'],
             'optional' => ['multi-purpose', 'sss', 'gsis', 'philhealth']
         ],
         "Voter's ID" => [

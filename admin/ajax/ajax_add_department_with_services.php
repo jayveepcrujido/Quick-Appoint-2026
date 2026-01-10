@@ -17,8 +17,10 @@ header('Content-Type: application/json');
 $name = trim($_POST['name'] ?? '');
 $acronym = trim($_POST['acronym'] ?? '');
 $description = trim($_POST['description'] ?? '');
+$serviceDescriptions = $_POST['service_descriptions'] ?? [];
 $services = $_POST['services'] ?? [];
 $requirements = $_POST['requirements'] ?? [];
+
 
 // Validation
 if (empty($name)) {
@@ -46,14 +48,16 @@ try {
     $stmt->execute([$name, $acronym ?: null, $description]);
     $deptId = $pdo->lastInsertId();
 
-    $svcStmt = $pdo->prepare("INSERT INTO department_services (department_id, service_name) VALUES (?, ?)");
+    $svcStmt = $pdo->prepare("INSERT INTO department_services (department_id, service_name, description) VALUES (?, ?, ?)");
     $reqStmt = $pdo->prepare("INSERT INTO service_requirements (service_id, requirement) VALUES (?, ?)");
 
     foreach ($services as $index => $service) {
         $serviceName = trim($service);
         
         if ($serviceName !== '') {
-            $svcStmt->execute([$deptId, $serviceName]);
+            $serviceDesc = isset($serviceDescriptions[$index]) ? trim($serviceDescriptions[$index]) : null;
+            
+            $svcStmt->execute([$deptId, $serviceName, $serviceDesc]);
             $serviceId = $pdo->lastInsertId();
 
             if (isset($requirements[$index])) {

@@ -6,6 +6,7 @@ if (!isset($_SESSION['auth_id']) || $_SESSION['role'] !== 'Resident') {
 }
 
 include '../conn.php';
+
 $authId = $_SESSION['auth_id'];
 
 $stmt = $pdo->prepare("SELECT id FROM residents WHERE auth_id = ? LIMIT 1");
@@ -1012,7 +1013,7 @@ textarea.form-control {
                             <span>Reason for Rescheduling</span>
                             <span class="text-danger">*</span>
                         </label>
-                        <textarea class="form-control" name="reason" rows="4" required 
+                        <textarea class="form-control" name="reason" rows="4" required
                                 placeholder="Please explain why you missed the appointment and why you need to reschedule..."
                                 style="padding: 0.65rem 0.85rem; border-radius: 8px; border: 2px solid #e0e0e0; font-size: 0.9rem; resize: vertical;"></textarea>
                         <small class="form-text text-muted" style="display: flex; align-items: center; gap: 0.4rem; margin-top: 0.4rem; font-size: 0.8rem;">

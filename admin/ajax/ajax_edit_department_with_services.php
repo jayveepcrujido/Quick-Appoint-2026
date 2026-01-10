@@ -7,6 +7,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $desc = $_POST['description'] ?? '';
     $services = $_POST['services'] ?? [];
     $requirements = $_POST['requirements'] ?? [];
+    $serviceDescriptions = $_POST['service_descriptions'] ?? [];
 
     if (!$deptId || !$name || empty($services)) {
         http_response_code(400);
@@ -31,13 +32,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $pdo->prepare("DELETE FROM department_services WHERE department_id = ?")->execute([$deptId]);
 
-        $svcStmt = $pdo->prepare("INSERT INTO department_services (department_id, service_name) VALUES (?, ?)");
+        $svcStmt = $pdo->prepare("INSERT INTO department_services (department_id, service_name, description) VALUES (?, ?, ?)");
         $reqStmt = $pdo->prepare("INSERT INTO service_requirements (service_id, requirement) VALUES (?, ?)");
 
-        $reqIndex = 0;
+        $serviceIdx = 0;
         foreach ($services as $svc) {
             if (trim($svc) !== '') {
-                $svcStmt->execute([$deptId, trim($svc)]);
+                $serviceDesc = isset($serviceDescriptions[$serviceIdx]) ? trim($serviceDescriptions[$serviceIdx]) : null;
+                $svcStmt->execute([$deptId, trim($svc), $serviceDesc]);
                 $newServiceId = $pdo->lastInsertId();
 
                 while ($reqIndex < count($requirements) && trim($requirements[$reqIndex]) !== '') {
@@ -46,6 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     if (isset($services[$reqIndex])) break;
                 }
+                $serviceIdx++;
             }
         }
 

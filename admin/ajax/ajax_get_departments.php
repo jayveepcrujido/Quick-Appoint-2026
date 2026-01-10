@@ -15,7 +15,7 @@ $stmt = $pdo->query("SELECT d.*,
 $departments = $stmt->fetchAll();
 
 $serviceMap = [];
-$stmt = $pdo->query("SELECT ds.id AS service_id, ds.department_id, ds.service_name, sr.requirement
+$stmt = $pdo->query("SELECT ds.id AS service_id, ds.department_id, ds.service_name, ds.description as service_description, sr.requirement
                      FROM department_services ds
                      LEFT JOIN service_requirements sr ON ds.id = sr.service_id
                      ORDER BY ds.department_id, ds.id");
@@ -27,6 +27,7 @@ while ($row = $stmt->fetch()) {
     if (!isset($serviceMap[$deptId][$serviceId])) {
         $serviceMap[$deptId][$serviceId] = [
             'name' => $row['service_name'],
+            'description' => $row['service_description'],
             'requirements' => []
         ];
     }
@@ -106,6 +107,14 @@ while ($row = $stmt->fetch()) {
                                                 <i class='bx bx-check-circle'></i>
                                                 <?= htmlspecialchars($svc['name']) ?>
                                             </div>
+                                            
+                                            <!-- Service Description -->
+                                            <?php if (!empty($svc['description'])): ?>
+                                                <p class="text-muted mb-2" style="font-size: 0.875rem; padding-left: 1.75rem;">
+                                                    <em><?= htmlspecialchars($svc['description']) ?></em>
+                                                </p>
+                                            <?php endif; ?>
+                                            
                                             <?php if (!empty($svc['requirements'])): ?>
                                                 <ul class="requirement-list">
                                                     <?php foreach ($svc['requirements'] as $req): ?>
@@ -116,7 +125,7 @@ while ($row = $stmt->fetch()) {
                                                     <?php endforeach; ?>
                                                 </ul>
                                             <?php else: ?>
-                                                <p class="text-muted mb-0"><em>No specific requirements</em></p>
+                                                <p class="text-muted mb-0" style="padding-left: 1.75rem;"><em>No specific requirements</em></p>
                                             <?php endif; ?>
                                         </div>
                                         <button type="button" 
@@ -203,7 +212,22 @@ while ($row = $stmt->fetch()) {
                                 <?php foreach ($serviceMap[$d['id']] as $svcId => $svc): ?>
                                     <div class="service-edit-block">
                                         <input type="hidden" name="service_ids[]" value="<?= $svcId ?>">
-                                        <input type="text" name="service_names[]" class="form-control form-control-custom mb-3" value="<?= htmlspecialchars($svc['name']) ?>" placeholder="Service Name" required>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label" style="font-size: 0.8125rem; font-weight: 500; margin-bottom: 0.5rem;">
+                                                <i class='bx bx-text'></i>
+                                                Service Name
+                                            </label>
+                                            <input type="text" name="service_names[]" class="form-control form-control-custom" value="<?= htmlspecialchars($svc['name']) ?>" placeholder="Service Name" required>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label" style="font-size: 0.8125rem; font-weight: 500; margin-bottom: 0.5rem;">
+                                                <i class='bx bx-info-circle'></i>
+                                                Service Description (Optional)
+                                            </label>
+                                            <textarea name="service_descriptions[]" class="form-control form-control-custom" rows="2" placeholder="Brief description of the service"><?= htmlspecialchars($svc['description'] ?? '') ?></textarea>
+                                        </div>
                                         
                                         <div class="requirement-group">
                                             <?php if (!empty($svc['requirements'])): ?>

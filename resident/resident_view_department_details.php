@@ -183,7 +183,15 @@
                 padding: 1.5rem 2rem;
                 background-color: #f8f9fa;
             }
+            #serviceModal .modal-dialog {
+                max-width: 700px;
+            }
 
+            @media (min-width: 992px) {
+                #serviceModal .modal-dialog {
+                    max-width: 900px;
+                }
+            }
             #serviceModal .modal-header {
                 background: linear-gradient(135deg, #2c3e50, #3498db);
             }
@@ -192,15 +200,11 @@
                 padding: 2rem;
             }
 
-            #serviceModal .requirements-list {
-                background: #f8f9fa;
-                border-radius: 0.75rem;
-                padding: 1.5rem;
-            }
-
             #serviceModal .requirements-list li {
                 padding: 0.75rem 0;
                 border-bottom: 1px solid #e9ecef;
+                font-size: 0.9rem;
+                text-align: left;
             }
 
             #serviceModal .requirements-list li:last-child {
@@ -1063,21 +1067,22 @@
                     <div class="row">
                         <?php foreach ($services as $svc): ?>
                         <div class="col-md-6 mb-4">
-                            <div class="card service-card shadow-sm h-100"
-                                data-id="<?= $svc['id'] ?>"
-                                data-name="<?= htmlspecialchars($svc['service_name']) ?>"
-                                data-req='<?= json_encode($requirementsByService[$svc['id']] ?? []) ?>'>
-
-                                <div class="card-body d-flex flex-column justify-content-between">
-                                    <div>
-                                        <div class="d-flex align-items-center mb-3">
-                                            <div class="service-icon bg-info text-white rounded-circle d-flex align-items-center justify-content-center mr-3">
-                                                <i class="bx bx-envelope"></i>
-                                            </div>
-                                            <h5 class="card-title mb-0"><?= htmlspecialchars($svc['service_name']) ?></h5>
+                        <div class="card service-card shadow-sm h-100"
+                            data-id="<?= $svc['id'] ?>"
+                            data-name="<?= htmlspecialchars($svc['service_name']) ?>"
+                            data-req="<?= htmlspecialchars(json_encode($requirementsByService[$svc['id']] ?? []), ENT_QUOTES, 'UTF-8') ?>"
+                            data-desc="<?= htmlspecialchars($svc['description'] ?? '') ?>"> <div class="card-body d-flex flex-column justify-content-between">
+                                <div>
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="service-icon bg-info text-white rounded-circle d-flex align-items-center justify-content-center mr-3">
+                                            <i class="bx bx-envelope"></i>
                                         </div>
-                                        <p class="text-muted small mb-0">Click to view details & requirements</p>
+                                        <h5 class="card-title mb-0"><?= htmlspecialchars($svc['service_name']) ?></h5>
                                     </div>
+                                    <p class="text-muted small mb-0">
+                                        <?= !empty($svc['description']) ? htmlspecialchars($svc['description']) : 'Click to view details & requirements' ?>
+                                    </p>
+                                </div>
                                     <div class="text-right mt-3">
                                         <span class="badge badge-pill badge-primary px-3 py-2">
                                             <i class="bx bx-info-circle mr-1"></i> View
@@ -1104,6 +1109,9 @@
                         </div>
                         <div class="modal-body">
                             <h5 id="serviceName" style="color: #2c3e50; font-weight: 600;"></h5>
+                            
+                            <p id="serviceDescription" class="text-muted mt-2" style="font-size: 0.95rem;"></p>
+                            
                             <div class="requirements-list mt-3">
                                 <h6 class="d-flex align-items-center" style="color: #2c3e50; margin-bottom: 1rem;">
                                     <i class="bx bx-list-ul mr-2"></i>Requirements:
@@ -1415,26 +1423,53 @@
     });
 
     $(document).off("click", ".service-card").on("click", ".service-card", function() {
-        const serviceId = $(this).data("id");
-        const serviceName = $(this).data("name");
-        const requirements = $(this).data("req");
+    const serviceId = $(this).data("id");
+    const serviceName = $(this).data("name");
+    
+    // 1. Robust data retrieval
+    let requirements = $(this).data("req");
 
-        $("#serviceName").text(serviceName);
-        $("#serviceRequirements").empty();
-
-        if (requirements && requirements.length > 0) {
-            requirements.forEach(r => {
-                $("#serviceRequirements").append(
-                    `<li class="mb-2 d-flex align-items-start"><i class="bx bx-check-circle text-success mr-2" style="margin-top: 2px;"></i><span>${r}</span></li>`
-                );
-            });
-        } else {
-            $("#serviceRequirements").html('<p class="text-muted">No specific requirements listed.</p>');
+    // 2. Safety check: If it's a string (parsing failed), try to parse it manually
+    if (typeof requirements === 'string') {
+        try {
+            requirements = JSON.parse(requirements);
+        } catch (e) {
+            console.error("Failed to parse requirements JSON", e);
+            requirements = [];
         }
+    }
 
-        $("#bookNowBtn").data("service-id", serviceId);
-        $("#serviceModal").modal("show");
-    });
+    // 3. Final Safety: Ensure it is an array before looping
+    if (!Array.isArray(requirements)) {
+        requirements = [];
+    }
+
+    const description = $(this).data("desc");
+
+    $("#serviceName").text(serviceName);
+
+    if (description) {
+        $("#serviceDescription").text(description);
+    } else {
+        $("#serviceDescription").text("No description available.");
+    }
+
+    $("#serviceRequirements").empty();
+
+    // 4. Now this is safe to run
+    if (requirements.length > 0) {
+        requirements.forEach(r => {
+            $("#serviceRequirements").append(
+                `<li class="mb-2 d-flex align-items-start"><i class="bx bx-check-circle text-success mr-2" style="margin-top: 2px; font-size: 1rem;"></i><span>${r}</span></li>`
+            );
+        });
+    } else {
+        $("#serviceRequirements").html('<p class="text-muted">No specific requirements listed.</p>');
+    }
+
+    $("#bookNowBtn").data("service-id", serviceId);
+    $("#serviceModal").modal("show");
+});
 
     $(document).off('click', '#bookNowBtn').on('click', '#bookNowBtn', function(e) {
         const serviceId = $(this).data("service-id");

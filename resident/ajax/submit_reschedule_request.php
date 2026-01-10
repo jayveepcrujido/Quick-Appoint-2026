@@ -25,7 +25,7 @@ try {
         throw new Exception('All fields are required');
     }
     
-    if (strlen($reason) < 20) {
+    if (strlen($reason) < 5) {
         throw new Exception('Please provide a more detailed reason (minimum 20 characters)');
     }
     

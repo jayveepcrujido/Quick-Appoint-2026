@@ -2,7 +2,7 @@
 $servername = "localhost";
 $username = "root";
 $password = "";
-$database = "lgu_q_a";
+$database = "lgu_quick_appoint";
 
 try {
     $pdo = new PDO("mysql:host=$servername;dbname=$database", $username, $password);

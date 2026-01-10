@@ -77,6 +77,7 @@ $stats = $statsQuery->fetch(PDO::FETCH_ASSOC);
         .info-section { background: #f8f9fa; border-radius: 10px; padding: 15px; margin-bottom: 15px; }
         .clickable-id { cursor: zoom-in; transition: transform 0.2s; }
         .clickable-id:hover { transform: scale(1.02); }
+        #viewIdImage { max-height: 400px; width: auto; object-fit: contain; }
         .table-warning { background-color: #fff3cd !important; transition: background-color 0.3s ease;}
         tr.table-success {background-color: #d4edda !important;transition: background-color 1s ease;}
     </style>
@@ -263,8 +264,8 @@ $stats = $statsQuery->fetch(PDO::FETCH_ASSOC);
 <div class="modal fade" id="fullImageModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content bg-transparent border-0">
-            <div class="modal-body p-0 text-center">
-                <button type="button" class="close text-white position-absolute" style="right: -20px; top: -20px;" data-dismiss="modal">&times;</button>
+            <div class="modal-body p-0 text-center position-relative">
+                <button type="button" class="close text-white position-absolute" style="right: 10px; top: 10px; font-size: 2rem; z-index: 1000; text-shadow: 0 0 5px black;" data-dismiss="modal">&times;</button>
                 <img src="" id="fullImageDisplay" class="img-fluid rounded">
             </div>
         </div>
@@ -334,7 +335,7 @@ $(document).ready(function () {
             schedText = `${dateStr} (${timeStr})`;
         }
         $('#viewScheduled').text(schedText);
-        $('#viewIdImage').attr('src', data.id_front_image);
+        $('#viewIdImage').attr('src', '../' + data.id_front_image);
         
         $('.btn-complete-action').data('id', data.id);
         $('.btn-delete-action').data('id', data.id);

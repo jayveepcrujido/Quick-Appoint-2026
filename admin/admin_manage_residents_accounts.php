@@ -10,16 +10,79 @@ include '../conn.php';
 if (isset($_POST['delete_id'])) {
     $deleteId = $_POST['delete_id'];
 
-    $stmt = $pdo->prepare("SELECT auth_id FROM residents WHERE id = ?");
-    $stmt->execute([$deleteId]);
-    $authId = $stmt->fetchColumn();
+    try {
+        // Start transaction
+        $pdo->beginTransaction();
+        
+        // Get the auth_id
+        $stmt = $pdo->prepare("SELECT auth_id FROM residents WHERE id = ?");
+        $stmt->execute([$deleteId]);
+        $authId = $stmt->fetchColumn();
 
-    if ($authId) {
-        $pdo->prepare("DELETE FROM auth WHERE id = ?")->execute([$authId]);
+        if ($authId) {
+            $pdo->prepare("
+                DELETE af FROM appointment_feedback af
+                INNER JOIN appointments a ON af.appointment_id = a.id
+                WHERE a.resident_id = ?
+            ")->execute([$deleteId]);
+            
+            $pdo->prepare("DELETE FROM reschedule_requests WHERE resident_id = ?")->execute([$deleteId]);
+            
+            $pdo->prepare("DELETE FROM notifications WHERE resident_id = ?")->execute([$deleteId]);
+            
+            $pdo->prepare("DELETE FROM appointments WHERE resident_id = ?")->execute([$deleteId]);
+            
+            $pdo->prepare("DELETE FROM residents WHERE id = ?")->execute([$deleteId]);
+            
+            $pdo->prepare("DELETE FROM auth WHERE id = ?")->execute([$authId]);
+            
+            $pdo->commit();
+            $_SESSION['delete_success'] = true;
+        } else {
+            $pdo->rollBack();
+            $_SESSION['delete_error'] = true;
+        }
+    } catch (Exception $e) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        $_SESSION['delete_error'] = true;
+        error_log("Delete error: " . $e->getMessage());
     }
-
-    echo json_encode(['status' => 'success']);
+    
+    header("Location: admin_dashboard.php");
     exit();
+}
+
+if (isset($_POST['view_id'])) {
+    $viewId = $_POST['view_id'];
+    
+    $stmt = $pdo->prepare("
+        SELECT r.*, a.email
+        FROM residents r
+        JOIN auth a ON r.auth_id = a.id
+        WHERE r.id = ?
+    ");
+    $stmt->execute([$viewId]);
+    $resident = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    if ($resident) {
+        echo json_encode(['status' => 'success', 'data' => $resident]);
+    } else {
+        echo json_encode(['status' => 'error', 'message' => 'Resident not found']);
+    }
+    exit();
+}
+
+$showSuccessAlert = false;
+$showErrorAlert = false;
+if (isset($_SESSION['delete_success'])) {
+    $showSuccessAlert = true;
+    unset($_SESSION['delete_success']);
+}
+if (isset($_SESSION['delete_error'])) {
+    $showErrorAlert = true;
+    unset($_SESSION['delete_error']);
 }
 
 $stmt = $pdo->prepare("
@@ -307,6 +370,33 @@ $femaleCount = $genderData['female_count'];
             transform: translateY(0);
         }
 
+        .btn-view {
+            background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .btn-view:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(78, 115, 223, 0.4);
+            color: white;
+        }
+
+        .btn-view:active {
+            transform: translateY(0);
+        }
+
+        .me-1 {
+            margin-right: 0.5rem;
+        }
+
         .empty-state {
             text-align: center;
             padding: 4rem 2rem;
@@ -457,9 +547,139 @@ $femaleCount = $genderData['female_count'];
         .main-card, .stat-card, .mobile-card {
             animation: fadeIn 0.5s ease-in;
         }
+        .resident-profile {
+            padding: 1rem 0;
+        }
+
+        .profile-header {
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
+
+        .info-section {
+            background: #f8f9fc;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+        }
+
+        .section-title {
+            color: #2d3748;
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .info-label {
+            color: #718096;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.25rem;
+        }
+
+        .info-value {
+            color: #2d3748;
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 0;
+        }
+
+        .id-image-container {
+            position: relative;
+            overflow: hidden;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .id-image-container:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .id-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .image-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+            color: white;
+            padding: 0.75rem;
+            font-size: 0.875rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .id-image-container:hover .image-overlay {
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            .profile-header {
+                padding: 1.5rem 1rem;
+            }
+            
+            .info-section {
+                padding: 1rem;
+            }
+            
+            .id-image {
+                height: 150px;
+            }
+        }
     </style>
 </head>
 <body class="p-3 p-md-4">
+    <?php if ($showSuccessAlert): ?>
+<div class="alert alert-success alert-dismissible fade show position-fixed" 
+     style="top: 20px; right: 20px; z-index: 9999; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.2);">
+    <i class='bx bx-check-circle'></i> Resident account deleted successfully!
+    <button type="button" class="close" data-dismiss="alert">
+        <span>&times;</span>
+    </button>
+</div>
+<script>
+    setTimeout(function() {
+        $('.alert').fadeOut();
+    }, 3000);
+</script>
+<?php endif; ?>
+
+<?php if ($showErrorAlert): ?>
+<div class="alert alert-danger alert-dismissible fade show position-fixed" 
+     style="top: 20px; right: 20px; z-index: 9999; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.2);">
+    <i class='bx bx-error'></i> Failed to delete resident account!
+    <button type="button" class="close" data-dismiss="alert">
+        <span>&times;</span>
+    </button>
+</div>
+<script>
+    setTimeout(function() {
+        $('.alert').fadeOut();
+    }, 3000);
+</script>
+<?php endif; ?>
 <div class="container-fluid">
     <!-- Page Header -->
     <div class="page-header">
@@ -553,6 +773,9 @@ $femaleCount = $genderData['female_count'];
                                         </span>
                                     </td>
                                     <td class="text-center">
+                                        <button class="btn btn-view btn-sm me-1" onclick="viewResident(<?= $resident['id'] ?>)">
+                                            <i class='bx bx-show'></i> View
+                                        </button>
                                         <button class="btn btn-delete btn-sm" onclick="deleteResident(<?= $resident['id'] ?>, '<?= htmlspecialchars($fullName) ?>')">
                                             <i class='bx bx-trash'></i> Delete
                                         </button>
@@ -594,6 +817,9 @@ $femaleCount = $genderData['female_count'];
                                     </span>
                                 </div>
                                 <div class="mobile-card-row mt-2">
+                                    <button class="btn btn-view btn-block mb-2" onclick="viewResident(<?= $resident['id'] ?>)">
+                                        <i class='bx bx-show'></i> View Details
+                                    </button>
                                     <button class="btn btn-delete btn-block" onclick="deleteResident(<?= $resident['id'] ?>, '<?= htmlspecialchars($fullName) ?>')">
                                         <i class='bx bx-trash'></i> Delete Account
                                     </button>
@@ -644,6 +870,34 @@ $femaleCount = $genderData['female_count'];
     </div>
 </div>
 
+<!-- View Resident Modal -->
+<div class="modal fade" id="viewModal" tabindex="-1" role="dialog" aria-labelledby="viewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" role="document">
+        <div class="modal-content" style="border-radius: 15px; border: none;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #4e73df 0%, #224abe 100%); color: white; border-radius: 15px 15px 0 0;">
+                <h5 class="modal-title" id="viewModalLabel">
+                    <i class='bx bx-user-circle'></i> Resident Information
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="residentDetails">
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" style="border-radius: 8px;">
+                    <i class='bx bx-x'></i> Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 let deleteId = null;
 
@@ -652,6 +906,25 @@ function deleteResident(id, name) {
     $('#residentName').text(name);
     $('#deleteModal').modal('show');
 }
+
+$('#confirmDelete').off('click').on('click', function() {
+    if (!deleteId) return;
+    
+    // Create and submit a hidden form
+    const form = $('<form>', {
+        'method': 'POST',
+        'action': 'admin_manage_residents_accounts.php'
+    });
+    
+    form.append($('<input>', {
+        'type': 'hidden',
+        'name': 'delete_id',
+        'value': deleteId
+    }));
+    
+    $('body').append(form);
+    form.submit();
+});
 
 $('#confirmDelete').click(function() {
     if (deleteId) {
@@ -698,6 +971,172 @@ $('#searchInput').on('keyup', function() {
         });
     }
 });
+function viewResident(id) {
+    $('#viewModal').modal('show');
+    $('#residentDetails').html(`
+        <div class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+    `);
+    
+    $.post('admin_manage_residents_accounts.php', { view_id: id }, function(response) {
+        if (response.status === 'success') {
+            const r = response.data;
+            const fullName = `${r.first_name} ${r.middle_name || ''} ${r.last_name}`.trim();
+            const initials = (r.first_name.charAt(0) + r.last_name.charAt(0)).toUpperCase();
+            
+            $('#residentDetails').html(`
+                <div class="resident-profile">
+                    <!-- Header Section -->
+                    <div class="profile-header text-center mb-4">
+                        <div class="user-avatar mx-auto mb-3" style="width: 80px; height: 80px; font-size: 2rem;">
+                            ${initials}
+                        </div>
+                        <h4 class="mb-1">${fullName}</h4>
+                        <p class="text-muted mb-2">
+                            <i class='bx bx-envelope'></i> ${r.email}
+                        </p>
+                    </div>
+
+                    <!-- Personal Information -->
+                    <div class="info-section mb-4">
+                        <h5 class="section-title">
+                            <i class='bx bx-user'></i> Personal Information
+                        </h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="info-label">Birthday</label>
+                                <p class="info-value">${new Date(r.birthday).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="info-label">Age</label>
+                                <p class="info-value">${r.age || 'N/A'} years old</p>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="info-label">Sex</label>
+                                <p class="info-value">${r.sex}</p>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="info-label">Civil Status</label>
+                                <p class="info-value">${r.civil_status}</p>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label class="info-label">Address</label>
+                                <p class="info-value">${r.address}</p>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="info-label">Phone Number</label>
+                                <p class="info-value">${r.phone_number}</p>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="info-label">Valid ID Type</label>
+                                <p class="info-value">${r.valid_id_type}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ID Images -->
+                    ${r.id_front_image || r.id_back_image || r.selfie_with_id_image ? `
+                    <div class="info-section">
+                        <h5 class="section-title">
+                            <i class='bx bx-id-card'></i> Identification Documents
+                        </h5>
+                        <div class="row">
+                            ${r.id_front_image ? `
+                            <div class="col-md-4 mb-3">
+                                <label class="info-label">ID Front</label>
+                                <div class="id-image-container">
+                                    <img src="../${r.id_front_image}" alt="ID Front" class="img-fluid id-image" onclick="openImageModal(this.src)">
+                                    <div class="image-overlay">
+                                        <i class='bx bx-zoom-in'></i> Click to enlarge
+                                    </div>
+                                </div>
+                            </div>
+                            ` : ''}
+                            ${r.id_back_image ? `
+                            <div class="col-md-4 mb-3">
+                                <label class="info-label">ID Back</label>
+                                <div class="id-image-container">
+                                    <img src="../${r.id_back_image}" alt="ID Back" class="img-fluid id-image" onclick="openImageModal(this.src)">
+                                    <div class="image-overlay">
+                                        <i class='bx bx-zoom-in'></i> Click to enlarge
+                                    </div>
+                                </div>
+                            </div>
+                            ` : ''}
+                            ${r.selfie_with_id_image ? `
+                            <div class="col-md-4 mb-3">
+                                <label class="info-label">Selfie with ID</label>
+                                <div class="id-image-container">
+                                    <img src="../${r.selfie_with_id_image}" alt="Selfie with ID" class="img-fluid id-image" onclick="openImageModal(this.src)">
+                                    <div class="image-overlay">
+                                        <i class='bx bx-zoom-in'></i> Click to enlarge
+                                    </div>
+                                </div>
+                            </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                    ` : ''}
+
+                    <!-- Registration Info -->
+                    <div class="info-section mt-4">
+                        <h5 class="section-title">
+                            <i class='bx bx-info-circle'></i> Registration Details
+                        </h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="info-label">Registered On</label>
+                                <p class="info-value">${new Date(r.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="info-label">Last Updated</label>
+                                <p class="info-value">${new Date(r.updated_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `);
+        } else {
+            $('#residentDetails').html(`
+                <div class="alert alert-danger">
+                    <i class='bx bx-error'></i> Failed to load resident information.
+                </div>
+            `);
+        }
+    }, 'json').fail(function() {
+        $('#residentDetails').html(`
+            <div class="alert alert-danger">
+                <i class='bx bx-error'></i> An error occurred while loading resident information.
+            </div>
+        `);
+    });
+}
+
+function openImageModal(src) {
+    const imageModal = `
+        <div class="modal fade" id="imageModal" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                <div class="modal-content bg-transparent border-0">
+                    <div class="modal-body p-0 text-center">
+                        <button type="button" class="close text-white position-absolute" style="right: 10px; top: 10px; z-index: 1000; font-size: 2rem; opacity: 1;" data-dismiss="modal">
+                            <span>&times;</span>
+                        </button>
+                        <img src="${src}" class="img-fluid" style="max-height: 90vh; border-radius: 10px;">
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    $('body').append(imageModal);
+    $('#imageModal').modal('show');
+    $('#imageModal').on('hidden.bs.modal', function () {
+        $(this).remove();
+    });
+}
 </script>
 </body>
 </html>

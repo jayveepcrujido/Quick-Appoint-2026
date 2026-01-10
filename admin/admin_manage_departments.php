@@ -14,7 +14,7 @@ $stmt = $pdo->query("SELECT d.*,
 $departments = $stmt->fetchAll();
 
 $serviceMap = [];
-$stmt = $pdo->query("SELECT ds.id AS service_id, ds.department_id, ds.service_name, sr.requirement
+$stmt = $pdo->query("SELECT ds.id AS service_id, ds.department_id, ds.service_name, ds.description as service_description, sr.requirement
                      FROM department_services ds
                      LEFT JOIN service_requirements sr ON ds.id = sr.service_id
                      ORDER BY ds.department_id, ds.id");
@@ -26,6 +26,7 @@ while ($row = $stmt->fetch()) {
     if (!isset($serviceMap[$deptId][$serviceId])) {
         $serviceMap[$deptId][$serviceId] = [
             'name' => $row['service_name'],
+            'description' => $row['service_description'],
             'requirements' => []
         ];
     }
@@ -1742,7 +1743,21 @@ body {
                                         <?php foreach ($serviceMap[$d['id']] as $svcId => $svc): ?>
                                             <div class="service-edit-block">
                                                 <input type="hidden" name="service_ids[]" value="<?= $svcId ?>">
-                                                <input type="text" name="service_names[]" class="form-control form-control-custom mb-3" value="<?= htmlspecialchars($svc['name']) ?>" placeholder="Service Name" required>
+                                                <div class="mb-3">
+                                                    <label class="form-label" style="font-size: 0.8125rem; font-weight: 500; margin-bottom: 0.5rem;">
+                                                        <i class='bx bx-text'></i>
+                                                        Service Name
+                                                    </label>
+                                                    <input type="text" name="service_names[]" class="form-control form-control-custom" value="<?= htmlspecialchars($svc['name']) ?>" placeholder="Service Name" required>
+                                                </div>
+
+                                                <div class="mb-3">
+                                                    <label class="form-label" style="font-size: 0.8125rem; font-weight: 500; margin-bottom: 0.5rem;">
+                                                        <i class='bx bx-info-circle'></i>
+                                                        Service Description (Optional)
+                                                    </label>
+                                                    <textarea name="service_descriptions[]" class="form-control form-control-custom" rows="2" placeholder="Brief description of the service"><?= htmlspecialchars($svc['description'] ?? '') ?></textarea>
+                                                </div>
                                                 
                                                 <div class="requirement-group">
                                                     <?php if (!empty($svc['requirements'])): ?>
@@ -1865,7 +1880,19 @@ body {
                             
                             <!-- Service Name Input -->
                             <div class="mb-3">
+                                <label class="form-label" style="font-size: 0.8125rem; font-weight: 500; margin-bottom: 0.5rem;">
+                                    <i class='bx bx-text'></i>
+                                    Service Name
+                                </label>
                                 <input type="text" name="services[]" class="form-control form-control-custom" placeholder="Enter service name" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label" style="font-size: 0.8125rem; font-weight: 500; margin-bottom: 0.5rem;">
+                                    <i class='bx bx-info-circle'></i>
+                                    Service Description (Optional)
+                                </label>
+                                <textarea name="service_descriptions[]" class="form-control form-control-custom" rows="2" placeholder="Brief description of the service"></textarea>
                             </div>
                             
                             <!-- Requirements Container -->
@@ -2252,7 +2279,19 @@ body {
                 </div>
                 
                 <div class="mb-3">
+                    <label class="form-label" style="font-size: 0.8125rem; font-weight: 500; margin-bottom: 0.5rem;">
+                        <i class='bx bx-text'></i>
+                        Service Name
+                    </label>
                     <input type="text" name="services[]" class="form-control form-control-custom" placeholder="Enter service name" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" style="font-size: 0.8125rem; font-weight: 500; margin-bottom: 0.5rem;">
+                        <i class='bx bx-info-circle'></i>
+                        Service Description (Optional)
+                    </label>
+                    <textarea name="service_descriptions[]" class="form-control form-control-custom" rows="2" placeholder="Brief description of the service"></textarea>
                 </div>
                 
                 <div class="requirements-container">
@@ -2321,7 +2360,23 @@ body {
         const block = `
             <div class="service-edit-block">
                 <input type="hidden" name="service_ids[]" value="${uniqueId}">
-                <input type="text" name="service_names[]" class="form-control form-control-custom mb-3" placeholder="Service Name" required>
+                
+                <div class="mb-3">
+                    <label class="form-label" style="font-size: 0.8125rem; font-weight: 500; margin-bottom: 0.5rem;">
+                        <i class='bx bx-text'></i>
+                        Service Name
+                    </label>
+                    <input type="text" name="service_names[]" class="form-control form-control-custom" placeholder="Service Name" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" style="font-size: 0.8125rem; font-weight: 500; margin-bottom: 0.5rem;">
+                        <i class='bx bx-info-circle'></i>
+                        Service Description (Optional)
+                    </label>
+                    <textarea name="service_descriptions[]" class="form-control form-control-custom" rows="2" placeholder="Brief description of the service"></textarea>
+                </div>
+
                 <div class="requirement-group">
                     <div class="input-group mb-2">
                         <input type="text" name="requirements[${uniqueId}][]" class="form-control form-control-custom" placeholder="Requirement">
